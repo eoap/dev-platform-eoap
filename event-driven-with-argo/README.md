@@ -1,4 +1,7 @@
 # Event driven with argo:
+
+> Note: It is highly recommended to follow [this tutorial](https://eoap.github.io/event-driven-with-argo/) to know the rationale behind this activity.
+
 ## Installation
 
 - The user must start a Minikube cluster using the command below:  
@@ -25,7 +28,7 @@
 - You will see the code server is running. Follow the documentations under `doc` folder.
 
 
-> Note: It is highly recommended to follow [this tutorial](https://eoap.github.io/event-driven-with-argo/) to know the rationale behind this activity.
+
 
 ### **Troubleshooting**  
 
