@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: semaphore-argo-cwl-runner
+data:
+  workflow: "{{ .Values.semaphore }}"
+    

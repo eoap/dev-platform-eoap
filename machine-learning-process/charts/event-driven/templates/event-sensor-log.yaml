@@ -1,0 +1,16 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: acme-sentinel2-stream-source-logger
+spec:
+  eventBusName: jetstream-event-bus
+
+  dependencies:
+    - name: acme-sentinel2-stream-source-logger
+      eventSourceName: acme-sentinel2-stream-source
+      eventName: acme-sentinel2-stream-source-collected
+  triggers:
+    - template:
+        name: log-event
+        log:
+          intervalSeconds: 5 # Frequency of log updates
