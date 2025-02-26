@@ -1,0 +1,15 @@
+{
+    "S3": {
+        "Services": {
+            "results": {
+                "UrlPattern": "s3:\/\/results\/.*",
+                "Region": "us-east-1",
+                "AuthenticationRegion": "us-east-1",
+                "AccessKey": "test",
+                "SecretKey": "test",
+                "ServiceURL": "http://eoap-event-driven-localstack.eoap-event-driven.svc.cluster.local:4566",
+                "ForcePathStyle": "true"
+            }
+        }
+    }
+}

@@ -1,0 +1,5 @@
+alias ll="ls -l"
+
+alias aws="aws --endpoint-url=http://eoap-event-driven-localstack:4566"
+
+source /workspace/.venv/bin/activate   

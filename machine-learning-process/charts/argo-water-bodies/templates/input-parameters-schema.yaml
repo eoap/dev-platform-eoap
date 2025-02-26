@@ -1,0 +1,6 @@
+kind: ConfigMap
+apiVersion: v1
+metadata: 
+  name: app-package-input-schema-water-bodies-1-0-0
+data:
+  input-schema.json: {{ required "A valid .Values.inputSchema entry required!" ( tpl ( .Values.inputSchema | default ( .Files.Get "files/input-parameters-schema.json")) . | quote ) }}

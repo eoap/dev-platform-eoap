@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: semaphore-water-bodies
+data:
+  workflow: "{{ .Values.semaphore }}"
+    

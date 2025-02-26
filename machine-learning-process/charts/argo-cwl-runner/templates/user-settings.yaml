@@ -1,0 +1,9 @@
+# secret with the user-settings.json, it transforms the value yaml to json  
+apiVersion: v1
+kind: Secret
+metadata:
+  name: user-settings
+  labels:
+    app: argo-water-bodies
+data:
+  usersettings.json: {{ required "A valid .Values.userSettings entry required!" ( tpl ( .Values.userSettings | default ( .Files.Get "files/user-settings.json")) . | b64enc) }}

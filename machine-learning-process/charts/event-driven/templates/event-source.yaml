@@ -1,0 +1,13 @@
+apiVersion: argoproj.io/v1alpha1
+kind: EventSource
+metadata:
+  name: acme-sentinel2-stream-source
+spec:
+  eventBusName: jetstream-event-bus
+  redisStream:
+    acme-sentinel2-stream-source-collected:
+      hostAddress: redis-service:6379
+      db: 0
+      streams:
+        - {{ .Values.streamName }}
+      consumerGroup: acme-sentinel2-stream-source

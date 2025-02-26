@@ -1,0 +1,8 @@
+semaphore: 3  
+validateSchemaImage: validateschema
+
+storageClassRWX: standard
+storageSize: "10Gi"
+
+maxRam: "4G"
+maxCores: "4"

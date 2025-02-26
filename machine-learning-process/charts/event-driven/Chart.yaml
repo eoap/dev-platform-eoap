@@ -1,0 +1,6 @@
+apiVersion: v2
+name: event-driven
+description: Event driven manifests including event bus and source/sensor
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

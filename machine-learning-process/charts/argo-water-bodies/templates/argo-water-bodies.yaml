@@ -1,0 +1,216 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: water-bodies-detection
+  annotations:
+    workflows.argoproj.io/version: ">= v3.3.0"
+    workflows.argoproj.io/description: |
+      This workflow template detects water bodies.
+    eoap.ogc.org/version: "1.0.0"
+    eoap.ogc.org/title: "Water bodies detection based on NDWI and otsu threshold"
+    eoap.ogc.org/abstract: "Water bodies detection based on NDWI and otsu threshold applied to Sentinel-2 COG STAC items"
+    eoap.ogc.org/schema: "app-package-input-schema-water-bodies-1-0-0/input-schema.json"
+    eoap.ogc.org/app-package: "app-package-water-bodies-1-0-0/app-package.json"
+spec:
+  onExit: exit-handler
+  # this is the Workflow throttling to avoid overloading the cluster
+  # the configMap contains the number of concurrent Workflows allowed
+  synchronization:
+    semaphore:
+      configMapKeyRef:
+        name: semaphore-water-bodies
+        key: workflow
+  # Claim the RWX volume
+  volumeClaimTemplates:
+    - metadata:
+        name: calrissian-wdir
+      spec:
+        accessModes: [ "ReadWriteMany" ]
+        storageClassName:  "{{ .Values.storageClassRWX }}"
+        resources:
+          requests:
+            storage: "{{ .Values.storageSize }}"
+  volumes:
+    - name: usersettings-vol
+      secret:
+        secretName: user-settings
+    - name: volume-input-schema
+      configMap:
+        name: app-package-input-schema-water-bodies-1-0-0
+        items:
+          - key: input-schema.json
+            path: input-schema.json
+            mode: 420
+        defaultMode: 420
+        optional: false
+    - name: volume-app-package
+      configMap:
+        name: app-package-water-bodies-1-0-0
+        items:
+          - key: app-package.json
+            path: app-package.json
+            mode: 420
+        defaultMode: 420
+        optional: false
+
+  entrypoint: main
+  parameters:
+  - name: items
+    value: "['https://earth-search.aws.element84.com/v0/collections/sentinel-s2-l2a-cogs/items/S2A_10TFK_20210708_0_L2A']"
+  - name: "aoi"
+    value: "-121.399,39.834,-120.74,40.472"
+  - name: "epsg"   
+    value: "EPSG:4326"
+  
+  templates:
+    - name: main
+      inputs:
+        parameters:
+        - name: items
+        - name: aoi
+        - name: epsg
+      outputs:
+        parameters:
+          - name: results
+            valueFrom: 
+              expression: "steps['argo-cwl'].outputs.parameters['results']"
+          - name: log
+            valueFrom: 
+              expression: "steps['argo-cwl'].outputs.parameters['log']"
+          - name: usage-report
+            valueFrom: 
+              expression: "steps['argo-cwl'].outputs.parameters['usage-report']"
+          - name: stac-catalog
+            valueFrom: 
+              expression: "steps['argo-cwl'].outputs.parameters['stac-catalog']"
+        artifacts:
+          - name: tool-logs
+            fromExpression: "steps['argo-cwl'].outputs.artifacts['tool-logs']"
+          - name: calrissian-output
+            fromExpression: "steps['argo-cwl'].outputs.artifacts['calrissian-output']"
+          - name: calrissian-stderr
+            fromExpression: "steps['argo-cwl'].outputs.artifacts['calrissian-stderr']"
+          - name: calrissian-report
+            fromExpression: "steps['argo-cwl'].outputs.artifacts['calrissian-report']"
+      steps:
+      - - name: prepare
+          template: prepare
+          arguments:
+            parameters:
+            - name: items
+              value: {{ `"{{inputs.parameters.items}}"` }}
+            - name: aoi
+              value: {{ `"{{inputs.parameters.aoi}}"` }}
+            - name: epsg
+              value: {{ `"{{inputs.parameters.epsg}}"` }}
+      
+      - - name: validate-inputs
+          template: validate-inputs
+          arguments:
+            parameters:
+            - name: inputs
+              value: {{ `"{{steps.prepare.outputs.parameters.inputs}}"` }}
+
+      - - name: argo-cwl # this steps invokes a WorkflowTemplate
+          templateRef: 
+            name: argo-cwl-runner
+            template: calrissian-runner
+          arguments:
+            parameters:
+            - name: max_ram
+              value: "{{ .Values.maxRam }}"
+            - name: max_cores
+              value: "{{ .Values.maxCores }}"
+            - name: parameters
+              value: {{ `"{{steps.prepare.outputs.parameters.inputs}}"` }}
+            - name: cwl
+              value: {{ `"{{steps.prepare.outputs.parameters.workflow}}"` }}
+
+    - name: prepare
+      inputs:
+        parameters:
+        - name: items
+        - name: aoi
+        - name: epsg
+      outputs:
+        parameters:
+           - name: inputs
+             valueFrom:
+               path: /tmp/cwl_parameters.json
+           - name: workflow
+             valueFrom: 
+               path: /tmp/cwl_workflow.json
+      script:
+        image: ubuntu:20.04
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: 1
+        
+        volumeMounts:
+        - name: volume-app-package
+          mountPath: /config
+        
+        command: [bash]
+        source: |
+          {{ required "A valid .Values.prepareScript entry required!" ( tpl ( .Values.prepareScript | default ( .Files.Get "files/prepare.sh")) . | nindent 10 ) }}
+          
+    - name: validate-inputs
+      inputs:
+        parameters:
+        - name: inputs
+    
+      script:
+        image: {{ .Values.validateSchemaImage }}
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: 1
+      
+        volumeMounts:
+        - name: volume-input-schema
+          mountPath: /schema
+
+        command: [python]
+        source: |
+          {{ required "A valid .Values.validationScript entry required!" ( tpl ( .Values.validationScript | default ( .Files.Get "files/validation.py")) . | nindent 10 ) }}
+    
+
+    - name: exit-handler
+      steps:
+      - - name: celebrate
+          template: notify-redis-success
+          when: "{{"{{workflow.status}}"}} == Succeeded"
+        - name: cry
+          template: notify-redis-failure
+          when: "{{"{{workflow.status}}"}} != Succeeded"
+
+
+    - name: notify-redis-success
+      script:
+        image: redis:alpine
+        command: [sh, -c]
+        source: |
+          item="{{ `{{workflow.parameters.items}}` }}"
+          item="${item:1:-1}"
+          catalog="s3://results/{{ `{{workflow.name}}`}}-{{ `{{workflow.uid}}` }}/catalog.json"
+          echo "XADD WATERBODIES * subject \"$item\" \
+              workflow_id \"{{ `{{workflow.uid}}` }}\" \
+              workflow_name \"{{ `{{workflow.name}}`}}\" \
+              workflow_status \"{{ `{{workflow.status}}`}}\" \
+              href \"$item\" \
+              stac_catalog  \"$catalog\"" | redis-cli -h redis-service -p 6379
+          
+    - name: notify-redis-failure
+      script:
+        image: redis:alpine
+        command: [sh, -c]
+        source: |
+          item="{{ `{{workflow.parameters.items}}` }}"
+          item="${item:1:-1}"
+          echo "XADD WATERBODIESFAILURE * subject \"$item\" \
+              workflow_id \"{{ `{{workflow.uid}}` }}\" \
+              workflow_name \"{{ `{{workflow.name}}`}}\" \
+              workflow_status \"{{ `{{workflow.status}}`}}\" \
+              href \"$item\"" | redis-cli -h redis-service -p 6379
+          

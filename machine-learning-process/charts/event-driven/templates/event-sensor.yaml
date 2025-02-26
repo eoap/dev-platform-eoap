@@ -1,0 +1,46 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: acme-water-bodies-detection-sensor
+spec:
+  eventBusName: jetstream-event-bus
+  template:
+    serviceAccountName: argo
+  dependencies:
+    - name: acme-sentinel2-stream
+      eventSourceName: acme-sentinel2-stream-source
+      eventName: acme-sentinel2-stream-source-collected
+      transform:
+        jq: ".values.href = [ .values.href ]"
+  triggers:
+    - template:
+        name: water-bodies-detection-trigger
+        k8s:
+          group: argoproj.io
+          version: v1alpha1
+          resource: workflows
+          operation: create
+          source:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                generateName: water-bodies-detection-
+                namespace: eoap-event-driven
+              spec:
+                serviceAccountName: argo
+                entrypoint: main
+                arguments:
+                  parameters:
+                  - name: items
+                  - name: aoi
+                    value: "-121.399,39.834,-120.74,40.472"
+                  - name: epsg
+                    value: "EPSG:4326"
+                workflowTemplateRef:
+                  name: water-bodies-detection
+          parameters:
+            - src:
+                dependencyName: acme-sentinel2-stream
+                dataKey: values.href
+              dest: spec.arguments.parameters.0.value
