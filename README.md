@@ -71,7 +71,7 @@ cd mastering-app-package
 skaffold dev
 ```
 
-Wait for the deployment to stablize (1-2 minutes) and the open your browser on the link printed, usually http://127.0.0.1:8000.
+Wait for the deployment to stablize (1-2 minutes) and then open your browser on the link printed, usually http://127.0.0.1:8000.
 
 The typical output is: 
 
