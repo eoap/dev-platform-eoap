@@ -24,3 +24,8 @@ coderResources:
 
 skaffold:
   enabled: False
+
+daskGateway: 
+  enabled: False
+  daskGatewayUrl: ""
+  image: ""
