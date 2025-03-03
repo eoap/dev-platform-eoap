@@ -1,17 +1,17 @@
 apiVersion: skaffold/v4beta9
 kind: Config
 metadata:
-  name: eoap-event-driven
+  name: tile-based-training
 build:
   artifacts:
-  - image: stageout
-    context: containers/stage-out
-    docker:
-      dockerfile: Dockerfile
-  - image: validateschema
-    context: containers/validate-schema
-    docker:
-      dockerfile: Dockerfile
+    - image: stageout
+      context: containers/stage-out
+      docker:
+        dockerfile: Dockerfile
+    - image: validateschema
+      context: containers/validate-schema
+      docker:
+        dockerfile: Dockerfile
 
 deploy:
   helm:
@@ -19,7 +19,7 @@ deploy:
       # argo workflows
       - name: eoap-argo-workflows
         remoteChart: argo/argo-workflows
-        namespace: eoap-event-driven
+        namespace: tile-based-training
         createNamespace: true
         wait: true
         setValues:
@@ -34,7 +34,7 @@ deploy:
               create: true
           controller:
             workflowNamespaces:
-              - eoap-event-driven
+              - tile-based-training
             workflowDefaults:
               spec:
                 serviceAccountName: argo
@@ -53,105 +53,66 @@ deploy:
             secretKeySecret:
               name: localstack-cred
               key: secretkey
-      # argo events
-      - name: eoap-argo-events
-        remoteChart: argo/argo-events
-        namespace: eoap-event-driven
-        wait: true
-        createNamespace: true
-        setValues:
-          crds.install: true
-          controller:
-            rbac:
-              enabled: true
-              namespaced: true
-              managedNamespace: eoap-event-driven
-
-
-      - name: eoap-redis
-        chartPath: ./charts/redis
-        namespace: eoap-event-driven
-        createNamespace: true
-        setValues:
-          maxMemory: 2mb
-          maxMemoryPolicy: allkeys-lru
-          port: 6379
-        
-      # local chart for event bus/source/sensor
-      - name: eoap-event-driven
-        chartPath: ./charts/event-driven
-        namespace: eoap-event-driven
-        createNamespace: true
-        wait: true
-        setValues:
-          jetstreamReplicas: 3
-          jetstreamVolumeSize: 1Gi
-          streamName: STREAM
-
-      # argo cwl runner
+      
+      # Argo CWL Runner
       - name: argo-cwl-runner
         chartPath: ./charts/argo-cwl-runner
-        namespace: eoap-event-driven
+        namespace: tile-based-training
         valuesFiles:
           - ./charts/argo-cwl-runner/values.yaml
         setValueTemplates:
           stageOutImage: "{{.IMAGE_NAME_stageout}}:{{.IMAGE_TAG_stageout}}"
-        setFiles: {
+        setFiles:
           userSettings: ./charts/argo-cwl-runner/files/user-settings.json
-        }
-      # argo water bodies
-      - name: argo-water-bodies
-        chartPath: ./charts/argo-water-bodies
-        namespace: eoap-event-driven
-        valuesFiles:
-          - ./charts/argo-water-bodies/values.yaml
-        setFiles: {
-          appPackage: ./charts/argo-water-bodies/files/app-package.json,
-          inputSchema: ./charts/argo-water-bodies/files/input-parameters-schema.json
-        }
-        setValues: 
-          storageClassRWX: "standard"
 
-      - name: eoap-event-driven-localstack
+      # LocalStack
+      - name: tile-based-training-localstack
         remoteChart: localstack/localstack
-        namespace: eoap-event-driven
+        namespace: tile-based-training
         createNamespace: true
         wait: true
         setValues:
           service.type: ClusterIP
 
-      - name: eoap-event-driven-coder
+      # Code-Server with Calrissian
+      - name: tile-based-training-coder
         chartPath: ../charts/coder
-        namespace: eoap-event-driven
+        namespace: tile-based-training
         createNamespace: true
         wait: true
         setValues:
           coder.coderImage: eoepca/pde-code-server:1.0.0
-          coder.workspace: event-driven-with-argo
+          coder.workspace: machine-learning-process
           coderstorageClassName: standard
           coder.workspaceStorage: 10Gi
           coderResources.limits.cpu: '2'
           coderResources.limits.memory: '6442450944'
           coderResources.requests.cpu: '1'
           coderResources.requests.memory: '4294967296'
-          calrissian.enabled: true 
+          calrissian.enabled: true
         setFiles: {
           initScript: ./files/init.sh,
           bashrcScript: ./files/bash-rc,
           bashloginScript: ./files/bash-login
         }
-      
+      # MLflow
+      - name: my-mlflow
+        remoteChart: community-charts/mlflow
+        namespace: tile-based-training
+        createNamespace: true
+        wait: true
+        setValues:
+          service.type: ClusterIP
 
-portForward: 
+portForward:
   - resourceType: service
-    resourceName: eoap-argo-workflows-server
-    namespace: eoap-event-driven
-    address: localhost
-    port: 2746
-    localPort: 2746  
+    resourceName: my-mlflow
+    namespace: tile-based-training
+    port: 5000
+    localPort: 5000
+
   - resourceType: service
     resourceName: code-server-service
-    namespace: eoap-event-driven
-    address: localhost
+    namespace: tile-based-training
     port: 8080
-    localPort: 8000  
+    localPort: 8000

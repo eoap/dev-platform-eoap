@@ -1,9 +1,9 @@
 cd /workspace
 
 #temp
-mkdir event-driven-with-argo
-git clone https://github.com/eoap/event-driven-with-argo.git
-cd event-driven-with-argo
+mkdir notebook
+git clone https://github.com/ai-extensions/notebooks.git
+cd notebook
 git checkout develop
 
 code-server --install-extension ms-python.python 

@@ -1,3 +1,0 @@
-maxMemory: 2mb
-maxMemoryPolicy: allkeys-lru 
-port: 6379
