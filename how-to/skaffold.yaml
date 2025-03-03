@@ -24,6 +24,7 @@ deploy:
           coderResources.limits.memory: '6442450944'
           coderResources.requests.cpu: '1'
           coderResources.requests.memory: '4294967296'
+          skaffold.enabled: True
         setFiles: {
           initScript: ./files/init.sh,
           bashrcScript: ./files/bash-rc,
