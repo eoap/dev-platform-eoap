@@ -4,75 +4,25 @@ metadata:
   name: tile-based-training
 build:
   artifacts:
-    - image: stageout
-      context: containers/stage-out
-      docker:
-        dockerfile: Dockerfile
-    - image: validateschema
-      context: containers/validate-schema
-      docker:
-        dockerfile: Dockerfile
-
+  - image: stageout
+    context: containers/stage-out
+    docker:
+      dockerfile: Dockerfile
+  - image: validateschema
+    context: containers/validate-schema
+    docker:
+      dockerfile: Dockerfile
 deploy:
   helm:
     releases:
-      # argo workflows
-      - name: eoap-argo-workflows
-        remoteChart: argo/argo-workflows
-        namespace: tile-based-training
-        createNamespace: true
-        wait: true
-        setValues:
-          crds.install: true
-          server.authModes: [server]
-          singleNamespace: true
-          workflow:
-            serviceAccount:
-              create: true
-              name: "argo"
-            rbac:
-              create: true
-          controller:
-            workflowNamespaces:
-              - tile-based-training
-            workflowDefaults:
-              spec:
-                serviceAccountName: argo
-                podGC:
-                  strategy: OnWorkflowCompletion
-                  deleteDelayDuration: 120s
-            rbac.writeConfigMaps: true
-            securityContext.runAsNonRoot: false
-          artifactRepository.s3:
-            bucket: workflows
-            endpoint: eoap-event-driven-localstack:4566
-            insecure: true
-            accessKeySecret:
-              name: localstack-cred
-              key: accesskey
-            secretKeySecret:
-              name: localstack-cred
-              key: secretkey
       
-      # Argo CWL Runner
-      - name: argo-cwl-runner
-        chartPath: ./charts/argo-cwl-runner
-        namespace: tile-based-training
-        valuesFiles:
-          - ./charts/argo-cwl-runner/values.yaml
-        setValueTemplates:
-          stageOutImage: "{{.IMAGE_NAME_stageout}}:{{.IMAGE_TAG_stageout}}"
-        setFiles:
-          userSettings: ./charts/argo-cwl-runner/files/user-settings.json
-
-      # LocalStack
-      - name: tile-based-training-localstack
+      - name: tile-based-localstack
         remoteChart: localstack/localstack
         namespace: tile-based-training
         createNamespace: true
         wait: true
         setValues:
-          service.type: ClusterIP
+          service.type: LoadBalancer
 
       # Code-Server with Calrissian
       - name: tile-based-training-coder
@@ -80,9 +30,11 @@ deploy:
         namespace: tile-based-training
         createNamespace: true
         wait: true
+
         setValues:
+          service.type: LoadBalancer
           coder.coderImage: eoepca/pde-code-server:1.0.0
-          coder.workspace: machine-learning-process
+          coder.workspace: event-driven-with-argo
           coderstorageClassName: standard
           coder.workspaceStorage: 10Gi
           coderResources.limits.cpu: '2'
@@ -95,24 +47,56 @@ deploy:
           bashrcScript: ./files/bash-rc,
           bashloginScript: ./files/bash-login
         }
-      # MLflow
-      - name: my-mlflow
-        remoteChart: community-charts/mlflow
-        namespace: tile-based-training
-        createNamespace: true
-        wait: true
-        setValues:
-          service.type: ClusterIP
+      
+      # # MLflow
+      # - name: my-mlflow
+      #   remoteChart: community-charts/mlflow
+      #   namespace: tile-based-training
+      #   createNamespace: true
+      #   wait: true
+      #   setValues:
+      #     service.type: ClusterIP
+      #     service.port: 5000
+      #     ingress.enabled: true
+      #     ingress.className: standard
+      #     resources.limits.memory: 5Gi
+      #     resources.limits.cpu: 500m
+      #     resources.requests.cpu: 200m
+      #     resources.requests.memory: 3Gi
+      #     backendStore:
+      #       databaseMigration: true  # Enable database migration to ensure schema is up-to-date
+      #       postgres:
+      #         enabled: false  # Disable PostgreSQL
+      #       mysql:
+      #         enabled: false  # Disable MySQL
+      #     artifactRoot: 
+      #       artifactRoot:
+      #       proxiedArtifactStorage: false  # Disable proxied artifact storage access
+      #       azureBlob:
+      #         enabled: false  # Disable Azure Blob Storage
+      #       s3:
+      #         enabled: false  # Disable AWS S3
+      #       gcs:
+      #         enabled: false  # Disable Google Cloud Storage
+          
+            
 
 portForward:
-  - resourceType: service
-    resourceName: my-mlflow
-    namespace: tile-based-training
-    port: 5000
-    localPort: 5000
+  # - resourceType: service
+  #   resourceName: my-mlflow
+  #   namespace: tile-based-training
+  #   port: 5000
+  #   localPort: 5000
 
+  # - resourceType: service
+  #   resourceName: eoap-argo-workflows-server
+  #   namespace: tile-based-training
+  #   address: localhost
+  #   port: 2746
+  #   localPort: 2746  
   - resourceType: service
-    resourceName: code-server-service
+    resourceName: tile-based-training-coder
     namespace: tile-based-training
+    address: localhost
     port: 8080
-    localPort: 8000
+    localPort: 8000  
