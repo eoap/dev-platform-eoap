@@ -14,29 +14,29 @@ deploy:
       #   setValues:
       #     service.type: LoadBalancer
 
-      # # Code-Server with Calrissian
-      # - name: tile-based-training-coder
-      #   chartPath: ../charts/coder
-      #   namespace: tile-based-training
-      #   createNamespace: true
-      #   wait: true
+      # Code-Server with Calrissian
+      - name: tile-based-training-coder
+        chartPath: ../charts/coder
+        namespace: tile-based-training
+        createNamespace: true
+        wait: true
 
-      #   setValues:
-      #     service.type: LoadBalancer
-      #     coder.coderImage: eoepca/pde-code-server:1.0.0
-      #     coder.workspace: event-driven-with-argo
-      #     coderstorageClassName: standard
-      #     coder.workspaceStorage: 10Gi
-      #     coderResources.limits.cpu: '2'
-      #     coderResources.limits.memory: '6442450944'
-      #     coderResources.requests.cpu: '1'
-      #     coderResources.requests.memory: '4294967296'
-      #     calrissian.enabled: true
-      #   setFiles: {
-      #     initScript: ./files/init.sh,
-      #     bashrcScript: ./files/bash-rc,
-      #     bashloginScript: ./files/bash-login
-      #   }
+        setValues:
+          service.type: LoadBalancer
+          coder.coderImage: eoepca/pde-code-server:1.0.0
+          coder.workspace: notebooks
+          coderstorageClassName: standard
+          coder.workspaceStorage: 10Gi
+          coderResources.limits.cpu: '2'
+          coderResources.limits.memory: '6442450944'
+          coderResources.requests.cpu: '1'
+          coderResources.requests.memory: '4294967296'
+          calrissian.enabled: true
+        setFiles: {
+          initScript: ./files/init.sh,
+          bashrcScript: ./files/bash-rc,
+          bashloginScript: ./files/bash-login
+        }
       
       # MLflow
       - name: my-mlflow
@@ -73,19 +73,15 @@ deploy:
 portForward:
   - resourceType: service
     resourceName: my-mlflow
+    address: localhost
     namespace: tile-based-training
     port: 5000
     localPort: 5000
 
-  # - resourceType: service
-  #   resourceName: eoap-argo-workflows-server
-  #   namespace: tile-based-training
-  #   address: localhost
-  #   port: 2746
-  #   localPort: 2746  
-  # - resourceType: service
-  #   resourceName: tile-based-training-coder
-  #   namespace: tile-based-training
-  #   address: localhost
-  #   port: 8080
-  #   localPort: 8000  
+  
+  - resourceType: service
+    resourceName: code-server-service # code server service name in ../chart/coder/templates/coder.yaml
+    namespace: tile-based-training
+    address: localhost
+    port: 8080
+    localPort: 8000  
