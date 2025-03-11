@@ -1,9 +1,9 @@
 cd /workspace
 
 #temp
-mkdir event-driven-with-argo
-git clone https://github.com/eoap/event-driven-with-argo.git
-cd event-driven-with-argo
+mkdir notebooks
+git clone https://github.com/ai-extensions/notebooks.git
+cd notebooks
 git checkout develop
 
 code-server --install-extension ms-python.python 
@@ -15,8 +15,7 @@ echo '{"workbench.colorTheme": "Visual Studio Dark"}' > /workspace/User/settings
 
 python -m venv /workspace/.venv
 source /workspace/.venv/bin/activate
-/workspace/.venv/bin/python -m pip install --no-cache-dir ipykernel requests pyyaml boto3==1.35.23 loguru redis
-/workspace/.venv/bin/python -m ipykernel install --user --name zoo_env --display-name "Python (Event Driven with Argo)"
+/workspace/.venv/bin/python -m pip install --no-cache-dir hatch
 
 export AWS_DEFAULT_REGION="us-east-1"
 export AWS_ACCESS_KEY_ID="test"

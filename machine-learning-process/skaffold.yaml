@@ -1,157 +1,87 @@
 apiVersion: skaffold/v4beta9
 kind: Config
 metadata:
-  name: eoap-event-driven
-build:
-  artifacts:
-  - image: stageout
-    context: containers/stage-out
-    docker:
-      dockerfile: Dockerfile
-  - image: validateschema
-    context: containers/validate-schema
-    docker:
-      dockerfile: Dockerfile
-
+  name: tile-based-training
 deploy:
   helm:
     releases:
-      # argo workflows
-      - name: eoap-argo-workflows
-        remoteChart: argo/argo-workflows
-        namespace: eoap-event-driven
-        createNamespace: true
-        wait: true
-        setValues:
-          crds.install: true
-          server.authModes: [server]
-          singleNamespace: true
-          workflow:
-            serviceAccount:
-              create: true
-              name: "argo"
-            rbac:
-              create: true
-          controller:
-            workflowNamespaces:
-              - eoap-event-driven
-            workflowDefaults:
-              spec:
-                serviceAccountName: argo
-                podGC:
-                  strategy: OnWorkflowCompletion
-                  deleteDelayDuration: 120s
-            rbac.writeConfigMaps: true
-            securityContext.runAsNonRoot: false
-          artifactRepository.s3:
-            bucket: workflows
-            endpoint: eoap-event-driven-localstack:4566
-            insecure: true
-            accessKeySecret:
-              name: localstack-cred
-              key: accesskey
-            secretKeySecret:
-              name: localstack-cred
-              key: secretkey
-      # argo events
-      - name: eoap-argo-events
-        remoteChart: argo/argo-events
-        namespace: eoap-event-driven
-        wait: true
-        createNamespace: true
-        setValues:
-          crds.install: true
-          controller:
-            rbac:
-              enabled: true
-              namespaced: true
-              managedNamespace: eoap-event-driven
+      
+      # - name: tile-based-localstack
+      #   remoteChart: localstack/localstack
+      #   namespace: tile-based-training
+      #   createNamespace: true
+      #   wait: true
+      #   setValues:
+      #     service.type: LoadBalancer
 
-
-      - name: eoap-redis
-        chartPath: ./charts/redis
-        namespace: eoap-event-driven
-        createNamespace: true
-        setValues:
-          maxMemory: 2mb
-          maxMemoryPolicy: allkeys-lru
-          port: 6379
-        
-      # local chart for event bus/source/sensor
-      - name: eoap-event-driven
-        chartPath: ./charts/event-driven
-        namespace: eoap-event-driven
-        createNamespace: true
-        wait: true
-        setValues:
-          jetstreamReplicas: 3
-          jetstreamVolumeSize: 1Gi
-          streamName: STREAM
-
-      # argo cwl runner
-      - name: argo-cwl-runner
-        chartPath: ./charts/argo-cwl-runner
-        namespace: eoap-event-driven
-        valuesFiles:
-          - ./charts/argo-cwl-runner/values.yaml
-        setValueTemplates:
-          stageOutImage: "{{.IMAGE_NAME_stageout}}:{{.IMAGE_TAG_stageout}}"
-        setFiles: {
-          userSettings: ./charts/argo-cwl-runner/files/user-settings.json
-        }
-      # argo water bodies
-      - name: argo-water-bodies
-        chartPath: ./charts/argo-water-bodies
-        namespace: eoap-event-driven
-        valuesFiles:
-          - ./charts/argo-water-bodies/values.yaml
-        setFiles: {
-          appPackage: ./charts/argo-water-bodies/files/app-package.json,
-          inputSchema: ./charts/argo-water-bodies/files/input-parameters-schema.json
-        }
-        setValues: 
-          storageClassRWX: "standard"
-
-      - name: eoap-event-driven-localstack
-        remoteChart: localstack/localstack
-        namespace: eoap-event-driven
-        createNamespace: true
-        wait: true
-        setValues:
-          service.type: ClusterIP
-
-      - name: eoap-event-driven-coder
+      # Code-Server with Calrissian
+      - name: tile-based-training-coder
         chartPath: ../charts/coder
-        namespace: eoap-event-driven
+        namespace: tile-based-training
         createNamespace: true
         wait: true
+
         setValues:
+          service.type: LoadBalancer
           coder.coderImage: eoepca/pde-code-server:1.0.0
-          coder.workspace: event-driven-with-argo
+          coder.workspace: notebooks
           coderstorageClassName: standard
           coder.workspaceStorage: 10Gi
           coderResources.limits.cpu: '2'
           coderResources.limits.memory: '6442450944'
           coderResources.requests.cpu: '1'
           coderResources.requests.memory: '4294967296'
-          calrissian.enabled: true 
+          calrissian.enabled: true
         setFiles: {
           initScript: ./files/init.sh,
           bashrcScript: ./files/bash-rc,
           bashloginScript: ./files/bash-login
         }
       
+      # MLflow
+      - name: my-mlflow
+        remoteChart: community-charts/mlflow
+        namespace: tile-based-training
+        createNamespace: true
+        wait: true
+        setValues:
+          service.type: ClusterIP
+          service.port: 5000
+          ingress.enabled: true
+          ingress.className: standard
+          resources.limits.memory: 5Gi
+          resources.limits.cpu: 500m
+          resources.requests.cpu: 200m
+          resources.requests.memory: 3Gi
+          backendStore:
+            databaseMigration: true  # Enable database migration to ensure schema is up-to-date
+            postgres:
+              enabled: false  # Disable PostgreSQL
+            mysql:
+              enabled: false  # Disable MySQL
+          artifactRoot: 
+            proxiedArtifactStorage: false  # Disable proxied artifact storage access
+            azureBlob:
+              enabled: false  # Disable Azure Blob Storage
+            s3:
+              enabled: false  # Disable AWS S3
+            gcs:
+              enabled: false  # Disable Google Cloud Storage
+          
+            
 
-portForward: 
+portForward:
   - resourceType: service
-    resourceName: eoap-argo-workflows-server
-    namespace: eoap-event-driven
+    resourceName: my-mlflow
     address: localhost
-    port: 2746
-    localPort: 2746  
+    namespace: tile-based-training
+    port: 5000
+    localPort: 5000
+
+  
   - resourceType: service
-    resourceName: code-server-service
-    namespace: eoap-event-driven
+    resourceName: code-server-service # code server service name in ../chart/coder/templates/coder.yaml
+    namespace: tile-based-training
     address: localhost
     port: 8080
     localPort: 8000  
