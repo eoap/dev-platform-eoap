@@ -5,26 +5,24 @@ metadata:
 deploy:
   helm:
     releases:
-      
-      # - name: tile-based-localstack
-      #   remoteChart: localstack/localstack
-      #   namespace: tile-based-training
-      #   createNamespace: true
-      #   wait: true
-      #   setValues:
-      #     service.type: LoadBalancer
+
+      - name: tile-based-training-localstack
+        remoteChart: localstack/localstack
+        namespace: tile-based-training
+        createNamespace: true
+        setValues:
+          service.type: LoadBalancer
 
       # Code-Server with Calrissian
-      - name: tile-based-training-coder
+      - name: code-server
         chartPath: ../charts/coder
         namespace: tile-based-training
         createNamespace: true
-        wait: true
-
         setValues:
           service.type: LoadBalancer
+          storageClassRWX: "standard"
           coder.coderImage: eoepca/pde-code-server:1.0.0
-          coder.workspace: notebooks
+          coder.workspace: machine-learning-process
           coderstorageClassName: standard
           coder.workspaceStorage: 10Gi
           coderResources.limits.cpu: '2'
@@ -35,15 +33,14 @@ deploy:
         setFiles: {
           initScript: ./files/init.sh,
           bashrcScript: ./files/bash-rc,
-          bashloginScript: ./files/bash-login
+          bashloginScript: ./files/bash-login,
         }
-      
+       
       # MLflow
       - name: my-mlflow
         remoteChart: community-charts/mlflow
         namespace: tile-based-training
         createNamespace: true
-        wait: true
         setValues:
           service.type: ClusterIP
           service.port: 5000
