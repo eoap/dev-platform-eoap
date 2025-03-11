@@ -97,6 +97,8 @@ spec:
           - name: DASK_IMAGE
             value: "{{ .Values.daskGateway.image }}"
           {{- end }}
+          {{ if .Values.kaniko.enabled }}
+          {{- end }}
           resources:
             limits:
               cpu: {{ .Values.coderResources.limits.cpu }}

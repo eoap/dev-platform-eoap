@@ -29,3 +29,6 @@ daskGateway:
   enabled: False
   daskGatewayUrl: ""
   image: ""
+
+kaniko:
+  enabled: False

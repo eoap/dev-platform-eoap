@@ -10,3 +10,4 @@ odc-stac[botocore]==0.3.10
 stackstac==0.5.1
 pystac-client
 planetary-computer
+xarray-spatial

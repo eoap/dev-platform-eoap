@@ -4,16 +4,20 @@ metadata:
   name: eoap-dask-gateway
 
 build:
+  tagPolicy:
+    envTemplate:
+      template: 2h
+
   artifacts:
-    - image: worker
+    - image: ttl.sh/eoap-dask-gateway-worker
       context: .
       docker:
         dockerfile: Dockerfile.worker
-    - image: daskclient
+    - image: ttl.sh/eoap-dask-gateway-daskclient
       context: .
       docker:
         dockerfile: Dockerfile.client
-    - image: coder 
+    - image: ttl.sh/eoap-dask-gateway-coder 
       context: .
       docker:
         dockerfile: Dockerfile.coder
@@ -28,8 +32,10 @@ deploy:
         valuesFiles:
           - values.yaml
         setValueTemplates:
-          gateway.backend.image.name: "{{.IMAGE_NAME_worker}}"
-          gateway.backend.image.tag: "{{.IMAGE_TAG_worker}}"
+          gateway.backend.image.name: ttl.sh/eoap-dask-gateway-worker
+          gateway.backend.image.tag: 2h
+          gateway.backend.imagePullSecrets: 
+          - name: kaniko-secret
           traefik.service.type: "ClusterIP"
 
       - name: eoap-dask-gateway
@@ -37,19 +43,22 @@ deploy:
         namespace: eoap-dask-gateway
         createNamespace: true
         setValueTemplates:
-          coder.coderImage: "{{.IMAGE_NAME_coder}}"
-          daskGateway.image: "{{.IMAGE_NAME_worker}}:{{.IMAGE_TAG_worker}}"
+          coder.coderImage: ttl.sh/eoap-dask-gateway-coder 
+          daskGateway.image: ttl.sh/eoap-dask-gateway-worker:2h
         setValues:
           coder.workspace: dask-app-package
-          coderstorageClassName: standard
+          coder.storageClassName: openebs-kernel-nfs-scw
           coder.workspaceStorage: 10Gi
           coderResources.limits.cpu: '2'
           coderResources.limits.memory: '6442450944'
           coderResources.requests.cpu: '1'
           coderResources.requests.memory: '4294967296'
           calrissian.enabled: true
+          calrissian.storageClassName: openebs-kernel-nfs-scw
+          skaffold.enabled: true
           daskGateway.enabled: true
           daskGateway.daskGatewayUrl: "http://traefik-dask-gateway.eoap-dask-gateway.svc.cluster.local:80"
+          kaniko.enabled: true
         setFiles: {
           initScript: ./files/init.sh,
           bashrcScript: ./files/bash-rc,
@@ -61,6 +70,7 @@ deploy:
         createNamespace: true
         setValues:
           service.type: ClusterIP
+          
     hooks:
       before: []
       after:
