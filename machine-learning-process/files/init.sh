@@ -1,10 +1,13 @@
+#!/bin/bash
+
+set -x 
 cd /workspace
 
 #temp
-mkdir notebooks
-git clone https://github.com/ai-extensions/notebooks.git
-cd notebooks
-git checkout develop
+mkdir machine-learning-process
+git clone https://github.com/parham-membari-terradue/machine-learning-process.git
+cd machine-learning-process
+
 
 code-server --install-extension ms-python.python 
 code-server --install-extension ms-toolsai.jupyter
@@ -17,8 +20,9 @@ python -m venv /workspace/.venv
 source /workspace/.venv/bin/activate
 /workspace/.venv/bin/python -m pip install --no-cache-dir hatch
 
-export AWS_DEFAULT_REGION="us-east-1"
+export AWS_DEFAULT_REGION="far-par"
 export AWS_ACCESS_KEY_ID="test"
 export AWS_SECRET_ACCESS_KEY="test"
-aws s3 mb s3://results --endpoint-url=http://eoap-event-driven-localstack:4566
-aws s3 mb s3://workflows --endpoint-url=http://eoap-event-driven-localstack:4566
+export AWS_BUCKET_NAME="ai-ext-bucket-dev"
+export AWS_S3_ENDPOINT="https://s3.fr-par.scw.cloud"
+export MLFLOW_TRACKING_URI="http://localhost:5000"
