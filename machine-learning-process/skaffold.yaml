@@ -37,7 +37,7 @@ deploy:
         }
        
       # MLflow
-      - name: my-mlflow
+      - name: my-mlflow  # OSError: [Errno 30] Read-only file system: '/mlflow'
         remoteChart: community-charts/mlflow
         namespace: tile-based-training
         createNamespace: true
