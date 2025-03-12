@@ -18,11 +18,11 @@ echo '{"workbench.colorTheme": "Visual Studio Dark"}' > /workspace/User/settings
 
 python -m venv /workspace/.venv
 source /workspace/.venv/bin/activate
-/workspace/.venv/bin/python -m pip install --no-cache-dir hatch
+/workspace/.venv/bin/python -m pip install --no-cache-dir hatch calrissian
 
 export AWS_DEFAULT_REGION="far-par"
 export AWS_ACCESS_KEY_ID="test"
 export AWS_SECRET_ACCESS_KEY="test"
 export AWS_BUCKET_NAME="ai-ext-bucket-dev"
 export AWS_S3_ENDPOINT="https://s3.fr-par.scw.cloud"
-export MLFLOW_TRACKING_URI="http://localhost:5000"
+export MLFLOW_TRACKING_URI="http://my-mlflow:5000"

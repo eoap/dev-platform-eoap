@@ -19,11 +19,10 @@ deploy:
         namespace: tile-based-training
         createNamespace: true
         setValues:
-          service.type: LoadBalancer
-          storageClassRWX: "standard"
+          coder.serviceType: LoadBalancer
+          coder.storageClassName: standard
           coder.coderImage: eoepca/pde-code-server:1.0.0
           coder.workspace: machine-learning-process
-          coderstorageClassName: standard
           coder.workspaceStorage: 10Gi
           coderResources.limits.cpu: '2'
           coderResources.limits.memory: '6442450944'
@@ -57,7 +56,7 @@ deploy:
             mysql:
               enabled: false  # Disable MySQL
           artifactRoot: 
-            proxiedArtifactStorage: false  # Disable proxied artifact storage access
+            proxiedArtifactStorage: true  # Disable proxied artifact storage access
             azureBlob:
               enabled: false  # Disable Azure Blob Storage
             s3:
