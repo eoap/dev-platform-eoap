@@ -146,6 +146,7 @@ spec:
     requests:
       storage: {{ .Values.coder.workspaceStorage }}
   storageClassName: {{ .Values.coder.storageClassName}}
+
 ---
 apiVersion: v1
 kind: Service
@@ -158,7 +159,7 @@ spec:
   - name: web
     port: 8080
     targetPort: 8080
-  type: ClusterIP
+  type: {{.Values.coder.serviceType}}
 ---
 apiVersion: v1
 kind: ConfigMap

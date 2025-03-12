@@ -1,10 +1,13 @@
 coder:
   coderImage: eoepca/pde-code-server:1.0.0
   workspace: quickwin
+  serviceType: ClusterIP
   storageClassName: standard
   workspaceStorage: 20Gi
   securityContext:
     privileged: true
+
+
 
 calrissian:
   enabled: True
