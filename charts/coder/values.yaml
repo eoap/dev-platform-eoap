@@ -1,13 +1,12 @@
+
 coder:
   coderImage: eoepca/pde-code-server:1.0.0
   workspace: quickwin
-  serviceType: ClusterIP
   storageClassName: standard
   workspaceStorage: 20Gi
   securityContext:
     privileged: true
-
-
+  serviceType: ClusterIP
 
 calrissian:
   enabled: True
@@ -15,7 +14,7 @@ calrissian:
   storageClassName: standard
   imagePullSecrets:
     - kaniko-secret
-  
+
 coderResources:
   limits:
     cpu: '2'
@@ -32,9 +31,5 @@ daskGateway:
   daskGatewayUrl: ""
   image: ""
 
-
-
-
-
-
-
+kaniko:
+  enabled: False

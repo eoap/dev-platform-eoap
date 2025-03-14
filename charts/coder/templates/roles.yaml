@@ -40,3 +40,18 @@ rules:
   resources:
     - pods/exec
 {{- end }}
+{{- if .Values.daskGateway.enabled }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: dask-configmap-role
+rules:
+- verbs:
+    - create
+    - delete
+  apiGroups:
+    - ''
+  resources:
+    - configmaps
+{{- end }}

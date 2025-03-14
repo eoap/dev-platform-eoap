@@ -66,6 +66,10 @@ spec:
               mountPath: /etc/calrissian/pod-node-selector.yaml 
               subPath: pod-node-selector.yaml 
             {{ end }}
+            {{- if .Values.daskGateway.enabled }}
+            - name: dask-gateway-config
+              mountPath: /etc/dask
+            {{- end }}
           env:
           - name: XDG_CONFIG_HOME
             value: /workspace/.local
@@ -86,7 +90,15 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.name
-          {{ end }}
+          {{- end }}
+          {{- if .Values.daskGateway.enabled }}
+          - name: DASK_GATEWAY_ADDRESS
+            value: "{{ .Values.daskGateway.daskGatewayUrl }}"
+          - name: DASK_IMAGE
+            value: "{{ .Values.daskGateway.image }}"
+          {{- end }}
+          {{ if .Values.kaniko.enabled }}
+          {{- end }}
           resources:
             limits:
               cpu: {{ .Values.coderResources.limits.cpu }}
@@ -119,6 +131,11 @@ spec:
             name: node-selectors
             defaultMode: 420
         {{ end }}
+        {{- if .Values.daskGateway.enabled }}
+        - name: dask-gateway-config
+          configMap:
+            name: dask-gateway-config
+        {{- end }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
