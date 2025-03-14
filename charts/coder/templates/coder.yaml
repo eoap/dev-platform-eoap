@@ -63,8 +63,8 @@ spec:
             - mountPath: /calrissian
               name: calrissian-volume
             - name: node-selectors
-              mountPath: /etc/calrissian/pod-node-selector.yaml 
-              subPath: pod-node-selector.yaml 
+              mountPath: /etc/calrissian/pod-node-selector.yaml
+              subPath: pod-node-selector.yaml
             {{ end }}
             {{- if .Values.daskGateway.enabled }}
             - name: dask-gateway-config
@@ -168,7 +168,7 @@ metadata:
   name: init
 data:
   init: |
-    {{ required "A valid .Values.initScript entry required!" ( tpl ( .Values.initScript | default ( .Files.Get "files/init.sh")) . | nindent 10 ) }} 
+    {{ required "A valid .Values.initScript entry required!" ( tpl ( .Values.initScript | default ( .Files.Get "files/init.sh")) . | nindent 10 ) }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -176,7 +176,7 @@ metadata:
   name: bash-rc
 data:
   bash-rc: |
-    {{ required "A valid .Values.bashrcScript entry required!" ( tpl ( .Values.bashrcScript | default ( .Files.Get "files/bash-rc")) . | nindent 10 ) }}  
+    {{ required "A valid .Values.bashrcScript entry required!" ( tpl ( .Values.bashrcScript | default ( .Files.Get "files/bash-rc")) . | nindent 10 ) }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -184,7 +184,7 @@ metadata:
   name: bash-login
 data:
   bash-login: |
-    {{ required "A valid .Values.bashloginScript entry required!" ( tpl ( .Values.bashloginScript | default ( .Files.Get "files/bash-login")) . | nindent 10 ) }} 
+    {{ required "A valid .Values.bashloginScript entry required!" ( tpl ( .Values.bashloginScript | default ( .Files.Get "files/bash-login")) . | nindent 10 ) }}
 ---
 {{ if .Values.calrissian.enabled }}
 apiVersion: v1

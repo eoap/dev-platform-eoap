@@ -18,19 +18,20 @@ deploy:
         chartPath: ../charts/coder
         namespace: tile-based-training
         createNamespace: true
-        setValues:
-          skaffold.enabled: true
+        setValues: 
           coder.serviceType: LoadBalancer
           coder.storageClassName: standard
           coder.coderImage: eoepca/pde-code-server:1.0.0
           coder.workspace: machine-learning-process-new
-          coder.workspaceStorage: 10Gi
+          coder.workspaceStorage: 20Gi
           coderResources.limits.cpu: '2'
           coderResources.limits.memory: '6442450944'
           coderResources.requests.cpu: '1'
           coderResources.requests.memory: '4294967296'
           calrissian.enabled: true
-          coder.securityContext.privileged: false
+          coder.securityContext.privileged: true
+          kaniko.enabled: true
+          skaffold.enabled: true
         setFiles: {
           initScript: ./files/init.sh,
           bashrcScript: ./files/bash-rc,
@@ -38,7 +39,7 @@ deploy:
         }
        
       # MLflow
-      - name: my-mlflow  # OSError: [Errno 30] Read-only file system: '/mlflow'
+      - name: my-mlflow  
         remoteChart: community-charts/mlflow
         namespace: tile-based-training
         createNamespace: true

@@ -53,4 +53,4 @@ export AWS_BUCKET_NAME="ai-ext-bucket-dev"
 export AWS_S3_ENDPOINT="https://s3.fr-par.scw.cloud"
 export MLFLOW_TRACKING_URI="http://my-mlflow:5000"
 export TASK_X_REMOTE_TASKFILES="1"
-export PATH=$PATH:/workspace/.venv/bin:/workspace/.venv/bin/yq
+export PATH=$PATH:/workspace/.venv/bin
