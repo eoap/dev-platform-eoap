@@ -5,11 +5,7 @@ metadata:
 deploy:
   helm:
     releases:
-      - name: cluster-config
-        chartPath: ./charts/cluster-config
-        namespace: tile-based-training
-        createNamespace: true
-
+      
       - name: tile-based-training-localstack
         remoteChart: localstack/localstack
         namespace: tile-based-training
@@ -23,6 +19,7 @@ deploy:
         namespace: tile-based-training
         createNamespace: true
         setValues:
+          skaffold.enabled: true
           coder.serviceType: LoadBalancer
           coder.storageClassName: standard
           coder.coderImage: eoepca/pde-code-server:1.0.0
@@ -33,6 +30,7 @@ deploy:
           coderResources.requests.cpu: '1'
           coderResources.requests.memory: '4294967296'
           calrissian.enabled: true
+          coder.securityContext.privileged: false
         setFiles: {
           initScript: ./files/init.sh,
           bashrcScript: ./files/bash-rc,
