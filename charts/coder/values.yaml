@@ -15,7 +15,7 @@ calrissian:
   storageClassName: standard
   imagePullSecrets:
     - kaniko-secret
-
+  
 coderResources:
   limits:
     cpu: '2'
@@ -31,3 +31,10 @@ daskGateway:
   enabled: False
   daskGatewayUrl: ""
   image: ""
+
+
+
+
+
+
+
