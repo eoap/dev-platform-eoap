@@ -11,7 +11,7 @@ deploy:
         namespace: tile-based-training
         createNamespace: true
         setValues:
-          service.type: LoadBalancer
+          service.type: NodePort
 
       # Code-Server with Calrissian
       - name: code-server
@@ -19,11 +19,11 @@ deploy:
         namespace: tile-based-training
         createNamespace: true
         setValues: 
-          coder.serviceType: LoadBalancer
+          coder.serviceType: NodePort
           coder.storageClassName: standard
           coder.coderImage: eoepca/pde-code-server:1.0.0
-          coder.workspace: machine-learning-process-new
-          coder.workspaceStorage: 20Gi
+          coder.workspace: machine-learning-process
+          coder.workspaceStorage: 30Gi
           coderResources.limits.cpu: '2'
           coderResources.limits.memory: '6442450944'
           coderResources.requests.cpu: '1'

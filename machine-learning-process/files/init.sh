@@ -5,9 +5,9 @@ cd /workspace
 
 
 # Setup workspace
-mkdir machine-learning-process-new
-git clone https://github.com/parham-membari-terradue/machine-learning-process-new.git
-cd machine-learning-process-new
+mkdir machine-learning-process
+git clone https://github.com/parham-membari-terradue/machine-learning-process.git
+cd machine-learning-process
 
 # Install VS Code Extensions
 code-server --install-extension ms-python.python 
@@ -44,7 +44,7 @@ chmod +x /workspace/.venv/bin/skaffold
 curl -s -LO https://github.com/mikefarah/yq/releases/download/v4.45.1/yq_linux_amd64.tar.gz 
 tar -xvf yq_linux_amd64.tar.gz
 mv yq_linux_amd64 /workspace/.venv/bin/yq
-
+chmod +x /workspace/.venv/bin/yq
 # AWS environment variables
 export AWS_DEFAULT_REGION="far-par"
 export AWS_ACCESS_KEY_ID="test"

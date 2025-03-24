@@ -21,7 +21,7 @@ skaffold dev
 code-server: http://localhost:8000
 mlflow: http://localhost:5000
 ```
-5- Follow the documentation of both `training` and `inference`. You must build the docker image for each of them which are located under `training/make-ml-model` and `inference/make-inference`.
+5- Follow the documentations of both `training` and `inference`.
 6- Run the application packages with calrissian(documentation is provided for each module).
 
 
