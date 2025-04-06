@@ -5,9 +5,9 @@ cd /workspace
 
 
 # Setup workspace
-mkdir machine-learning-process-new
-git clone https://github.com/parham-membari-terradue/machine-learning-process-new.git
-cd machine-learning-process-new
+mkdir machine-learning-process
+git clone https://github.com/parham-membari-terradue/machine-learning-process.git
+cd machine-learning-process
 
 # Install VS Code Extensions
 code-server --install-extension ms-python.python 
