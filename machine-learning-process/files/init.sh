@@ -23,7 +23,7 @@ echo '{"workbench.colorTheme": "Visual Studio Dark"}' > /workspace/User/settings
 # Setup Python virtual environment
 python -m venv /workspace/.venv
 source /workspace/.venv/bin/activate
-/workspace/.venv/bin/python -m pip install --no-cache-dir tomlq calrissian 
+/workspace/.venv/bin/python -m pip install --no-cache-dir tomlq calrissian yq
 
 
 echo "**** install kubectl ****" 
@@ -41,9 +41,9 @@ chmod +x /workspace/.venv/bin/task
 curl -s -L https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 > /workspace/.venv/bin/skaffold
 chmod +x /workspace/.venv/bin/skaffold
 
-curl -s -LO https://github.com/mikefarah/yq/releases/download/v4.45.1/yq_linux_amd64.tar.gz 
-tar -xvf yq_linux_amd64.tar.gz
-mv yq_linux_amd64 /workspace/.venv/bin/yq
+# curl -s -LO https://github.com/mikefarah/yq/releases/download/v4.45.1/yq_linux_amd64.tar.gz 
+# tar -xvf yq_linux_amd64.tar.gz
+# mv yq_linux_amd64 /workspace/.venv/bin/yq
 chmod +x /workspace/.venv/bin/yq
 # AWS environment variables
 export AWS_DEFAULT_REGION="far-par"
