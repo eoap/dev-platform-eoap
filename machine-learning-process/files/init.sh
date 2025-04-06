@@ -44,7 +44,7 @@ chmod +x /workspace/.venv/bin/skaffold
 curl -s -LO https://github.com/mikefarah/yq/releases/download/v4.45.1/yq_linux_amd64.tar.gz 
 tar -xvf yq_linux_amd64.tar.gz
 mv yq_linux_amd64 /workspace/.venv/bin/yq
-
+chmod +x /workspace/.venv/bin/yq
 # AWS environment variables
 export AWS_DEFAULT_REGION="far-par"
 export AWS_ACCESS_KEY_ID="test"
