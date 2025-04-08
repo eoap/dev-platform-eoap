@@ -6,7 +6,7 @@ cd /workspace
 
 # Setup workspace
 mkdir machine-learning-process
-git clone https://github.com/parham-membari-terradue/machine-learning-process.git
+git clone https://github.com/eoap/machine-learning-process.git
 cd machine-learning-process
 
 # Install VS Code Extensions
