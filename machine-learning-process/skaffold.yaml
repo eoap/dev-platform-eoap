@@ -41,6 +41,7 @@ deploy:
       # MLflow
       - name: my-mlflow  
         remoteChart: community-charts/mlflow
+        version: 0.15.0
         namespace: tile-based-training
         createNamespace: true
         setValues:
