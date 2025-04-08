@@ -1,10 +1,6 @@
 # Installation
 
-1- Create namespace:
-```
-kubectl create ns tile-based-training
-```
-2- install mlflow using helm:
+1- install mlflow using helm:
 ```
 helm repo add community-charts https://community-charts.github.io/helm-charts
 helm repo add localstack https://helm.localstack.cloud
@@ -12,18 +8,15 @@ helm repo update
 
 ```
 
-3- Deploy everything using command below:
+2- Deploy everything using command below:
 ```
 skaffold dev
 ```
-4- Open the code-server and mlflow on your browser:
+3- Open the code-server and mlflow on your browser:
 ```
 code-server: http://localhost:8000
 mlflow: http://localhost:5000
 ```
-5- Follow the documentations of both `training` and `inference`.
-6- Run the application packages with calrissian(documentation is provided for each module).
-
 
 ### **Troubleshooting**  
 
