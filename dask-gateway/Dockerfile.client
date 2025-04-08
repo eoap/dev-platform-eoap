@@ -1,0 +1,33 @@
+FROM docker.io/library/python:3.10.12@sha256:bac3a0e0d16125977e351c861e2f4b12ecafeaa6f72431dc970d0b9155103232
+
+# Install necessary packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    curl \
+    wget \
+    vim \
+    tree \
+    sudo && \
+    rm -rf /var/lib/apt/lists
+
+# Create a user named 'dask-user' with sudo privileges
+RUN useradd -m dask-user && \
+    echo "dask-user:password" | chpasswd && \
+    adduser dask-user sudo && \
+    echo "dask-user ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+
+ADD requirements.txt /tmp/requirements.txt
+
+RUN pip install --no-cache-dir -r /tmp/requirements.txt && \
+    rm -rf /tmp/requirements.txt
+
+# Set the user to 'dask-user'
+USER dask-user
+
+# Add alias for ll="ls -l" to the bash profile of dask-user
+RUN echo 'alias ll="ls -l"' >> /home/dask-user/.bashrc
+
+WORKDIR /home/dask-user
+
+ENTRYPOINT []

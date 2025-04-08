@@ -1,7 +1,7 @@
 apiVersion: skaffold/v4beta9
 kind: Config
 metadata:
-  name: eoap-how-to
+  name: eoap-advanced-tooling
 
 build:
   tagPolicy:
@@ -9,42 +9,49 @@ build:
       template: 2h
 
   artifacts:
-    - image: ttl.sh/eoap-how-to-coder 
-  
+    - image: ttl.sh/eoap-advanced-tooling-coder 
+      context: .
+      docker:
+        dockerfile: Dockerfile.coder
+
 deploy:
   helm:
     releases:
-      - name: eoap-how-to
+      - name: eoap-advanced-tooling
         chartPath: ../charts/coder
-        namespace: eoap-how-to
+        namespace: eoap-advanced-tooling
         createNamespace: true
-        setValueTemplates:
-          coder.coderImage: ttl.sh/eoap-how-to-coder:2h
         setValues:
-          coder.workspace: how-to
-<<<<<<< HEAD
-          coderstorageclassName: hostpath
-=======
+          coder.coderImage: ttl.sh/eoap-dask-gateway-coder:2h
+          coder.workspace: advanced-tooling
           coder.storageClassName: openebs-kernel-nfs-scw
->>>>>>> e7768c942e05c5ad3c5e5c9aac1003ea61686c0e
           coder.workspaceStorage: 10Gi
           coderResources.limits.cpu: '2'
           coderResources.limits.memory: '6442450944'
           coderResources.requests.cpu: '1'
           coderResources.requests.memory: '4294967296'
+          coder.securityContext.privileged: false
           calrissian.enabled: true
           calrissian.storageClassName: openebs-kernel-nfs-scw
-          calrissian.imagePullSecrets: []
-          skaffold.enabled: True
+          skaffold.enabled: true
+          kaniko.enabled: true
+          
         setFiles: {
           initScript: ./files/init.sh,
           bashrcScript: ./files/bash-rc,
           bashloginScript: ./files/bash-login
         }
+      - name: eoap-advanced-tooling-localstack
+        remoteChart: localstack/localstack
+        namespace: eoap-advanced-tooling
+        createNamespace: true
+        setValues:
+          service.type: ClusterIP
 
 portForward:
   - resourceType: service
     resourceName: code-server-service
-    namespace: eoap-how-to
+    namespace: eoap-advanced-tooling 
+    address: localhost
     port: 8080
     localPort: 8000

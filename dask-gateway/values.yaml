@@ -1,0 +1,11 @@
+gateway:
+  extraConfig:
+    dask_gateway_config.py: |
+      c = get_config()
+      from dask_gateway_server.options import Options, String, Integer, Float
+      c.Backend.cluster_options = Options(
+        Float("worker_cores_limit", default=1, label="Worker Cores Limit"),
+        Float("worker_cores", default=1, label="Worker Cores"),
+        String("worker_memory", default="1 G", label="Worker Memory"),
+        String("image", default="daskgateway/dask-worker:latest", label="Worker Image")
+      )

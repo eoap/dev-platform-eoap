@@ -10,7 +10,7 @@ deploy:
         remoteChart: zoo-project/zoo-project-dru
         namespace: eoap-zoo-project
         createNamespace: true
-        version: 0.3.6
+        version: 0.3.23
         valuesFiles: 
         - values.yaml
         setValues:
@@ -20,6 +20,16 @@ deploy:
           filter_in.enabled: true
           filter_out.enabled: true
           persistence.procServicesAccessMode: ReadWriteMany
+          customConfig.main.additional_parameters: |-
+            s3_bucket=results
+            region_name=us-east-1
+            aws_secret_access_key=test
+            aws_access_key_id=test
+            endpoint_url=http://eoap-zoo-project-localstack.eoap-zoo-project.svc.cluster.local:4566
+          #customConfig.main.pod_env_vars: |-
+          #  C="1"
+          #customConfig.main.pod_node_selector: |-
+          #  "kubernetes.io/hostname"=minikube
       - name: eoap-zoo-project-coder
         chartPath: ../charts/coder
         namespace: eoap-zoo-project

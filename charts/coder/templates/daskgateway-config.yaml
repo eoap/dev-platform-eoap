@@ -1,0 +1,13 @@
+{{- if .Values.daskGateway.enabled }}
+kind: ConfigMap
+apiVersion: v1
+metadata: 
+  name: dask-gateway-config
+data:
+  gateway.yaml: |
+      gateway:
+        address: "{{ .Values.daskGateway.daskGatewayUrl }}"
+{{- end }}
+          
+
+                    
