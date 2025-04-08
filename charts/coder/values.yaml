@@ -6,10 +6,11 @@ coder:
   workspaceStorage: 20Gi
   securityContext:
     privileged: true
+  serviceType: ClusterIP
 
 calrissian:
   enabled: True
-  storage: 10Gi
+  storage: 20Gi
   storageClassName: standard
   imagePullSecrets:
     - kaniko-secret
