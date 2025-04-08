@@ -20,10 +20,10 @@ deploy:
         createNamespace: true
         setValues: 
           coder.serviceType: NodePort
-          coder.storageClassName: standard
+          coder.storageClassName: hostpath
           coder.coderImage: eoepca/pde-code-server:1.0.0
           coder.workspace: machine-learning-process
-          coder.workspaceStorage: 30Gi
+          coder.workspaceStorage: 12Gi
           coderResources.limits.cpu: '2'
           coderResources.limits.memory: '6442450944'
           coderResources.requests.cpu: '1'

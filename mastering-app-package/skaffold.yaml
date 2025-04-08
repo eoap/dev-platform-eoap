@@ -13,7 +13,7 @@ deploy:
         setValues:
           coder.coderImage: eoepca/pde-code-server:1.0.0
           coder.workspace: mastering-app-package
-          coderstorageClassName: standard
+          coderstorageclassName: hostpath
           coder.workspaceStorage: 10Gi
           coderResources.limits.cpu: '2'
           coderResources.limits.memory: '6442450944'

@@ -18,7 +18,7 @@ deploy:
           coder.coderImage: "{{.IMAGE_REPO_appimage}}/{{.IMAGE_TAG_appimage}}@{{.IMAGE_DIGEST_appimage}}"
         setValues:
           coder.workspace: how-to
-          coderstorageClassName: standard
+          coderstorageclassName: hostpath
           coder.workspaceStorage: 10Gi
           coderResources.limits.cpu: '2'
           coderResources.limits.memory: '6442450944'

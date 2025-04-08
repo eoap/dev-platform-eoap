@@ -1,7 +1,7 @@
 semaphore: 3  
 validateSchemaImage: validateschema
 
-storageClassRWX: standard
+storageClassRWX: hostpath
 storageSize: "10Gi"
 
 maxRam: "4G"

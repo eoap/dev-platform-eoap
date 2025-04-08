@@ -2,7 +2,7 @@
 coder:
   coderImage: eoepca/pde-code-server:1.0.0
   workspace: quickwin
-  storageClassName: standard
+  storageClassName: hostpath
   workspaceStorage: 20Gi
   securityContext:
     privileged: true
@@ -11,7 +11,7 @@ coder:
 calrissian:
   enabled: True
   storage: 20Gi
-  storageClassName: standard
+  storageClassName: hostpath
   imagePullSecrets:
     - kaniko-secret
 

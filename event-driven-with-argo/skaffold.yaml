@@ -110,7 +110,7 @@ deploy:
           inputSchema: ./charts/argo-water-bodies/files/input-parameters-schema.json
         }
         setValues: 
-          storageClassRWX: "standard"
+          storageClassRWX: "hostpath"
 
       - name: eoap-event-driven-localstack
         remoteChart: localstack/localstack
@@ -128,7 +128,7 @@ deploy:
         setValues:
           coder.coderImage: eoepca/pde-code-server:1.0.0
           coder.workspace: event-driven-with-argo
-          coderstorageClassName: standard
+          coderstorageclassName: hostpath
           coder.workspaceStorage: 10Gi
           coderResources.limits.cpu: '2'
           coderResources.limits.memory: '6442450944'

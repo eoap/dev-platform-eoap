@@ -7,7 +7,7 @@ spec:
     version: latest 
     replicas: {{ .Values.jetstreamReplicas }}
     persistence: 
-        storageClassName: standard
+        storageclassName: hostpath
         accessMode: ReadWriteOnce
         volumeSize: {{ .Values.jetstreamVolumeSize }}
     streamConfig: |             
