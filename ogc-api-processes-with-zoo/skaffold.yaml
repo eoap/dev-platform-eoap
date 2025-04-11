@@ -6,120 +6,88 @@ metadata:
 build:
   platforms: ["linux/amd64"]
 
+deploy:
+  helm:
+    releases:
+      - name: zoo-project-dru
+        remoteChart: zoo-project/zoo-project-dru
+        namespace: eoap-zoo-project
+        createNamespace: true
+        version: 0.4.14
+        valuesFiles: 
+        - values.yaml
+        setValues:
+          iam.enabled: false
+          cookiecutter.templateUrl: https://github.com/eoap/zoo-service-template.git
+          cookiecutter.templateBranch: feature-secrets-nodeselector-imagepullsecrets
+          filter_in.enabled: true
+          filter_out.enabled: true
+          persistence.procServicesAccessMode: ReadWriteMany
+          workflow.additionalInputs:
+            s3_bucket: results
+            region_name: us-east-1
+            aws_secret_access_key: test
+            aws_access_key_id: test
+            endpoint_url: http://eoap-zoo-project-localstack.eoap-zoo-project.svc.cluster.local:4566
+
+      - name: eoap-zoo-project-coder
+        chartPath: ../charts/coder
+        namespace: eoap-zoo-project
+        createNamespace: true
+        setValues:
+          coder.coderImage: eoepca/pde-code-server:1.0.0
+          coder.workspace: ogc-api-processes-with-zoo
+          coder.workspaceStorage: 10Gi
+          coderResources.limits.cpu: '2'
+          coderResources.limits.memory: '6442450944'
+          coderResources.requests.cpu: '1'
+          coderResources.requests.memory: '4294967296'
+          calrissian.enabled: true
+
+        setFiles: {
+          initScript: ./files/init.sh,
+          bashrcScript: ./files/bash-rc,
+          bashloginScript: ./files/bash-login
+        }
+      - name: eoap-zoo-project-localstack
+        remoteChart: localstack/localstack
+        namespace: eoap-zoo-project
+        createNamespace: true
+        setValues:
+          service.type: ClusterIP
+
 profiles:
+
   - name: macos
 
-    deploy:
-      helm:
-        releases:
-          - name: zoo-project-dru
-            remoteChart: zoo-project/zoo-project-dru
-            namespace: eoap-zoo-project
-            createNamespace: true
-            version: 0.3.36
-            valuesFiles:
-            - values.yaml
-            setValues:
-              iam.enabled: false
-              cookiecutter.templateUrl: https://github.com/eoap/zoo-service-template.git
-              cookiecutter.templateBranch: feature-secrets-nodeselector-imagepullsecrets
-              filter_in.enabled: true
-              filter_out.enabled: true
-              zoofpm.image.pullPolicy: Never
-              zookernel.image.pullPolicy: Never
-              workflow.storageClass: hostpath
-              workflow.argo.storageClass: hostpath
-              persistence.storageClass: hostpath
-              persistence.procServicesStorageClass: hostpath
-              persistence.tmpStorageClass: hostpath
-              persistence.procServicesAccessMode: ReadWriteMany
-              workflow.additionalInputs:
-                s3_bucket: results
-                region_name: us-east-1
-                aws_secret_access_key: test
-                aws_access_key_id: test
-                endpoint_url: http://eoap-zoo-project-localstack.eoap-zoo-project.svc.cluster.local:4566
-
-          - name: eoap-zoo-project-coder
-            chartPath: ../charts/coder
-            namespace: eoap-zoo-project
-            createNamespace: true
-            setValues:
-              coder.coderImage: eoepca/pde-code-server:1.0.0
-              coder.workspace: ogc-api-processes-with-zoo
-              #coder.storageClassName: standard
-              calrissian.storageClassName: hostpath
-              coder.storageClassName: hostpath
-              coder.workspaceStorage: 10Gi
-              coderResources.limits.cpu: '2'
-              coderResources.limits.memory: '6442450944'
-              coderResources.requests.cpu: '1'
-              coderResources.requests.memory: '4294967296'
-              calrissian.enabled: true
-
-            setFiles: {
-              initScript: ./files/init.sh,
-              bashrcScript: ./files/bash-rc,
-              bashloginScript: ./files/bash-login
-            }
-          - name: eoap-zoo-project-localstack
-            remoteChart: localstack/localstack
-            namespace: eoap-zoo-project
-            createNamespace: true
-            setValues:
-              service.type: ClusterIP
-
-  - name: standard
-
-    deploy:
-      helm:
-        releases:
-          - name: zoo-project-dru
-            remoteChart: zoo-project/zoo-project-dru
-            namespace: eoap-zoo-project
-            createNamespace: true
-            version: 0.3.36
-            valuesFiles: 
-            - values.yaml
-            setValues:
-              iam.enabled: false
-              cookiecutter.templateUrl: https://github.com/eoap/zoo-service-template.git
-              cookiecutter.templateBranch: feature-secrets-nodeselector-imagepullsecrets
-              filter_in.enabled: true
-              filter_out.enabled: true
-              persistence.procServicesAccessMode: ReadWriteMany
-              workflow.additionalInputs:
-                s3_bucket: results
-                region_name: us-east-1
-                aws_secret_access_key: test
-                aws_access_key_id: test
-                endpoint_url: http://eoap-zoo-project-localstack.eoap-zoo-project.svc.cluster.local:4566
-
-          - name: eoap-zoo-project-coder
-            chartPath: ../charts/coder
-            namespace: eoap-zoo-project
-            createNamespace: true
-            setValues:
-              coder.coderImage: eoepca/pde-code-server:1.0.0
-              coder.workspace: ogc-api-processes-with-zoo
-              coder.workspaceStorage: 10Gi
-              coderResources.limits.cpu: '2'
-              coderResources.limits.memory: '6442450944'
-              coderResources.requests.cpu: '1'
-              coderResources.requests.memory: '4294967296'
-              calrissian.enabled: true
-
-            setFiles: {
-              initScript: ./files/init.sh,
-              bashrcScript: ./files/bash-rc,
-              bashloginScript: ./files/bash-login
-            }
-          - name: eoap-zoo-project-localstack
-            remoteChart: localstack/localstack
-            namespace: eoap-zoo-project
-            createNamespace: true
-            setValues:
-              service.type: ClusterIP
+    patches:
+      - op: add
+        path: /deploy/helm/releases/0/setValues/zoofpm.image.pullPolicy
+        value: Never
+      - op: add
+        path: /deploy/helm/releases/0/setValues/zookernel.image.pullPolicy
+        value: Never
+      - op: add
+        path: /deploy/helm/releases/0/setValues/workflow.storageClass
+        value: hostpath
+      - op: add
+        path: /deploy/helm/releases/0/setValues/workflow.argo.storageClass
+        value: hostpath
+      - op: add
+        path: /deploy/helm/releases/0/setValues/persistence.storageClass
+        value: hostpath
+      - op: add
+        path: /deploy/helm/releases/0/setValues/persistence.procServicesStorageClass
+        value: hostpath
+      - op: add
+        path: /deploy/helm/releases/0/setValues/persistence.tmpStorageClass
+        value: hostpath
+      - op: add
+        path: /deploy/helm/releases/1/setValues/coder.storageClassName
+        value: hostpath
+      - op: add
+        path: /deploy/helm/releases/1/setValues/calrissian.storageClassName
+        value: hostpath
 
 portForward:
   - resourceType: service
