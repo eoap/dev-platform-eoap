@@ -8,6 +8,7 @@ cd /workspace
 mkdir machine-learning-process
 git clone https://github.com/eoap/machine-learning-process.git
 cd machine-learning-process
+git checkout develop
 
 # Install VS Code Extensions
 code-server --install-extension ms-python.python 
@@ -46,11 +47,8 @@ chmod +x /workspace/.venv/bin/skaffold
 # mv yq_linux_amd64 /workspace/.venv/bin/yq
 chmod +x /workspace/.venv/bin/yq
 # AWS environment variables
-export AWS_DEFAULT_REGION="far-par"
 export AWS_ACCESS_KEY_ID="test"
 export AWS_SECRET_ACCESS_KEY="test"
-export AWS_BUCKET_NAME="ai-ext-bucket-dev"
-export AWS_S3_ENDPOINT="https://s3.fr-par.scw.cloud"
 export MLFLOW_TRACKING_URI="http://my-mlflow:5000"
 export TASK_X_REMOTE_TASKFILES="1"
 export PATH=$PATH:/workspace/.venv/bin

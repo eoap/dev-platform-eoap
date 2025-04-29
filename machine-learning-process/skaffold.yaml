@@ -23,14 +23,15 @@ deploy:
           coder.storageClassName: standard
           coder.coderImage: eoepca/pde-code-server:1.0.0
           coder.workspace: machine-learning-process
-          coder.workspaceStorage: 30Gi
-          coderResources.limits.cpu: '2'
-          coderResources.limits.memory: '6442450944'
+          coder.workspaceStorage: 40Gi
+          coderResources.limits.cpu: '3'
+          coderResources.limits.memory: '10737418240'
           coderResources.requests.cpu: '1'
           coderResources.requests.memory: '4294967296'
           calrissian.enabled: true
+          #calrissian.storage: 30Gi
           coder.securityContext.privileged: true
-          kaniko.enabled: true
+          kaniko.enabled: false
           skaffold.enabled: true
         setFiles: {
           initScript: ./files/init.sh,
