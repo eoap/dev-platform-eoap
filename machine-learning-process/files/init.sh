@@ -8,7 +8,6 @@ cd /workspace
 mkdir machine-learning-process
 git clone https://github.com/eoap/machine-learning-process.git
 cd machine-learning-process
-git checkout develop
 
 # Install VS Code Extensions
 code-server --install-extension ms-python.python 
@@ -24,7 +23,7 @@ echo '{"workbench.colorTheme": "Visual Studio Dark"}' > /workspace/User/settings
 # Setup Python virtual environment
 python -m venv /workspace/.venv
 source /workspace/.venv/bin/activate
-/workspace/.venv/bin/python -m pip install --no-cache-dir tomlq calrissian yq
+/workspace/.venv/bin/python -m pip install --no-cache-dir tomlq calrissian yq backports.zoneinfo
 
 
 echo "**** install kubectl ****" 
@@ -42,13 +41,20 @@ chmod +x /workspace/.venv/bin/task
 curl -s -L https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 > /workspace/.venv/bin/skaffold
 chmod +x /workspace/.venv/bin/skaffold
 
-# curl -s -LO https://github.com/mikefarah/yq/releases/download/v4.45.1/yq_linux_amd64.tar.gz 
-# tar -xvf yq_linux_amd64.tar.gz
-# mv yq_linux_amd64 /workspace/.venv/bin/yq
+# install tzdata
+
+wget https://github.com/eggert/tz/archive/refs/tags/2024a.tar.gz
+tar -xzf 2024a.tar.gz
+mkdir -p /usr/share/zoneinfo
+cp -r tz-2024a/** /usr/share/zoneinfo 
+
+
+
 chmod +x /workspace/.venv/bin/yq
 # AWS environment variables
 export AWS_ACCESS_KEY_ID="test"
 export AWS_SECRET_ACCESS_KEY="test"
 export MLFLOW_TRACKING_URI="http://my-mlflow:5000"
+export ARROW_TZDATA_DIR=/usr/share/zoneinfo
 export TASK_X_REMOTE_TASKFILES="1"
 export PATH=$PATH:/workspace/.venv/bin

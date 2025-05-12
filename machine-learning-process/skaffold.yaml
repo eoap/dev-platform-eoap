@@ -21,7 +21,7 @@ deploy:
         setValues: 
           coder.serviceType: NodePort
           coder.storageClassName: standard
-          coder.coderImage: eoepca/pde-code-server:1.0.0
+          coder.coderImage: eoepca/pde-code-server:1.0.1
           coder.workspace: machine-learning-process
           coder.workspaceStorage: 40Gi
           coderResources.limits.cpu: '3'
