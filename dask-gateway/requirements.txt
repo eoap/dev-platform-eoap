@@ -11,3 +11,5 @@ stackstac==0.5.1
 pystac-client
 planetary-computer
 xarray-spatial
+rio-color
+xarray[complete]

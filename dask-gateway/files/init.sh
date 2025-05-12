@@ -24,7 +24,7 @@ pip install git+https://github.com/Terradue/calrissian@dask-gateway tomlq # calr
 
 python -m venv /workspace/.venv
 source /workspace/.venv/bin/activate
-/workspace/.venv/bin/python -m pip install --no-cache-dir numpy==1.26.3 dask==2024.1.0 distributed==2024.1.0 dask-gateway==2024.1.0 pystac bokeh rioxarray==0.18.1 loguru==0.7.3 odc-stac[botocore]==0.3.10 stackstac==0.5.1 pystac-client planetary-computer xarray-spatial ipykernel
+/workspace/.venv/bin/python -m pip install --no-cache-dir numpy==1.26.3 dask==2024.1.0 distributed==2024.1.0 dask-gateway==2024.1.0 pystac bokeh rioxarray==0.18.1 loguru==0.7.3 odc-stac[botocore]==0.3.10 stackstac==0.5.1 pystac-client planetary-computer xarray-spatial "xarray[complete]" ipykernel rio-color
 res=$?
 if [ $res -ne 0 ]; then
     echo "Failed to install packages"
