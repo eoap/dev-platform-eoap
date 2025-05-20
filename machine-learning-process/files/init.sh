@@ -41,12 +41,6 @@ chmod +x /workspace/.venv/bin/task
 curl -s -L https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 > /workspace/.venv/bin/skaffold
 chmod +x /workspace/.venv/bin/skaffold
 
-# install tzdata
-
-wget https://github.com/eggert/tz/archive/refs/tags/2024a.tar.gz
-tar -xzf 2024a.tar.gz
-mkdir -p /usr/share/zoneinfo
-cp -r tz-2024a/** /usr/share/zoneinfo 
 
 
 
