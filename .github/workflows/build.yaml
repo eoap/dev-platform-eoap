@@ -30,7 +30,7 @@ jobs:
       run: |
         version=$(cat ${{ matrix.step }}/codemeta.json | jq -r .version )
         IMAGE_ID=ghcr.io/eoap/dev-platform-eoap/${{ matrix.step }}-coder
-        docker build dev-platform-eoap/${{ matrix.step }} --file dev-platform-eoap/${{ matrix.step }}/Dockerfile.coder --tag ${{ matrix.step }}
+        docker build ${{ matrix.step }} --file ${{ matrix.step }}/Dockerfile.coder --tag ${{ matrix.step }}
         docker tag ${{ matrix.step }} $IMAGE_ID:${version}
         docker push $IMAGE_ID:${version}
 
