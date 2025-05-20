@@ -7,8 +7,9 @@ on:
 
     paths:
     # Only rebuild website when apps have changed
-    - 'dask-gateway/**'
     - '.github/**'
+    - 'advanced-tooling/**'
+    - 'dask-gateway/**'
     - 'how-to/**'
 jobs:
   
@@ -21,7 +22,7 @@ jobs:
 
     strategy:
       matrix:
-        step: ["dask-gateway", "how-to"]
+        step: ["advanced-tooling", "dask-gateway", "how-to"]
 
     steps:
     - uses: actions/checkout@v2
