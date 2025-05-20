@@ -2,7 +2,6 @@ apiVersion: skaffold/v4beta9
 kind: Config
 metadata:
   name: eoap-dask-gateway
-
 build:
   tagPolicy:
     envTemplate:
@@ -23,7 +22,9 @@ build:
         dockerfile: Dockerfile.coder
 
 deploy:
+  statusCheckDeadlineSeconds: 2400
   helm:
+
     releases:
       - name: dask-gateway
         remoteChart: https://helm.dask.org/dask-gateway-2024.1.0.tgz

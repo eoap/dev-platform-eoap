@@ -18,13 +18,13 @@ RUN \
     echo "**** install build dependencies ****" && \
     apt-get update && \
     apt-get install -y \
-    nodejs
+    nodejs && \
+    apt remove yq jq -y
 
 RUN \
     echo "**** install runtime dependencies ****" && \
     apt-get install -y \
     git \
-    jq \
     libatomic1 \
     nano \
     net-tools \
@@ -89,12 +89,8 @@ ENV USER=jovyan \
 #     mamba clean -a
 
 RUN \
-    echo "**** install yq, aws cli ****" && \
-    VERSION="v4.12.2"                                                                               && \
-    BINARY="yq_linux_amd64"                                                                         && \
-    wget --quiet https://github.com/mikefarah/yq/releases/download/${VERSION}/${BINARY}.tar.gz -O - |\
-    tar xz && mv ${BINARY} /usr/bin/yq                                                              && \
-    pip install awscli                                                            && \
+    echo "**** install aws cli ****" && \   
+    pip install awscli  && \
     pip install awscli-plugin-endpoint                                              
 
 RUN \
@@ -121,5 +117,36 @@ RUN chmod +x /opt/entrypoint.sh
 ENTRYPOINT ["/opt/entrypoint.sh"]
 
 EXPOSE 8888
+
+RUN echo "**** install kubectl ****" && \
+    curl -s -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
+    chmod +x kubectl && \
+    mkdir -p /workspace/.venv/bin && \
+    mv ./kubectl /usr/local/bin/kubectl
+
+
+RUN curl -s -L https://github.com/pypa/hatch/releases/latest/download/hatch-x86_64-unknown-linux-gnu.tar.gz | tar -xzvf - -C /usr/local/bin/ && \
+    chmod +x /usr/local/bin/hatch
+
+RUN curl -s -L https://github.com/go-task/task/releases/download/v3.41.0/task_linux_amd64.tar.gz | tar -xzvf - -C /usr/local/bin/ && \
+    chmod +x /usr/local/bin/task
+
+RUN curl -s -L https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 > /usr/local/bin/skaffold && \
+    chmod +x /usr/local/bin/skaffold
+
+RUN pip3 install tomlq && tomlq --version
+
+RUN rm -f /usr/bin/yq && \
+    rm -f /usr/local/bin/yq && \
+    curl -s -LO https://github.com/mikefarah/yq/releases/download/v4.45.1/yq_linux_amd64.tar.gz && \
+    tar -xvf yq_linux_amd64.tar.gz && \
+    mv yq_linux_amd64 /usr/local/bin/yq && \
+    cp -v /usr/local/bin/yq /usr/bin/yq && \
+    chmod +x /usr/bin/yq /usr/local/bin/yq
+    
+RUN curl -s -L https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-amd64 > /usr/bin/jq && \
+    chmod +x /usr/bin/jq
+
+RUN pip install --upgrade uv
 
 USER jovyan
