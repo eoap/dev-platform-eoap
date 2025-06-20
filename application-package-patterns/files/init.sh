@@ -21,12 +21,14 @@ source /workspace/.venv/bin/activate
 
 /workspace/.venv/bin/python -m ipykernel install --user --name cwl_how_to_env --display-name "Python (CWL How-To's)"
 
-curl -s -L https://github.com/go-task/task/releases/download/v3.41.0/task_linux_amd64.tar.gz | tar -xzvf - -C /workspace/.venv/bin/
-chmod +x /workspace/.venv/bin/task
+cd /workspace
+git clone https://github.com/EOEPCA/eoap-cwlwrap.git
+cd eoap-cwlwrap
+/workspace/.venv/bin/pip install --no-cache-dir -e .
 
-curl -s -L https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 > /workspace/.venv/bin/skaffold
-chmod +x /workspace/.venv/bin/skaffold
 
-curl -s -LO https://github.com/mikefarah/yq/releases/download/v4.45.1/yq_linux_amd64.tar.gz 
-tar -xvf yq_linux_amd64.tar.gz
-mv yq_linux_amd64 /workspace/.venv/bin/yq
+export AWS_DEFAULT_REGION="us-east-1"
+export AWS_ACCESS_KEY_ID="test"
+export AWS_SECRET_ACCESS_KEY="test"
+
+aws s3 mb s3://results --endpoint-url=http://eoap-application-package-patterns-localstack:4566
