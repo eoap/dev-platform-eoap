@@ -1,0 +1,10 @@
+alias ll="ls -l"
+DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata
+dpkg-reconfigure --frontend noninteractive tzdata
+alias aws="aws --endpoint-url=http://eoap-event-driven-localstack:4566"
+export PATH=/workspace/.venv/bin:$PATH
+export TASK_X_REMOTE_TASKFILES=1
+export MLFLOW_TRACKING_URI="http://my-mlflow:5000"
+export ARROW_TZDATA_DIR=/usr/share/zoneinfo
+export PATH=$PATH:/workspace/.venv/bin:/workspace/.venv/bin/yq
+source /workspace/.venv/bin/activate   

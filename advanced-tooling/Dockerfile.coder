@@ -1,0 +1,156 @@
+FROM docker.io/library/python:3.10.12@sha256:bac3a0e0d16125977e351c861e2f4b12ecafeaa6f72431dc970d0b9155103232
+
+RUN \
+    apt-get update && \
+    apt-get install -y \
+    build-essential \
+    curl \
+    gcc \
+    vim \
+    tree \
+    file
+
+RUN \
+    echo "**** install node repo ****" && \
+    curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - && \
+    echo 'deb https://deb.nodesource.com/node_14.x jammy main' \
+        > /etc/apt/sources.list.d/nodesource.list && \
+    echo "**** install build dependencies ****" && \
+    apt-get update && \
+    apt-get install -y \
+    nodejs && \
+    apt remove yq jq -y
+
+RUN \
+    echo "**** install runtime dependencies ****" && \
+    apt-get install -y \
+    git \
+    libatomic1 \
+    nano \
+    net-tools \
+    sudo \
+    podman \
+    wget \
+    python3 \
+    python3-pip 
+
+RUN \
+    echo "**** install code-server ****" && \
+    if [ -z ${CODE_RELEASE+x} ]; then \
+        CODE_RELEASE=$(curl -sX GET https://api.github.com/repos/coder/code-server/releases/latest \
+        | awk '/tag_name/{print $4;exit}' FS='[""]' | sed 's|^v||'); \
+    fi && \
+    mkdir -p /app/code-server && \
+    curl -o \
+        /tmp/code-server.tar.gz -L \
+        "https://github.com/coder/code-server/releases/download/v${CODE_RELEASE}/code-server-${CODE_RELEASE}-linux-amd64.tar.gz" && \
+    tar xf /tmp/code-server.tar.gz -C \
+        /app/code-server --strip-components=1 && \
+    echo "**** patch 4.0.2 ****" && \
+    if [ "${CODE_RELEASE}" = "4.0.2" ] && [ "$(uname -m)" !=  "x86_64" ]; then \
+        cd /app/code-server && \
+        npm i --production @node-rs/argon2; \
+    fi && \
+    echo "**** clean up ****" && \
+    apt-get purge --auto-remove -y \
+        build-essential \
+        nodejs && \
+    apt-get clean && \
+    rm -rf \
+        /config/* \
+        /tmp/* \
+        /var/lib/apt/lists/* \
+        /var/tmp/* \
+        /etc/apt/sources.list.d/nodesource.list
+
+ENV USER=jovyan \
+    UID=1001 \
+    GID=100 \
+    HOME=/workspace \
+    PATH=/opt/conda/bin:/app/code-server/bin/:$PATH:/app/code-server/
+
+
+# RUN \
+#     echo "**** install conda ****" && \
+#     wget https://repo.anaconda.com/miniconda/Miniconda3-py39_4.12.0-Linux-x86_64.sh -O miniconda.sh -q && \
+#     sh miniconda.sh -b -p /opt/conda && \
+#     conda install -n base -c conda-forge mamba && \
+#     conda config --system --append channels conda-forge && \
+#     conda config --system --append channels terradue && \
+#     conda config --system --append channels eoepca && \
+#     conda config --system --append channels r && \
+#     conda config --system --set auto_update_conda false && \
+#     conda config --system --set show_channel_urls true && \
+#     conda config --system --set channel_priority "flexible"
+
+
+# RUN \
+#     mamba install -n base cwltool cwl-wrapper==0.12.2 nodejs && \
+#     mamba clean -a
+
+RUN \
+    echo "**** install yq, aws cli ****" && \
+    VERSION="v4.12.2"                                                                               && \
+    BINARY="yq_linux_amd64"                                                                         && \
+    wget --quiet https://github.com/mikefarah/yq/releases/download/${VERSION}/${BINARY}.tar.gz -O - |\
+    tar xz && mv ${BINARY} /usr/bin/yq                                                              && \
+    pip install awscli                                                            && \
+    pip install awscli-plugin-endpoint                                              
+
+RUN \
+    echo "**** install jupyter-hub native proxy ****" && \
+    pip install jhsingle-native-proxy>=0.0.9 && \
+    echo "**** install bash kernel ****" && \
+    pip install bash_kernel && \
+    python -m bash_kernel.install
+
+RUN \
+    echo "**** adds user jovyan ****" && \
+    useradd -m -s /bin/bash -N -u $UID $USER 
+
+COPY entrypoint.sh /opt/entrypoint.sh
+
+RUN chmod +x /opt/entrypoint.sh
+
+# RUN chown -R jovyan:100 /opt/conda
+
+# RUN \
+#     echo "**** required by cwltool docker pull even if running with --podman ****" && \
+#     ln -s /usr/bin/podman /usr/bin/docker
+
+ENTRYPOINT ["/opt/entrypoint.sh"]
+
+EXPOSE 8888
+
+RUN echo "**** install kubectl ****" && \
+    curl -s -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
+    chmod +x kubectl && \
+    mkdir -p /workspace/.venv/bin && \
+    mv ./kubectl /usr/local/bin/kubectl
+
+
+RUN curl -s -L https://github.com/pypa/hatch/releases/latest/download/hatch-x86_64-unknown-linux-gnu.tar.gz | tar -xzvf - -C /usr/local/bin/ && \
+    chmod +x /usr/local/bin/hatch
+
+RUN curl -s -L https://github.com/go-task/task/releases/download/v3.41.0/task_linux_amd64.tar.gz | tar -xzvf - -C /usr/local/bin/ && \
+    chmod +x /usr/local/bin/task
+
+RUN curl -s -L https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 > /usr/local/bin/skaffold && \
+    chmod +x /usr/local/bin/skaffold
+
+RUN pip3 install tomlq && tomlq --version
+
+RUN rm -f /usr/bin/yq && \
+    rm -f /usr/local/bin/yq && \
+    curl -s -LO https://github.com/mikefarah/yq/releases/download/v4.45.1/yq_linux_amd64.tar.gz && \
+    tar -xvf yq_linux_amd64.tar.gz && \
+    mv yq_linux_amd64 /usr/local/bin/yq && \
+    cp -v /usr/local/bin/yq /usr/bin/yq && \
+    chmod +x /usr/bin/yq /usr/local/bin/yq
+    
+RUN curl -s -L https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-amd64 > /usr/bin/jq && \
+    chmod +x /usr/bin/jq
+
+RUN pip install --upgrade uv
+
+USER jovyan

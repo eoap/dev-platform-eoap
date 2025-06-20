@@ -63,9 +63,13 @@ spec:
             - mountPath: /calrissian
               name: calrissian-volume
             - name: node-selectors
-              mountPath: /etc/calrissian/pod-node-selector.yaml 
-              subPath: pod-node-selector.yaml 
+              mountPath: /etc/calrissian/pod-node-selector.yaml
+              subPath: pod-node-selector.yaml
             {{ end }}
+            {{- if .Values.daskGateway.enabled }}
+            - name: dask-gateway-config
+              mountPath: /etc/dask
+            {{- end }}
           env:
           - name: XDG_CONFIG_HOME
             value: /workspace/.local
@@ -86,7 +90,15 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.name
-          {{ end }}
+          {{- end }}
+          {{- if .Values.daskGateway.enabled }}
+          - name: DASK_GATEWAY_ADDRESS
+            value: "{{ .Values.daskGateway.daskGatewayUrl }}"
+          - name: DASK_IMAGE
+            value: "{{ .Values.daskGateway.image }}"
+          {{- end }}
+          {{ if .Values.kaniko.enabled }}
+          {{- end }}
           resources:
             limits:
               cpu: {{ .Values.coderResources.limits.cpu }}
@@ -119,6 +131,11 @@ spec:
             name: node-selectors
             defaultMode: 420
         {{ end }}
+        {{- if .Values.daskGateway.enabled }}
+        - name: dask-gateway-config
+          configMap:
+            name: dask-gateway-config
+        {{- end }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -143,7 +160,7 @@ spec:
   - name: web
     port: 8080
     targetPort: 8080
-  type: ClusterIP
+  type: {{.Values.coder.serviceType}}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -151,7 +168,7 @@ metadata:
   name: init
 data:
   init: |
-    {{ required "A valid .Values.initScript entry required!" ( tpl ( .Values.initScript | default ( .Files.Get "files/init.sh")) . | nindent 10 ) }} 
+    {{ required "A valid .Values.initScript entry required!" ( tpl ( .Values.initScript | default ( .Files.Get "files/init.sh")) . | nindent 10 ) }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -159,7 +176,7 @@ metadata:
   name: bash-rc
 data:
   bash-rc: |
-    {{ required "A valid .Values.bashrcScript entry required!" ( tpl ( .Values.bashrcScript | default ( .Files.Get "files/bash-rc")) . | nindent 10 ) }}  
+    {{ required "A valid .Values.bashrcScript entry required!" ( tpl ( .Values.bashrcScript | default ( .Files.Get "files/bash-rc")) . | nindent 10 ) }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -167,7 +184,7 @@ metadata:
   name: bash-login
 data:
   bash-login: |
-    {{ required "A valid .Values.bashloginScript entry required!" ( tpl ( .Values.bashloginScript | default ( .Files.Get "files/bash-login")) . | nindent 10 ) }} 
+    {{ required "A valid .Values.bashloginScript entry required!" ( tpl ( .Values.bashloginScript | default ( .Files.Get "files/bash-login")) . | nindent 10 ) }}
 ---
 {{ if .Values.calrissian.enabled }}
 apiVersion: v1

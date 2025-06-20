@@ -2,7 +2,7 @@
 
 cd /workspace
 
-git clone 'https://github.com/eoap/how-to.git'
+git clone 'https://github.com/eoap/application-package-patterns.git'
 
 code-server --install-extension ms-python.python 
 code-server --install-extension redhat.vscode-yaml

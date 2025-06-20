@@ -1,0 +1,15 @@
+numpy==1.26.3  
+dask==2025.4.0
+distributed==2025.4.0
+dask-gateway==2025.4.0
+pystac==1.13.0
+bokeh==3.6.2
+rioxarray==0.18.1
+loguru==0.7.3
+odc-stac[botocore]==0.3.10
+stackstac==0.5.1
+pystac-client==0.8.6
+planetary-computer==1.0.0
+xarray-spatial==0.4.0
+rio-color==2.0.1
+xarray[complete]==2025.4.0

@@ -20,26 +20,7 @@ echo '{"workbench.colorTheme": "Visual Studio Dark"}' > /workspace/User/settings
 python -m venv /workspace/.venv
 source /workspace/.venv/bin/activate
 /workspace/.venv/bin/python -m pip install --no-cache-dir tomlq calrissian
-# /workspace/.venv/bin/python -m ipykernel install --user --name mastering_env --display-name "Python (Mastering Application Package)"
-
-echo "**** install kubectl ****" 
-curl -s -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"  
-chmod +x kubectl 
-mkdir -p /workspace/.venv/bin                                                                                                   
-mv ./kubectl /workspace/.venv/bin/kubectl
-
-
-curl -s -L https://github.com/pypa/hatch/releases/latest/download/hatch-x86_64-unknown-linux-gnu.tar.gz | tar -xzvf - -C /workspace/.venv/bin/
-chmod +x /workspace/.venv/bin/hatch
-curl -s -L https://github.com/go-task/task/releases/download/v3.41.0/task_linux_amd64.tar.gz | tar -xzvf - -C /workspace/.venv/bin/
-chmod +x /workspace/.venv/bin/task
-
-curl -s -L https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 > /workspace/.venv/bin/skaffold
-chmod +x /workspace/.venv/bin/skaffold
-
-curl -s -LO https://github.com/mikefarah/yq/releases/download/v4.45.1/yq_linux_amd64.tar.gz 
-tar -xvf yq_linux_amd64.tar.gz
-mv yq_linux_amd64 /workspace/.venv/bin/yq
+/workspace/.venv/bin/python -m ipykernel install --user --name advanced_tooling --display-name "Python (Advanced Tooling)"
 
 export AWS_DEFAULT_REGION="us-east-1"
 

@@ -1,0 +1,94 @@
+apiVersion: skaffold/v4beta9
+kind: Config
+metadata:
+  name: eoap-dask-gateway
+build:
+  tagPolicy:
+    envTemplate:
+      template: 2h
+
+  artifacts:
+    - image: ttl.sh/eoap-dask-gateway-worker
+      context: .
+      docker:
+        dockerfile: Dockerfile.worker
+    - image: ttl.sh/eoap-dask-gateway-daskclient
+      context: .
+      docker:
+        dockerfile: Dockerfile.client
+    - image: ttl.sh/eoap-dask-gateway-coder 
+      context: .
+      docker:
+        dockerfile: Dockerfile.coder
+
+deploy:
+  statusCheckDeadlineSeconds: 2400
+  helm:
+
+    releases:
+      - name: dask-gateway
+        remoteChart: https://helm.dask.org/dask-gateway-2024.1.0.tgz
+        namespace: eoap-dask-gateway
+        createNamespace: true
+        valuesFiles:
+          - values.yaml
+        setValueTemplates:
+          gateway.backend.image.name: ttl.sh/eoap-dask-gateway-worker
+          gateway.backend.image.tag: 2h
+          gateway.backend.imagePullSecrets: 
+          - name: kaniko-secret
+          traefik.service.type: "ClusterIP"
+
+      - name: eoap-dask-gateway
+        chartPath: ../charts/coder
+        namespace: eoap-dask-gateway
+        createNamespace: true
+        setValueTemplates:
+          coder.coderImage: ttl.sh/eoap-dask-gateway-coder 
+          daskGateway.image: ttl.sh/eoap-dask-gateway-worker:2h
+        setValues:
+          coder.workspace: dask-app-package
+          coder.storageClassName: openebs-kernel-nfs-scw
+          coder.workspaceStorage: 10Gi
+          coderResources.limits.cpu: '2'
+          coderResources.limits.memory: '6442450944'
+          coderResources.requests.cpu: '1'
+          coderResources.requests.memory: '4294967296'
+          calrissian.enabled: true
+          calrissian.storageClassName: openebs-kernel-nfs-scw
+          skaffold.enabled: true
+          daskGateway.enabled: true
+          daskGateway.daskGatewayUrl: "http://traefik-dask-gateway.eoap-dask-gateway.svc.cluster.local:80"
+          kaniko.enabled: true
+        setFiles: {
+          initScript: ./files/init.sh,
+          bashrcScript: ./files/bash-rc,
+          bashloginScript: ./files/bash-login
+        }
+      - name: eoap-dask-gateway-localstack
+        remoteChart: localstack/localstack
+        namespace: eoap-dask-gateway
+        createNamespace: true
+        setValues:
+          service.type: ClusterIP
+          
+    hooks:
+      before: []
+      after:
+        - host:
+            command: ["sh", "-c", "./wait-for-it.sh"]
+            os: [darwin, linux]
+
+portForward:
+  - resourceType: service
+    resourceName: code-server-service
+    namespace: eoap-dask-gateway 
+    address: localhost
+    port: 8080
+    localPort: 8000
+  - resourceType: service
+    resourceName: traefik-dask-gateway
+    namespace: eoap-dask-gateway
+    address: localhost
+    port: 80
+    localPort: 8001
