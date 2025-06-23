@@ -13,7 +13,8 @@ deploy:
         remoteChart: zoo-project/zoo-project-dru
         namespace: eoap-zoo-project
         createNamespace: true
-        version: 0.4.14
+        #version: 0.4.14
+        version: 0.5.0
         valuesFiles: 
         - values.yaml
         setValues:
@@ -23,6 +24,12 @@ deploy:
           filter_in.enabled: true
           filter_out.enabled: true
           persistence.procServicesAccessMode: ReadWriteMany
+          websocketd.enabled: true
+          websocketd.port: 8888
+          websocketd.image.repository: zooproject/websocketd
+          websocketd.image.tag: 67449315857b54bbc970f02c7aa4fd10a94721f0
+          websocketd.image.pullPolicy: IfNotPresent
+          redis.enabled: true
           workflow.additionalInputs:
             s3_bucket: results
             region_name: us-east-1
@@ -95,7 +102,12 @@ portForward:
     namespace: eoap-zoo-project
     address: localhost
     port: 8080
-    localPort: 8000  
+    localPort: 8000
+  - resourceType: service
+    resourceName: zoo-project-dru-websocketd
+    namespace: eoap-zoo-project
+    port: 8888
+    localPort: 8888
   - resourceType: service
     resourceName: zoo-project-dru-service
     namespace: eoap-zoo-project  
