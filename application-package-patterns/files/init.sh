@@ -17,9 +17,10 @@ echo '{"workbench.colorTheme": "Visual Studio Dark"}' > /workspace/User/settings
 
 python -m venv /workspace/.venv
 source /workspace/.venv/bin/activate
-/workspace/.venv/bin/python -m pip install --no-cache-dir stactools rasterio requests stac-asset click-logging tabulate tqdm pystac-client ipykernel loguru scikit-image rio_stac calrissian tomlq
+/workspace/.venv/bin/pip install --upgrade uv
+/workspace/.venv/bin/python -m uv pip install --no-cache-dir stactools calrissian tomlq
 
-/workspace/.venv/bin/python -m ipykernel install --user --name cwl_how_to_env --display-name "Python (CWL How-To's)"
+/workspace/.venv/bin/python -m ipykernel install --user --name cwl_how_to_env --display-name "Python (Application Package patterns)"
 
 cd /workspace
 git clone https://github.com/EOEPCA/eoap-cwlwrap.git
@@ -32,3 +33,8 @@ export AWS_ACCESS_KEY_ID="test"
 export AWS_SECRET_ACCESS_KEY="test"
 
 aws s3 mb s3://results --endpoint-url=http://eoap-application-package-patterns-localstack:4566
+
+rm -f /workspace/.venv/bin/yq
+
+# for calrissian (eoap-cwlwrap uses a recent version of cwltool)
+/workspace/.venv/bin/python -m uv pip install cwltool==3.1.20240708091337
