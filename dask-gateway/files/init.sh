@@ -19,7 +19,19 @@ ln -s /workspace/.local/share/code-server/extensions /workspace/extensions
 mkdir -p /workspace/User/
 
 echo '{"workbench.colorTheme": "Visual Studio Dark"}' > /workspace/User/settings.json
-
+echo '[
+            {
+                "key": "ctrl+c",
+                "command": "workbench.action.terminal.copySelection",
+                "when": "terminalFocus && terminalTextSelected"
+            },
+            {
+                "key": "ctrl+v",
+                "command": "workbench.action.terminal.paste",
+                "when": "terminalFocus"
+            }
+            ]' > /workspace/User/keybindings.json
+            
 pip install git+https://github.com/Terradue/calrissian@dask-gateway tomlq # calrissian and tomlq (for task files)
 
 python -m venv /workspace/.venv

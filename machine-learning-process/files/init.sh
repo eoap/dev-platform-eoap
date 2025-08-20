@@ -19,7 +19,19 @@ ln -s /workspace/.local/share/code-server/extensions /workspace/extensions
 # Setup user settings
 mkdir -p /workspace/User/
 echo '{"workbench.colorTheme": "Visual Studio Dark"}' > /workspace/User/settings.json
-
+echo '[
+            {
+                "key": "ctrl+c",
+                "command": "workbench.action.terminal.copySelection",
+                "when": "terminalFocus && terminalTextSelected"
+            },
+            {
+                "key": "ctrl+v",
+                "command": "workbench.action.terminal.paste",
+                "when": "terminalFocus"
+            }
+            ]' > /workspace/User/keybindings.json
+            
 # Setup Python virtual environment
 python -m venv /workspace/.venv
 source /workspace/.venv/bin/activate
