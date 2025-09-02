@@ -1,5 +1,4 @@
 alias ll="ls -l"
 
 alias aws="aws --endpoint-url=http://eoap-zoo-project-localstack:4566"
-export REPOSITORY_OWNER="parham-membari-terradue"
 source /workspace/.venv/bin/activate   
