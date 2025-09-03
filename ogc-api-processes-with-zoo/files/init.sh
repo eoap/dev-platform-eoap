@@ -32,7 +32,7 @@ cd /workspace
 
     source /workspace/.venv/bin/activate
     
-    /workspace/.venv/bin/python -m pip install --no-cache-dir stactools ipykernel requests pyyaml pystac boto3==1.35.23 loguru
+    /workspace/.venv/bin/python -m pip install --no-cache-dir stactools ipykernel requests pyyaml pystac boto3==1.35.23 loguru 'ogc-api-client @ git+https://github.com/EOEPCA/ogc-api-client@develop#subdirectory=src' rasterio fs_s3fs
 
     /workspace/.venv/bin/python -m ipykernel install --user --name zoo_env --display-name "Python (ZOO-Project)"
 
