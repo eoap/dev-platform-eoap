@@ -30,7 +30,8 @@ RUN \
     net-tools \
     sudo \
     podman \
-    wget 
+    wget \
+    graphviz
 
 RUN \
     echo "**** install code-server ****" && \
