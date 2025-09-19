@@ -1,7 +1,11 @@
 cd /workspace
     
 
-    git clone https://github.com/parham-membari-terradue/ogc-api-processes-with-zoo.git
+    git clone https://github.com/eoap/ogc-api-processes-with-zoo.git
+    cd ogc-api-processes-with-zoo
+    git fetch origin
+    git checkout branch-1
+
     
     code-server --install-extension ms-python.python 
 
@@ -32,7 +36,7 @@ cd /workspace
  
     source /workspace/.venv/bin/activate
     
-    /workspace/.venv/bin/python -m pip install --no-cache-dir stactools ipykernel requests pyyaml pystac boto3==1.35.23 loguru 'ogc-api-client @ git+https://github.com/EOEPCA/ogc-api-client@develop#subdirectory=src' rasterio fs_s3fs
+    /workspace/.venv/bin/python -m pip install --no-cache-dir stactools ipykernel requests pyyaml pystac boto3==1.35.23 loguru rasterio fs_s3fs
 
     /workspace/.venv/bin/python -m ipykernel install --user --name zoo_env --display-name "Python (ZOO-Project)"
 
@@ -43,7 +47,7 @@ cd /workspace
 
     aws s3 mb s3://results --endpoint-url=http://eoap-zoo-project-localstack:4566
     
-    VERSION=$(curl -s https://api.github.com/repos/parham-membari-terradue/ogc-api-processes-with-zoo/releases/latest | jq -r '.tag_name')
+    VERSION=$(curl -s https://api.github.com/repos/eoap/ogc-api-processes-with-zoo/releases/latest | jq -r '.tag_name')
     curl -L -o "/workspace/ogc-api-processes-with-zoo/cwl-workflows/eoap-api-cli.cwl" \
-        "https://github.com/parham-membari-terradue/ogc-api-processes-with-zoo/releases/download/${VERSION}/eoap-api-cli.${VERSION}.cwl"
+        "https://github.com/eoap/ogc-api-processes-with-zoo/releases/download/${VERSION}/eoap-api-cli.${VERSION}.cwl"
     #rm /workspace/cwl-workflows/eoap-api-cli.cwl
