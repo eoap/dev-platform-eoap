@@ -31,8 +31,9 @@ echo '[
             
 python -m venv /workspace/.venv
 source /workspace/.venv/bin/activate
-/workspace/.venv/bin/python -m pip install --no-cache-dir tomlq calrissian
-/workspace/.venv/bin/python -m ipykernel install --user --name advanced_tooling --display-name "Python (Advanced Tooling)"
+/workspace/.venv/bin/pip install --upgrade uv
+/workspace/.venv/bin/python -m uv pip install --no-cache-dir tomlq calrissian
+/workspace/.venv/bin/python -m ipykernel install --user --name advanced_tooling --display-name "Python (Application Package Patterns)"
 
 export AWS_DEFAULT_REGION="us-east-1"
 
