@@ -10,22 +10,64 @@ Skaffold is used to build, push, and deploy your application to Kubernetes.
 
 You can install it by following the instructions [here](https://skaffold.dev/docs/install/#standalone-binary).
 
+On MacOS you can use `brew install skaffold`
+
 ### Helm
 
 Helm is a package manager for Kubernetes, enabling you to manage Kubernetes applications easily. 
 
 You can install it by following the steps [here](https://helm.sh/docs/intro/install/).
 
+On MacOS you can use `brew install helm`
+
+
 ### Minikube
 
 Minikube runs a local Kubernetes cluster, ideal for development and testing. 
 
-You can install it by following the guide [here](https://minikube.sigs.k8s.io/docs/start).
+#### Linux
 
-Start your minikube instance with:
+You can install it by following the guide [here](https://minikube.sigs.k8s.io/docs/start) 
+
+Then start your minikube instance with:
 
 ```
 minikube start
+```
+
+#### MacOS
+
+Install docker with:
+
+```
+brew install --cask docker
+```
+
+Start Docker Desktop (once) so the Docker daemon is available
+
+```
+open -a "Docker"
+```
+
+Install `kubectl` and `minikube`:
+
+```
+brew install kubectl minikube
+```
+
+Start minikube with:
+
+```
+minikube start --driver=docker --cpus=4 --memory=8192 --disk-size=40g
+```
+
+Note: adapt the resources if needed
+
+
+### Helm repositories
+
+```
+helm repo add localstack https://localstack.github.io/helm-charts
 ```
 
 ### Optional requirements
