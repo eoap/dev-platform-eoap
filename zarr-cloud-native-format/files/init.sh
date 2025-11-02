@@ -17,6 +17,6 @@ echo '{"workbench.colorTheme": "Visual Studio Dark"}' > /workspace/User/settings
 
 python -m venv /workspace/.venv
 source /workspace/.venv/bin/activate
-/workspace/.venv/bin/python -m pip install --no-cache-dir odc-stac ipykernel cwltool zarr matplotlib
+/workspace/.venv/bin/python -m pip install --no-cache-dir "odc-stac" ipykernel cwltool zarr matplotlib loguru click "graphviz" "pillow" "cwl-loader>=0.5.0" "eoap-cwlwrap" "plantuml" "cwl2puml>=0.8.0" stactools[validate] rioxarray
 
 /workspace/.venv/bin/python -m ipykernel install --user --name cwl_eoap_env --display-name "Python (EOAP)"

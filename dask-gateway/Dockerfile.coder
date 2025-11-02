@@ -1,4 +1,4 @@
-FROM docker.io/library/python:3.10.12@sha256:bac3a0e0d16125977e351c861e2f4b12ecafeaa6f72431dc970d0b9155103232
+FROM docker.io/library/python:3.12.11-bookworm@sha256:bea386df48d7ee07eed0a1f3e6f9d5c0292c228b8d8ed2ea738b7a57b29c4470
 
 RUN \
     apt-get update && \
@@ -13,7 +13,7 @@ RUN \
 RUN \
     echo "**** install node repo ****" && \
     curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - && \
-    echo 'deb https://deb.nodesource.com/node_14.x jammy main' \
+    echo 'deb https://deb.nodesource.com/node_14.x bookworm main' \
         > /etc/apt/sources.list.d/nodesource.list && \
     echo "**** install build dependencies ****" && \
     apt-get update && \
@@ -30,9 +30,7 @@ RUN \
     net-tools \
     sudo \
     podman \
-    wget \
-    python3 \
-    python3-pip 
+    wget 
 
 RUN \
     echo "**** install code-server ****" && \

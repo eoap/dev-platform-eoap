@@ -1,6 +1,6 @@
 alias ll="ls -l"
 
-alias aws="aws --endpoint-url=http://eoap-how-to-localstack:4566"
+alias aws="aws --endpoint-url=http://eoap-application-package-patterns-localstack:4566"
 
 export PATH=/workspace/.venv/bin:$PATH
 export TASK_X_REMOTE_TASKFILES=1

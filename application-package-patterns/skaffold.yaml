@@ -35,11 +35,20 @@ deploy:
           calrissian.storageClassName: standard #openebs-kernel-nfs-scw
           calrissian.imagePullSecrets: []
           skaffold.enabled: True
+          kaniko.enabled: true
+   
         setFiles: {
           initScript: ./files/init.sh,
           bashrcScript: ./files/bash-rc,
           bashloginScript: ./files/bash-login
         }
+
+      - name: eoap-application-package-patterns-localstack
+        remoteChart: localstack/localstack
+        namespace: eoap-application-package-patterns
+        createNamespace: true
+        setValues:
+          service.type: ClusterIP
 
 portForward:
   - resourceType: service

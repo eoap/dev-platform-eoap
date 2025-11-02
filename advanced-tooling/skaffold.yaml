@@ -22,9 +22,9 @@ deploy:
         namespace: eoap-advanced-tooling
         createNamespace: true
         setValues:
-          coder.coderImage: ttl.sh/eoap-dask-gateway-coder:2h
+          coder.coderImage: ttl.sh/eoap-advanced-tooling-coder:2h
           coder.workspace: advanced-tooling
-          coder.storageClassName: openebs-kernel-nfs-scw
+          coder.storageClassName: standard #openebs-kernel-nfs-scw
           coder.workspaceStorage: 10Gi
           coderResources.limits.cpu: '2'
           coderResources.limits.memory: '6442450944'
@@ -32,7 +32,7 @@ deploy:
           coderResources.requests.memory: '4294967296'
           coder.securityContext.privileged: false
           calrissian.enabled: true
-          calrissian.storageClassName: openebs-kernel-nfs-scw
+          calrissian.storageClassName: standard #openebs-kernel-nfs-scw
           skaffold.enabled: true
           kaniko.enabled: true
           

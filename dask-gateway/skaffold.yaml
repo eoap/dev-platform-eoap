@@ -2,24 +2,6 @@ apiVersion: skaffold/v4beta9
 kind: Config
 metadata:
   name: eoap-dask-gateway
-build:
-  tagPolicy:
-    envTemplate:
-      template: 2h
-
-  artifacts:
-    - image: ttl.sh/eoap-dask-gateway-worker
-      context: .
-      docker:
-        dockerfile: Dockerfile.worker
-    - image: ttl.sh/eoap-dask-gateway-daskclient
-      context: .
-      docker:
-        dockerfile: Dockerfile.client
-    - image: ttl.sh/eoap-dask-gateway-coder 
-      context: .
-      docker:
-        dockerfile: Dockerfile.coder
 
 deploy:
   statusCheckDeadlineSeconds: 2400
@@ -33,7 +15,7 @@ deploy:
         valuesFiles:
           - values.yaml
         setValueTemplates:
-          gateway.backend.image.name: ttl.sh/eoap-dask-gateway-worker
+          gateway.backend.image.name: ghcr.io/eoap/dev-platform-eoap/dask-gateway-worker:0.1.0
           gateway.backend.image.tag: 2h
           gateway.backend.imagePullSecrets: 
           - name: kaniko-secret
@@ -44,18 +26,18 @@ deploy:
         namespace: eoap-dask-gateway
         createNamespace: true
         setValueTemplates:
-          coder.coderImage: ttl.sh/eoap-dask-gateway-coder 
-          daskGateway.image: ttl.sh/eoap-dask-gateway-worker:2h
+          coder.coderImage: ghcr.io/eoap/dev-platform-eoap/dask-gateway-coder:0.1.0
+          daskGateway.image: ghcr.io/eoap/dev-platform-eoap/dask-gateway-worker:0.1.0
         setValues:
           coder.workspace: dask-app-package
-          coder.storageClassName: openebs-kernel-nfs-scw
+          coder.storageClassName: standard
           coder.workspaceStorage: 10Gi
           coderResources.limits.cpu: '2'
           coderResources.limits.memory: '6442450944'
           coderResources.requests.cpu: '1'
           coderResources.requests.memory: '4294967296'
           calrissian.enabled: true
-          calrissian.storageClassName: openebs-kernel-nfs-scw
+          calrissian.storageClassName: standard
           skaffold.enabled: true
           daskGateway.enabled: true
           daskGateway.daskGatewayUrl: "http://traefik-dask-gateway.eoap-dask-gateway.svc.cluster.local:80"
