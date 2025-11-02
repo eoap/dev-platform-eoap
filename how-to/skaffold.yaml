@@ -4,9 +4,16 @@ metadata:
   name: eoap-how-to
 
 build:
+  tagPolicy:
+    envTemplate:
+      template: 2h
+
   artifacts:
-    - image: appimage
-  
+    - image: ttl.sh/eoap-how-to-coder 
+      context: .
+      docker:
+        dockerfile: Dockerfile.coder
+
 deploy:
   helm:
     releases:
@@ -15,15 +22,19 @@ deploy:
         namespace: eoap-how-to
         createNamespace: true
         setValueTemplates:
-          coder.coderImage: "{{.IMAGE_REPO_appimage}}/{{.IMAGE_TAG_appimage}}@{{.IMAGE_DIGEST_appimage}}"
+          coder.coderImage: ttl.sh/eoap-how-to-coder:2h
         setValues:
           coder.workspace: how-to
-          coderstorageClassName: standard
+          coder.storageClassName: standard #openebs-kernel-nfs-scw
           coder.workspaceStorage: 10Gi
           coderResources.limits.cpu: '2'
           coderResources.limits.memory: '6442450944'
           coderResources.requests.cpu: '1'
           coderResources.requests.memory: '4294967296'
+          calrissian.enabled: true
+          calrissian.storageClassName: standard #openebs-kernel-nfs-scw
+          calrissian.imagePullSecrets: []
+          skaffold.enabled: True
         setFiles: {
           initScript: ./files/init.sh,
           bashrcScript: ./files/bash-rc,

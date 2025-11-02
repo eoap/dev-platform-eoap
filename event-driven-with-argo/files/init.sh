@@ -15,7 +15,7 @@ echo '{"workbench.colorTheme": "Visual Studio Dark"}' > /workspace/User/settings
 
 python -m venv /workspace/.venv
 source /workspace/.venv/bin/activate
-/workspace/.venv/bin/python -m pip install --no-cache-dir ipykernel requests pyyaml boto3==1.35.23 loguru redis
+/workspace/.venv/bin/python -m pip install --no-cache-dir ipykernel requests pyyaml boto3==1.35.23 loguru redis pystac_client
 /workspace/.venv/bin/python -m ipykernel install --user --name zoo_env --display-name "Python (Event Driven with Argo)"
 
 export AWS_DEFAULT_REGION="us-east-1"

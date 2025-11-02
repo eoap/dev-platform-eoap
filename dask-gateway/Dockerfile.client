@@ -1,0 +1,34 @@
+FROM docker.io/library/python:3.12.11-bookworm@sha256:bea386df48d7ee07eed0a1f3e6f9d5c0292c228b8d8ed2ea738b7a57b29c4470
+
+
+# Install necessary packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    curl \
+    wget \
+    vim \
+    tree \
+    sudo && \
+    rm -rf /var/lib/apt/lists
+
+# Create a user named 'dask-user' with sudo privileges
+RUN useradd -m dask-user && \
+    echo "dask-user:password" | chpasswd && \
+    adduser dask-user sudo && \
+    echo "dask-user ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+
+ADD requirements.txt /tmp/requirements.txt
+
+RUN pip install --no-cache-dir -r /tmp/requirements.txt && \
+    rm -rf /tmp/requirements.txt
+
+# Set the user to 'dask-user'
+USER dask-user
+
+# Add alias for ll="ls -l" to the bash profile of dask-user
+RUN echo 'alias ll="ls -l"' >> /home/dask-user/.bashrc
+
+WORKDIR /home/dask-user
+
+ENTRYPOINT []
