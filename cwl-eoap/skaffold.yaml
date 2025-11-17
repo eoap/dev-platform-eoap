@@ -11,9 +11,9 @@ deploy:
         namespace: eoap-cwl
         createNamespace: true
         setValues:
-          coder.coderImage: eoepca/pde-code-server:1.0.0
+          coder.coderImage: ghcr.io/eoap/dev-platform-eoap/eoap-coder:0.1.0
           coder.workspace: cwl-eoap
-          coderstorageClassName: standard
+          coder.storageClassName: standard
           coder.workspaceStorage: 10Gi
           coderResources.limits.cpu: '2'
           coderResources.limits.memory: '6442450944'

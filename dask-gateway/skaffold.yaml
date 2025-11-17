@@ -31,7 +31,7 @@ deploy:
         setValues:
           coder.workspace: dask-app-package
           coder.storageClassName: standard
-          coder.workspaceStorage: 10Gi
+          coder.workspaceStorage: 15Gi
           coderResources.limits.cpu: '2'
           coderResources.limits.memory: '6442450944'
           coderResources.requests.cpu: '1'
@@ -60,6 +60,17 @@ deploy:
         - host:
             command: ["sh", "-c", "./wait-for-it.sh"]
             os: [darwin, linux]
+profiles:
+
+  - name: wrs-coverage
+
+    patches:
+      - op: add
+        path: /deploy/helm/releases/1/setFiles/initScript
+        value: ./files/init-wrs-coverage.sh
+      - op: add
+        path: /deploy/helm/releases/1/setValues/coder.workspace
+        value: ""
 
 portForward:
   - resourceType: service

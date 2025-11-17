@@ -145,6 +145,8 @@ RUN rm -f /usr/bin/yq && \
 RUN curl -s -L https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-amd64 > /usr/bin/jq && \
     chmod +x /usr/bin/jq
 
-RUN pip install --upgrade uv
+RUN pip install --upgrade uv && uv pip install --no-warn-script-location git+https://github.com/Terradue/calrissian@dask-gateway
+
+
 
 USER jovyan
