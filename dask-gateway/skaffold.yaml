@@ -72,6 +72,26 @@ profiles:
         path: /deploy/helm/releases/1/setValues/coder.workspace
         value: ""
 
+  - name: eopf-sentinel-2
+  
+    patches:
+      - op: add
+        path: /deploy/helm/releases/1/setFiles/initScript
+        value: ./files/init-eopf-sentinel-2.sh
+      - op: add
+        path: /deploy/helm/releases/1/setValues/coder.workspace
+        value: "dask-app-package/eopf-sentinel-2"
+
+  - name: cloudless-mosaic
+
+    patches:
+      - op: add
+        path: /deploy/helm/releases/1/setFiles/initScript
+        value: ./files/init-cloudless-mosaic.sh
+      - op: add
+        path: /deploy/helm/releases/1/setValues/coder.workspace
+        value: "dask-app-package/cloudless-mosaic"
+
 portForward:
   - resourceType: service
     resourceName: code-server-service
