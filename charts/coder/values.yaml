@@ -1,6 +1,6 @@
 
 coder:
-  coderImage: eoepca/pde-code-server:1.0.0
+  coderImage: ghcr.io/eoap/dev-platform-eoap/eoap-coder:0.1.0
   workspace: quickwin
   storageClassName: standard
   workspaceStorage: 20Gi

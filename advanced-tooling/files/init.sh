@@ -6,10 +6,7 @@ cd /workspace
 
 git clone 'https://github.com/eoap/advanced-tooling.git'
 
-code-server --install-extension ms-python.python 
-code-server --install-extension redhat.vscode-yaml
-code-server --install-extension sbg-rabix.benten-cwl
-code-server --install-extension ms-toolsai.jupyter
+code-server --install-extension ms-python.python --install-extension redhat.vscode-yaml --install-extension sbg-rabix.benten-cwl --install-extension ms-toolsai.jupyter
 
 ln -s /workspace/.local/share/code-server/extensions /workspace/extensions
 
@@ -19,8 +16,9 @@ echo '{"workbench.colorTheme": "Visual Studio Dark"}' > /workspace/User/settings
 
 python -m venv /workspace/.venv
 source /workspace/.venv/bin/activate
-/workspace/.venv/bin/python -m pip install --no-cache-dir tomlq calrissian
-/workspace/.venv/bin/python -m ipykernel install --user --name advanced_tooling --display-name "Python (Advanced Tooling)"
+/workspace/.venv/bin/pip install --upgrade uv
+/workspace/.venv/bin/python -m uv pip install --no-cache-dir tomlq calrissian
+/workspace/.venv/bin/python -m ipykernel install --user --name advanced_tooling --display-name "Python (Application Package Patterns)"
 
 export AWS_DEFAULT_REGION="us-east-1"
 

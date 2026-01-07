@@ -10,39 +10,42 @@ deploy:
         remoteChart: zoo-project/zoo-project-dru
         namespace: eoap-zoo-project
         createNamespace: true
-        version: 0.3.23
+        version: 0.4.7
         valuesFiles: 
         - values.yaml
         setValues:
           iam.enabled: false
           cookiecutter.templateUrl: https://github.com/eoap/zoo-service-template.git
-          cookiecutter.templateBranch: feature-collection
+          cookiecutter.templateBranch: feature-secrets-nodeselector-imagepullsecrets
           filter_in.enabled: true
           filter_out.enabled: true
           persistence.procServicesAccessMode: ReadWriteMany
-          customConfig.main.additional_parameters: |-
-            s3_bucket=results
-            region_name=us-east-1
-            aws_secret_access_key=test
-            aws_access_key_id=test
-            endpoint_url=http://eoap-zoo-project-localstack.eoap-zoo-project.svc.cluster.local:4566
-          #customConfig.main.pod_env_vars: |-
-          #  C="1"
-          #customConfig.main.pod_node_selector: |-
-          #  "kubernetes.io/hostname"=minikube
+          persistence.storageClass: standard #openebs-kernel-nfs-scw
+          persistence.procServicesStorageClass: standard # openebs-kernel-nfs-scw
+          persistence.tmpStorageClass: standard # openebs-kernel-nfs-scw
+          workflow:
+            additionalInputs:
+                s3_bucket: results
+                region_name: us-east-1
+                aws_secret_access_key: test
+                aws_access_key_id: test
+                endpoint_url: http://eoap-zoo-project-localstack.eoap-zoo-project.svc.cluster.local:4566
+            storageClass: standard #openebs-kernel-nfs-scw
+
       - name: eoap-zoo-project-coder
         chartPath: ../charts/coder
         namespace: eoap-zoo-project
         createNamespace: true
         setValues:
           coder.workspace: ogc-api-processes-with-zoo
-          coderstorageClassName: standard
+          coder.storageClassName: standard #openebs-kernel-nfs-scw
           coder.workspaceStorage: 10Gi
           coderResources.limits.cpu: '2'
           coderResources.limits.memory: '6442450944'
           coderResources.requests.cpu: '1'
           coderResources.requests.memory: '4294967296'
           calrissian.enabled: true
+          calrissian.storageClassName: standard #openebs-kernel-nfs-scw
           
         setFiles: {
           initScript: ./files/init.sh,
@@ -55,7 +58,6 @@ deploy:
         createNamespace: true
         setValues:
           service.type: ClusterIP
-
 
 portForward:
   - resourceType: service

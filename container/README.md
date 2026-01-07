@@ -1,0 +1,1 @@
+This folder contains the containers used by the EOAP dev platforms

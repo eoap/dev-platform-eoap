@@ -3,17 +3,6 @@ kind: Config
 metadata:
   name: eoap-application-package-patterns
 
-build:
-  tagPolicy:
-    envTemplate:
-      template: 2h
-
-  artifacts:
-    - image: ttl.sh/eoap-application-package-patterns-coder 
-      context: .
-      docker:
-        dockerfile: Dockerfile.coder
-
 deploy:
   helm:
     releases:
@@ -21,25 +10,32 @@ deploy:
         chartPath: ../charts/coder
         namespace: eoap-application-package-patterns
         createNamespace: true
-        setValueTemplates:
-          coder.coderImage: ttl.sh/eoap-application-package-patterns-coder:2h
         setValues:
           coder.workspace: application-package-patterns
-          coder.storageClassName: standard #openebs-kernel-nfs-scw
+          coder.storageClassName: standard
           coder.workspaceStorage: 10Gi
           coderResources.limits.cpu: '2'
           coderResources.limits.memory: '6442450944'
           coderResources.requests.cpu: '1'
           coderResources.requests.memory: '4294967296'
           calrissian.enabled: true
-          calrissian.storageClassName: standard #openebs-kernel-nfs-scw
+          calrissian.storageClassName: standard
           calrissian.imagePullSecrets: []
           skaffold.enabled: True
+          kaniko.enabled: true
+   
         setFiles: {
           initScript: ./files/init.sh,
           bashrcScript: ./files/bash-rc,
           bashloginScript: ./files/bash-login
         }
+
+      - name: eoap-application-package-patterns-localstack
+        remoteChart: localstack/localstack
+        namespace: eoap-application-package-patterns
+        createNamespace: true
+        setValues:
+          service.type: ClusterIP
 
 portForward:
   - resourceType: service

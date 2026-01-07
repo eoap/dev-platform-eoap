@@ -1,4 +1,4 @@
-FROM docker.io/library/python:3.10.12@sha256:bac3a0e0d16125977e351c861e2f4b12ecafeaa6f72431dc970d0b9155103232
+FROM docker.io/library/python:3.12.11-bookworm@sha256:bea386df48d7ee07eed0a1f3e6f9d5c0292c228b8d8ed2ea738b7a57b29c4470
 
 RUN \
     apt-get update && \
@@ -13,7 +13,7 @@ RUN \
 RUN \
     echo "**** install node repo ****" && \
     curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - && \
-    echo 'deb https://deb.nodesource.com/node_14.x jammy main' \
+    echo 'deb https://deb.nodesource.com/node_14.x bookworm main' \
         > /etc/apt/sources.list.d/nodesource.list && \
     echo "**** install build dependencies ****" && \
     apt-get update && \
@@ -31,8 +31,7 @@ RUN \
     sudo \
     podman \
     wget \
-    python3 \
-    python3-pip 
+    graphviz
 
 RUN \
     echo "**** install code-server ****" && \
@@ -53,8 +52,7 @@ RUN \
     fi && \
     echo "**** clean up ****" && \
     apt-get purge --auto-remove -y \
-        build-essential \
-        nodejs && \
+        build-essential && \
     apt-get clean && \
     rm -rf \
         /config/* \
@@ -69,32 +67,9 @@ ENV USER=jovyan \
     HOME=/workspace \
     PATH=/opt/conda/bin:/app/code-server/bin/:$PATH:/app/code-server/
 
-
-# RUN \
-#     echo "**** install conda ****" && \
-#     wget https://repo.anaconda.com/miniconda/Miniconda3-py39_4.12.0-Linux-x86_64.sh -O miniconda.sh -q && \
-#     sh miniconda.sh -b -p /opt/conda && \
-#     conda install -n base -c conda-forge mamba && \
-#     conda config --system --append channels conda-forge && \
-#     conda config --system --append channels terradue && \
-#     conda config --system --append channels eoepca && \
-#     conda config --system --append channels r && \
-#     conda config --system --set auto_update_conda false && \
-#     conda config --system --set show_channel_urls true && \
-#     conda config --system --set channel_priority "flexible"
-
-
-# RUN \
-#     mamba install -n base cwltool cwl-wrapper==0.12.2 nodejs && \
-#     mamba clean -a
-
 RUN \
-    echo "**** install yq, aws cli ****" && \
-    VERSION="v4.12.2"                                                                               && \
-    BINARY="yq_linux_amd64"                                                                         && \
-    wget --quiet https://github.com/mikefarah/yq/releases/download/${VERSION}/${BINARY}.tar.gz -O - |\
-    tar xz && mv ${BINARY} /usr/bin/yq                                                              && \
-    pip install awscli                                                            && \
+    echo "**** install aws cli ****" && \   
+    pip install awscli  && \
     pip install awscli-plugin-endpoint                                              
 
 RUN \
@@ -111,12 +86,6 @@ RUN \
 COPY entrypoint.sh /opt/entrypoint.sh
 
 RUN chmod +x /opt/entrypoint.sh
-
-# RUN chown -R jovyan:100 /opt/conda
-
-# RUN \
-#     echo "**** required by cwltool docker pull even if running with --podman ****" && \
-#     ln -s /usr/bin/podman /usr/bin/docker
 
 ENTRYPOINT ["/opt/entrypoint.sh"]
 
@@ -152,5 +121,11 @@ RUN curl -s -L https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-
     chmod +x /usr/bin/jq
 
 RUN pip install --upgrade uv
+
+# Download the hatch tar.gz file from GitHub
+RUN curl -L https://github.com/pypa/hatch/releases/latest/download/hatch-x86_64-unknown-linux-gnu.tar.gz -o /tmp/hatch-x86_64-unknown-linux-gnu.tar.gz
+
+# Extract the hatch binary
+RUN tar -xzf /tmp/hatch-x86_64-unknown-linux-gnu.tar.gz -C /usr/local/bin/
 
 USER jovyan

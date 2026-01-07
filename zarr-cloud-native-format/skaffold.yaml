@@ -11,9 +11,8 @@ deploy:
         namespace: zarr-cloud-native-format
         createNamespace: true
         setValues:
-          coder.coderImage: eoepca/pde-code-server:1.0.0
           coder.workspace: zarr-cloud-native-format
-          coderstorageClassName: standard
+          coder.storageClassName: standard
           coder.workspaceStorage: 10Gi
           coderResources.limits.cpu: '2'
           coderResources.limits.memory: '6442450944'
