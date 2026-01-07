@@ -126,7 +126,6 @@ deploy:
         createNamespace: true
         wait: true
         setValues:
-          coder.coderImage: eoepca/pde-code-server:1.0.0
           coder.workspace: event-driven-with-argo
           coderstorageClassName: standard
           coder.workspaceStorage: 10Gi

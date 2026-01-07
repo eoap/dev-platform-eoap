@@ -11,7 +11,6 @@ deploy:
         namespace: eoap-cwl
         createNamespace: true
         setValues:
-          coder.coderImage: ghcr.io/eoap/dev-platform-eoap/eoap-coder:0.1.0
           coder.workspace: cwl-eoap
           coder.storageClassName: standard
           coder.workspaceStorage: 10Gi

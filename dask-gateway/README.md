@@ -24,6 +24,14 @@ You can also use a remote cluster with:
 skaffold dev --default-repo <your container registry>
 ``` 
 
+## Using task
+
+You can use [taskfile](https://taskfile.dev/) to start the skaffold deployment:
+
+```console
+task dask-gateway SKAFFOLD_PROFILE=eopf-sentinel-2
+```
+
 ## Why the deployment is so long?
 
 THe code server pod has an init container that installs several tools, code extensions and python packages and this takes time.

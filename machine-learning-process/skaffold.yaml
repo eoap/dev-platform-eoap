@@ -11,7 +11,7 @@ deploy:
         namespace: tile-based-training
         createNamespace: true
         setValues:
-          service.type: NodePort
+          service.type: ClusterIP
 
       # Code-Server with Calrissian
       - name: code-server
@@ -21,7 +21,6 @@ deploy:
         setValues: 
           coder.serviceType: NodePort
           coder.storageClassName: standard
-          coder.coderImage: eoepca/pde-code-server:devlatest
           coder.workspace: machine-learning-process
           coder.workspaceStorage: 40Gi
           coderResources.limits.cpu: '3'

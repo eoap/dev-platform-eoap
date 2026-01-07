@@ -4,10 +4,7 @@ cd /workspace
 
 git clone 'https://github.com/eoap/application-package-patterns.git'
 
-code-server --install-extension ms-python.python 
-code-server --install-extension redhat.vscode-yaml
-code-server --install-extension sbg-rabix.benten-cwl
-code-server --install-extension ms-toolsai.jupyter
+code-server --install-extension ms-python.python --install-extension redhat.vscode-yaml --install-extension sbg-rabix.benten-cwl --install-extension ms-toolsai.jupyter
 
 ln -s /workspace/.local/share/code-server/extensions /workspace/extensions
 
@@ -18,15 +15,7 @@ echo '{"workbench.colorTheme": "Visual Studio Dark"}' > /workspace/User/settings
 python -m venv /workspace/.venv
 source /workspace/.venv/bin/activate
 /workspace/.venv/bin/pip install --upgrade uv
-/workspace/.venv/bin/python -m uv pip install --no-cache-dir stactools calrissian tomlq
-
-/workspace/.venv/bin/python -m ipykernel install --user --name cwl_how_to_env --display-name "Python (Application Package patterns)"
-
-cd /workspace
-git clone https://github.com/EOEPCA/eoap-cwlwrap.git
-cd eoap-cwlwrap
-/workspace/.venv/bin/pip install --no-cache-dir -e .
-
+/workspace/.venv/bin/python -m uv pip install --no-cache-dir stactools tomlq ipykernel graphviz "cwl-loader>=0.6.0" "cwl2puml>=0.9.0" "eoap-cwlwrap>=0.13.0" "pillow" "plantuml" "graphviz"
 
 export AWS_DEFAULT_REGION="us-east-1"
 export AWS_ACCESS_KEY_ID="test"
@@ -38,3 +27,7 @@ rm -f /workspace/.venv/bin/yq
 
 # for calrissian (eoap-cwlwrap uses a recent version of cwltool)
 /workspace/.venv/bin/python -m uv pip install cwltool==3.1.20240708091337
+
+/workspace/.venv/bin/python -m ipykernel install --user --name "cwl-eoap" --display-name "Python (Application Package patterns)"
+
+exit $?

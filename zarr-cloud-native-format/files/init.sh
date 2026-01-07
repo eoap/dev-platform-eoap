@@ -4,10 +4,14 @@ cd /workspace
 
 git clone 'https://github.com/eoap/zarr-cloud-native-format.git'
 
-code-server --install-extension ms-python.python 
+wget https://open-vsx.org/api/ms-python/python/2025.16.0/file/ms-python.python-2025.16.0.vsix
+code-server --install-extension ms-python.python-2025.16.0.vsix
+
+wget https://open-vsx.org/api/ms-toolsai/jupyter/2025.9.1/file/ms-toolsai.jupyter-2025.9.1.vsix
+code-server --install-extension ms-toolsai.jupyter-2025.9.1.vsix
+
 code-server --install-extension redhat.vscode-yaml
 code-server --install-extension sbg-rabix.benten-cwl
-code-server --install-extension ms-toolsai.jupyter
 
 ln -s /workspace/.local/share/code-server/extensions /workspace/extensions
 

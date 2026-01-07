@@ -3,17 +3,6 @@ kind: Config
 metadata:
   name: eoap-how-to
 
-build:
-  tagPolicy:
-    envTemplate:
-      template: 2h
-
-  artifacts:
-    - image: ttl.sh/eoap-how-to-coder 
-      context: .
-      docker:
-        dockerfile: Dockerfile.coder
-
 deploy:
   helm:
     releases:
@@ -21,8 +10,6 @@ deploy:
         chartPath: ../charts/coder
         namespace: eoap-how-to
         createNamespace: true
-        setValueTemplates:
-          coder.coderImage: ttl.sh/eoap-how-to-coder:2h
         setValues:
           coder.workspace: how-to
           coder.storageClassName: standard #openebs-kernel-nfs-scw
