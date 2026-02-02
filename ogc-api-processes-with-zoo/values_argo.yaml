@@ -1,0 +1,232 @@
+# ZOO-Project-DRU Configuration with Argo Workflows for eoap-zoo-project
+
+argo:
+  enabled: true
+  installCRDs: true  # Install CRDs automatically
+  instanceID: "eoap-zoo-project"
+
+  # Images configuration
+  cwlwrapperImage: "eoepca/cwl-wrapper:0.12.1"
+  stageOutImage: "ghcr.io/eoap/mastering-app-package/stage:1.1.1"
+  
+  # Service Account
+  serviceAccount:
+    name: "argo-workflow"
+    
+  # Feature collection script
+  featureCollectionScript: ""
+  
+  # Argo Events configuration
+  events:
+    enabled: false
+  
+  autoTokenManagement: true
+  restartOnTokenUpdate: false
+  
+  # S3 configuration for artifact repository
+  s3:
+    bucket: "results"
+    endpoint: "eoap-zoo-project-localstack.eoap-zoo-project.svc.cluster.local:4566"
+    insecure: true
+    # LocalStack secret configuration
+    secretName: "s3-service"
+    accessKeySecretKey: "rootUser"
+    secretKeySecretKey: "rootPassword"
+    
+  # Ingress configuration for Argo Workflows UI
+  ingress:
+    enabled: false
+
+workflow:
+  argo:
+    # Deploy Argo workflows using the Helm chart
+    internal: true
+    enabled: true
+    instanceID: "eoap-zoo-project"
+    
+    # Common configuration
+    defaultVolumeSize: "12Gi"
+    defaultMaxRam: "2Gi"
+    wfServer: "http://zoo-project-dru-argo-workflows-server.eoap-zoo-project.svc.cluster.local:2746"
+    wfToken: ""
+    wfNamespace: "eoap-zoo-project"
+    wfSynchronizationCm: "semaphore-argo-cwl-runner-stage-in-out"
+    CwlRunnerTemplare: "argo-cwl-runner-stage-in-out"
+    CwlRunnerEndpoint: "calrissian-runner"
+      
+  additionalInputs:
+    s3_bucket: results
+    region_name: us-east-1
+    aws_secret_access_key: test
+    aws_access_key_id: test
+    endpoint_url: http://eoap-zoo-project-localstack.eoap-zoo-project.svc.cluster.local:4566
+
+minio:
+  enabled: false  # Using external localstack instead
+
+cookiecutter:
+  templateUrl: https://github.com/gfenoy/zoo-argo-wf-proc-service-template.git
+  templateBranch: main
+
+# CWL Wrapper configuration for Argo Workflows
+wrapper:
+  rules: ""
+  main: ""
+  stageIn: ""
+  stageOut: ""
+
+iam:
+  enabled: false
+
+webui:
+  enabled: false
+
+websocketd:
+  enabled: true
+  port: 8888
+  image:
+    repository: zooproject/websocketd
+    tag: 67449315857b54bbc970f02c7aa4fd10a94721f0
+    pullPolicy: IfNotPresent
+
+redis:
+  enabled: true
+
+postgresql:
+  enabled: true
+  auth:
+    database: zoo
+    username: zoo
+    password: zoo-password
+
+rabbitmq:
+  autoSetup:
+    enabled: true
+
+# Configuration for Argo Workflows chart
+argo-workflows:
+  fullnameOverride: "zoo-project-dru-argo-workflows"
+  singleNamespace: true
+  
+  # Image versions
+  images:
+    tag: "v3.7.1"
+    pullPolicy: IfNotPresent
+  
+  # Global artifact repository configuration
+  artifactRepository:
+    archiveLogs: true
+    s3:
+      endpoint: eoap-zoo-project-localstack.eoap-zoo-project.svc.cluster.local:4566
+      bucket: results
+      insecure: true
+      accessKeySecret:
+        name: s3-service
+        key: rootUser
+      secretKeySecret:
+        name: s3-service
+        key: rootPassword
+  
+  # Workflow Controller Configuration
+  controller:
+    enabled: true
+    instanceID:
+      enabled: true
+      useReleaseName: false
+      explicitID: "eoap-zoo-project"
+    
+    # Metrics configuration
+    metricsConfig:
+      enabled: true
+      path: /metrics
+      port: 9090
+    
+    serviceMonitor:
+      enabled: false
+    
+    extraArgs:
+      - --managed-namespace=eoap-zoo-project
+      - --namespaced
+    
+    clusterWorkflowTemplates:
+      enabled: false
+    
+    workflowDefaults:
+      spec:
+        serviceAccountName: argo-workflow
+        ttlStrategy:
+          secondsAfterCompletion: 3600
+          secondsAfterSuccess: 300
+          secondsAfterFailure: 3600
+        podGC:
+          strategy: OnPodCompletion
+          deleteDelayDuration: 60s
+    
+    workflowTTLWorkers: 4
+    podCleanupWorkers: 4
+    
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  
+  # Argo Server Configuration
+  server:
+    enabled: true
+    serviceType: ClusterIP
+    servicePort: 2746
+    authModes:
+      - server
+    secure: false
+    namespaced: true
+    
+    clusterWorkflowTemplates:
+      enabled: false
+    
+    extraArgs:
+      - --namespaced
+      - --managed-namespace=eoap-zoo-project
+    
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  
+  serviceMonitor:
+    enabled: false
+  
+  # RBAC Configuration
+  rbac:
+    create: true
+  
+  # Service Account Configuration
+  serviceAccount:
+    create: true
+  
+  # Disable CRD installation
+  crds:
+    install: false
+    keep: true
+
+# Disable monitoring to keep configuration simple
+monitoring:
+  enabled: false
+
+argo-events:
+  enabled: false
+
+# Additional base configuration
+filter_in:
+  enabled: true
+
+filter_out:
+  enabled: true
+
+persistence:
+  procServicesAccessMode: ReadWriteMany
