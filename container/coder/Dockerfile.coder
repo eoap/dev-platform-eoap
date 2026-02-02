@@ -122,4 +122,10 @@ RUN curl -s -L https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-
 
 RUN pip install --upgrade uv
 
+# Download the hatch tar.gz file from GitHub
+RUN curl -L https://github.com/pypa/hatch/releases/latest/download/hatch-x86_64-unknown-linux-gnu.tar.gz -o /tmp/hatch-x86_64-unknown-linux-gnu.tar.gz
+
+# Extract the hatch binary
+RUN tar -xzf /tmp/hatch-x86_64-unknown-linux-gnu.tar.gz -C /usr/local/bin/
+
 USER jovyan

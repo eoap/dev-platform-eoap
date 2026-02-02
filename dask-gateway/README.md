@@ -6,10 +6,16 @@ This deployment is used to run the e-learning module [Dask application package](
 
 ## Usage
 
-Use `skaffold` to deploy on minikube:
+To deploy on minikube, use `skaffold` with one of the available profiles:
+
+- `wrs-coverage`
+- `eopf-sentinel-2`
+- `cloudless-mosaic`
+
+e.g.:
 
 ```
-skaffold dev
+skaffold dev -p wrs-coverage
 ```
 
 You can also use a remote cluster with:
@@ -17,6 +23,14 @@ You can also use a remote cluster with:
 ```
 skaffold dev --default-repo <your container registry>
 ``` 
+
+## Using task
+
+You can use [taskfile](https://taskfile.dev/) to start the skaffold deployment:
+
+```console
+task dask-gateway SKAFFOLD_PROFILE=eopf-sentinel-2
+```
 
 ## Why the deployment is so long?
 

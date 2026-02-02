@@ -1,0 +1,96 @@
+version: '3'
+
+vars:
+  SKAFFOLD_PROFILE: wrs-coverage
+
+tasks:
+
+  advanced-tooling:
+    desc: 'Runs skaffold dev on advanced-tooling'
+    cmds:
+      - |
+        set -x
+        cd advanced-tooling
+        skaffold dev
+    silent: false
+ 
+  application-package-patterns:
+    desc: 'Runs skaffold dev on application-package-patterns'
+    cmds:
+      - |
+        set -x
+        cd application-package-patterns
+        skaffold dev
+    silent: false
+
+  cwl-eoap:
+    desc: 'Runs skaffold dev on cwl-eoap'
+    cmds:
+      - |
+        set -x
+        cd cwl-eoap
+        skaffold dev
+    silent: false
+
+  dask-gateway:
+    desc: 'Runs skaffold dev on dask-gateway'
+    cmds:
+      - |
+        set -x
+        cd dask-gateway
+        skaffold dev --profile {{.SKAFFOLD_PROFILE}}
+    silent: false
+
+  event-driven-with-argo:
+    desc: 'Runs skaffold dev on event-driven-with-argo'
+    cmds:
+      - |
+        set -x
+        cd event-driven-with-argo
+        skaffold dev
+    silent: false
+
+  how-to:
+    desc: 'Runs skaffold dev on how-to'
+    cmds:
+      - |
+        set -x
+        cd how-to
+        skaffold dev
+    silent: false
+
+  machine-learning-process:
+    desc: 'Runs skaffold dev on machine-learning-process'
+    cmds:
+      - |
+        set -x
+        cd machine-learning-process
+        skaffold dev
+    silent: false
+
+  ogc-api-processes-with-zoo:
+    desc: 'Runs skaffold dev on ogc-api-processes-with-zoo'
+    cmds:
+      - |
+        set -x
+        cd ogc-api-processes-with-zoo
+        skaffold dev
+    silent: false
+  
+  quickwin:
+    desc: 'Runs skaffold dev on quickwin'
+    cmds:
+      - |
+        set -x
+        cd quickwin
+        skaffold dev
+    silent: false
+
+  stac-eoap:
+    desc: 'Runs skaffold dev on stac-eoap'
+    cmds:
+      - |
+        set -x
+        cd stac-eoap
+        skaffold dev
+    silent: false

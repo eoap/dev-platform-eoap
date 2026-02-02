@@ -42,7 +42,6 @@ deploy:
         namespace: eoap-zoo-project
         createNamespace: true
         setValues:
-          coder.coderImage: eoepca/pde-code-server:1.0.0
           coder.workspace: ogc-api-processes-with-zoo
           coder.workspaceStorage: 10Gi
           coderResources.limits.cpu: '2'
