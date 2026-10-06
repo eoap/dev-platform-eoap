@@ -30,6 +30,9 @@ deploy:
         namespace: eoap-mastering-app-package
         createNamespace: true
         setValues:
+          # Keep the workshop token-free; releases from 2026.03 require authentication.
+          image.repository: localstack/localstack
+          image.tag: "4.14.0"
           service.type: ClusterIP
 
 portForward:
