@@ -4,7 +4,8 @@ set -x
 
 cd /workspace
 
-git clone 'https://github.com/eoap/mastering-app-package.git'
+git clone --depth=1 'https://github.com/eoap/mastering-app-package.git'
+rm -rf /workspace/mastering-app-package/.git
 
 code-server --install-extension ms-python.python 
 code-server --install-extension redhat.vscode-yaml
@@ -18,8 +19,30 @@ mkdir -p /workspace/User/
 echo '{"workbench.colorTheme": "Visual Studio Dark"}' > /workspace/User/settings.json
 
 python -m venv /workspace/.venv
-source /workspace/.venv/bin/activate
-/workspace/.venv/bin/python -m pip install --no-cache-dir rasterio click pystac loguru pyproj shapely scikit-image pystac rio_stac ipykernel stactools[validate] calrissian matplotlib pandas nose2
+. /workspace/.venv/bin/activate
+
+# Use pip directly: uv can segfault under AMD64 emulation on ARM64 Minikube.
+/workspace/.venv/bin/python -m pip install --no-cache-dir \
+  rasterio==1.5.2 \
+  click==8.5.0 \
+  pystac==1.15.2 \
+  loguru==0.7.3 \
+  pyproj==3.8.0 \
+  shapely==2.1.2 \
+  scikit-image==0.26.0 \
+  rio-stac==0.12.0 \
+  ipykernel==7.4.0 \
+  'stactools[validate]==0.5.3' \
+  nose2==0.16.0 \
+  pandas==3.0.6 \
+  matplotlib==3.11.2
+
+res=$?
+if [ $res -ne 0 ]; then
+    echo "Failed to install packages"
+    exit $res
+fi
+
 /workspace/.venv/bin/python -m ipykernel install --user --name mastering_env --display-name "Python (Mastering Application Package)"
 
 echo "**** install kubectl ****" 
