@@ -64,6 +64,68 @@ If all commands return a version, you’re good to go!
 
 ## Mastering Earth Observation Application Packaging with CWL 
 
+### Prepare Minikube storage
+
+This module requests the `hostpath` StorageClass for both `code-server-pvc` and
+`calrissian-claim`. Minikube normally provides a class named `standard`, so create
+the additional class before running Skaffold:
+
+```sh
+minikube addons enable storage-provisioner
+kubectl apply -f - <<'YAML'
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: hostpath
+provisioner: k8s.io/minikube-hostpath
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+YAML
+kubectl get storageclass
+```
+
+These settings are for Minikube's built-in provisioner. It creates the PVs and
+directories inside the Minikube node automatically; no Mac directory mount is
+required. See [Minikube persistent volumes](https://minikube.sigs.k8s.io/docs/handbook/persistent_volumes/).
+
+### Enable AMD64 emulation on Apple Silicon
+
+The module uses `eoepca/pde-code-server:1.0.0`, an AMD64 image. On an ARM64
+Minikube node, it fails with `exec /usr/bin/sh: exec format error` unless AMD64
+emulation is available. Check the node architecture:
+
+```sh
+kubectl get nodes -o custom-columns=NAME:.metadata.name,ARCH:.status.nodeInfo.architecture
+```
+
+For an ARM64 node using the Docker runtime inside Minikube (tested with the
+`qemu2` driver), run:
+
+```sh
+minikube ssh -- 'mountpoint -q /proc/sys/fs/binfmt_misc || sudo mount -t binfmt_misc binfmt_misc /proc/sys/fs/binfmt_misc'
+minikube ssh -- 'docker run --privileged --rm tonistiigi/binfmt --install amd64'
+```
+
+The first command mounts the kernel's executable-format registry in the VM.
+Without this mount, the installer may report success but leave no emulator
+registered after its container exits. The second command registers the AMD64
+emulator using a privileged container inside Minikube. See the
+[binfmt documentation](https://github.com/tonistiigi/binfmt).
+
+Verify registration and test the actual workshop image:
+
+```sh
+minikube ssh -- 'cat /proc/sys/fs/binfmt_misc/qemu-x86_64'
+minikube ssh -- 'docker run --rm --platform linux/amd64 --entrypoint /usr/bin/sh eoepca/pde-code-server:1.0.0 -c "echo amd64-shell-ok"'
+```
+
+The shell test should print `amd64-shell-ok`. It downloads the image if it is
+not already present. Recheck emulation after restarting or recreating Minikube
+and repeat the setup if necessary. Emulated workloads run more slowly than
+native ARM64 workloads.
+
+### Start the module
+
 Run the _Mastering Earth Observation Application Packaging with CWL_ module on minikube with:
 
 ```
@@ -71,7 +133,39 @@ cd mastering-app-package
 skaffold dev
 ```
 
-Wait for the deployment to stablize (1-2 minutes) and then open your browser on the link printed, usually http://127.0.0.1:8000.
+Wait for the deployment to stabilize and then open your browser on the link
+printed, usually http://127.0.0.1:8000. Initial setup downloads extensions and
+Python packages and can take several minutes, especially under emulation.
+
+### Troubleshooting startup
+
+Inspect storage, pods, and initialization logs:
+
+```sh
+kubectl get pvc,pods -n eoap-mastering-app-package
+kubectl describe pvc -n eoap-mastering-app-package
+kubectl logs -n eoap-mastering-app-package deployment/code-server-deployment -c init-file-on-volume -f
+```
+
+- **PVC Pending / `storageclass.storage.k8s.io "hostpath" not found`:** complete
+  the storage setup above. Existing bound claims retain their original class;
+  changing `skaffold.yaml` does not migrate them. Do not delete bound claims to
+  change class without preserving their data: the reclaim policy is `Delete`.
+- **`Insufficient memory`:** the module requests 2 GiB for code-server, and the
+  node also needs memory for Kubernetes, LocalStack, and processing jobs. Check
+  allocations with `kubectl describe node minikube`. To increase the VM memory,
+  run `minikube stop` followed by `minikube start --memory=8192` if your Mac has
+  enough available RAM. This interrupts the cluster; recheck emulation afterward.
+- **`exec /usr/bin/sh: exec format error`:** complete the AMD64 emulation setup
+  and shell test above. Kubernetes retries the failed init container automatically.
+- **`Init:0/1`:** inspect the init logs above. This can indicate normal package
+  installation; it does not itself mean the PVC is waiting.
+- **LocalStack auth-token notice:** the Helm chart can print this notice even
+  when the pinned Community image `localstack/localstack:4.14.0` is healthy.
+  Check the pod status. The pin avoids the authentication requirement introduced
+  in [LocalStack 2026.03](https://blog.localstack.cloud/localstack-for-aws-release-2026-03-0/).
+  If logs show license activation failure and exit code 55, verify the deployed
+  image matches the pin in `mastering-app-package/skaffold.yaml`.
 
 The typical output is: 
 
