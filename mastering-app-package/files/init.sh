@@ -34,6 +34,7 @@ python -m venv /workspace/.venv
 . /workspace/.venv/bin/activate
 
 # Use pip directly: uv can segfault under AMD64 emulation on ARM64 Minikube.
+# Calrissian pins typing-extensions 4.8.0; keep a compatible Jupyter kernel/client.
 /workspace/.venv/bin/python -m pip install --no-cache-dir \
   rasterio==1.5.2 \
   click==8.5.0 \
@@ -43,7 +44,9 @@ python -m venv /workspace/.venv
   shapely==2.1.2 \
   scikit-image==0.26.0 \
   rio-stac==0.12.0 \
-  ipykernel==7.4.0 \
+  ipykernel==6.29.5 \
+  jupyter-client==8.6.3 \
+  calrissian==0.18.1 \
   'stactools[validate]==0.5.3' \
   nose2==0.16.0 \
   pandas==3.0.6 \
@@ -58,6 +61,13 @@ if [ $res -ne 0 ]; then
 fi
 
 /workspace/.venv/bin/python -m ipykernel install --user --name mastering_env --display-name "Python (Mastering Application Package)"
+
+echo "**** install yq ****" 
+curl -LJO https://github.com/mikefarah/yq/releases/download/v4.53.3/yq_linux_amd64
+chmod +x yq_linux_amd64
+mv yq_linux_amd64 /workspace/.venv/bin/yq
+yq -e --help
+
 
 echo "**** install kubectl ****" 
 curl -s -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"  
