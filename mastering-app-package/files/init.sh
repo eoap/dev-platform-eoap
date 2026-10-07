@@ -7,10 +7,15 @@ cd /workspace
 git clone --depth=1 'https://github.com/eoap/mastering-app-package.git'
 rm -rf /workspace/mastering-app-package/.git
 
+curl -LJO https://github.com/eoap/cwl-metadata-editor/releases/download/v0.3.0/cwl-metadata-editor-v0.3.0.vsix
+code-server --install-extension cwl-metadata-editor-v0.3.0.vsix
+rm -rf cwl-metadata-editor-v0.3.0.vsix
+
 code-server --install-extension ms-python.python 
 code-server --install-extension redhat.vscode-yaml
 code-server --install-extension sbg-rabix.benten-cwl
 code-server --install-extension ms-toolsai.jupyter
+code-server --install-extension eschalk0.scientific-data-viewer
 
 ln -s /workspace/.local/share/code-server/extensions /workspace/extensions
 
