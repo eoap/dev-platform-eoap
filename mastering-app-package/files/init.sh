@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -x 
+set -e
 
 cd /workspace
 
@@ -44,9 +44,9 @@ python -m venv /workspace/.venv
   shapely==2.1.2 \
   scikit-image==0.26.0 \
   rio-stac==0.12.0 \
-  ipykernel==6.29.5 \
-  jupyter-client==8.6.3 \
-  calrissian==0.18.1 \
+  ipykernel==7.4.0 \
+  bash_kernel==0.10.0 \
+  cwltool==3.3.20260925135507 \
   'stactools[validate]==0.5.3' \
   nose2==0.16.0 \
   pandas==3.0.6 \
@@ -54,12 +54,17 @@ python -m venv /workspace/.venv
   xarray==2026.9.0 \
   rioxarray==0.23.0
 
+#   ipykernel==6.29.5 \
+#   jupyter-client==8.6.3 \
+#   calrissian==0.18.1 \
+
 res=$?
 if [ $res -ne 0 ]; then
-    echo "Failed to install packages"
+    echo "Failed to install py packages"
     exit $res
 fi
 
+/workspace/.venv/bin/python -m bash_kernel.install --user 
 /workspace/.venv/bin/python -m ipykernel install --user --name mastering_env --display-name "Python (Mastering Application Package)"
 
 echo "**** install yq ****" 
