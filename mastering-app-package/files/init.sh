@@ -21,7 +21,14 @@ ln -s /workspace/.local/share/code-server/extensions /workspace/extensions
 
 mkdir -p /workspace/User/
 
-echo '{"workbench.colorTheme": "Visual Studio Dark"}' > /workspace/User/settings.json
+cat > /workspace/User/settings.json <<'JSON'
+{
+  "workbench.colorTheme": "Visual Studio Dark",
+  "python.defaultInterpreterPath": "/workspace/.venv/bin/python",
+  "scientificDataViewer.python.overridePythonInterpreter": "/workspace/.venv/bin/python",
+  "scientificDataViewer.python.useExtensionOwnEnvironment": false
+}
+JSON
 
 python -m venv /workspace/.venv
 . /workspace/.venv/bin/activate
@@ -40,7 +47,9 @@ python -m venv /workspace/.venv
   'stactools[validate]==0.5.3' \
   nose2==0.16.0 \
   pandas==3.0.6 \
-  matplotlib==3.11.2
+  matplotlib==3.11.2 \
+  xarray==2026.9.0 \
+  rioxarray==0.23.0
 
 res=$?
 if [ $res -ne 0 ]; then
