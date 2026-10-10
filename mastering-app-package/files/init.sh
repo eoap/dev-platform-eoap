@@ -13,7 +13,11 @@ if [ ! -d mastering-app-package/.git ]; then
 else
     git -C mastering-app-package fetch origin feature/metadata
     git -C mastering-app-package checkout feature/metadata
-    git -C mastering-app-package merge --ff-only FETCH_HEAD
+    if [ -z "$(git -C mastering-app-package status --porcelain)" ]; then
+        git -C mastering-app-package merge --ff-only FETCH_HEAD
+    else
+        echo "Preserving local training edits; skipping automatic fast-forward"
+    fi
 fi
 
 code-server --install-extension ms-python.python --install-extension redhat.vscode-yaml --install-extension sbg-rabix.benten-cwl --install-extension ms-toolsai.jupyter

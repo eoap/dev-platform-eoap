@@ -3,7 +3,8 @@
 This module uses the locally tested `eoepca/pde-code-server:amd64` image
 and its own SeaweedFS Helm release (chart 4.48.0, image 4.48).
 Initialization checks out the training repository's `feature/metadata` branch
-and fast-forwards existing checkouts without resetting local changes.
+and fast-forwards clean existing checkouts. Dirty checkouts keep local edits
+and skip the automatic fast-forward.
 
 Add the chart repository:
 
@@ -97,7 +98,8 @@ A container restart within the same pod can retain `emptyDir` contents; retentio
 is not guaranteed or required. Recreating only the storage pod also removes the
 bucket; recreate `results` with `aws s3 mb s3://results`, or restart the coder pod
 to rerun initialization. The chart keeps its credential Secret on uninstall;
-that Secret contains no S3 objects.
+that Secret contains no S3 objects. The coder chart retains workspace and
+Calrissian PVCs on uninstall; reinstalling the same release reuses user files.
 
 Integration validation passed on 10 October 2026 using
 `eoepca/pde-code-server:amd64` on the Docker-backed Minikube profile
@@ -132,8 +134,16 @@ Minikube. The full `task labs` sequence loads those images automatically.
 Initialization checks out `feature/metadata` and, when the kernel helper exists,
 installs isolated Hatch 1.16.2 with `virtualenv<21` and registers the four Bash
 kernels. This avoids the incompatible virtualenv 21 discovery API in Hatch.
-The updated initialization segment and notebook environments were exercised
-in the existing editor; a fresh deployment rollout was not performed.
+Subsequent acceptance checks deployed the final script into a new pod and
+verified all five kernels. The shared chart sets init/editor home and Hatch
+data/cache paths to the workspace, keeping Hatch interpreters available after
+init finishes. The module environment was recreated after preserving the old
+`.venv` as `/workspace/.venv-pre-migration-backup`; a workspace sentinel survived.
+SeaweedFS pod recreation and Skaffold delete/Helm uninstall followed by
+redeployment removed the S3 sentinel while preserving workspace and Calrissian
+PVCs. Initialization recreated `results` and smoke checks passed. These checks
+cover pod recreation and release removal; they do not require data loss on a
+container restart within the same pod.
 
 Successful executed notebooks are saved under:
 
