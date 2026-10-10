@@ -4,6 +4,7 @@ metadata:
   name: eoap-quickwin
     
 deploy:
+  statusCheckDeadlineSeconds: 1200
   helm:
     releases:
       - name: eoap-quickwin
@@ -11,6 +12,7 @@ deploy:
         namespace: eoap-quickwin
         createNamespace: true
         setValues:
+          coder.coderImage: eoepca/pde-code-server:amd64
           coder.workspace: quickwin
           coder.storageClassName: standard
           coder.workspaceStorage: 10Gi
@@ -23,12 +25,13 @@ deploy:
           bashrcScript: ./files/bash-rc,
           bashloginScript: ./files/bash-login
         }
-      - name: eoap-quickwin-localstack
-        remoteChart: localstack/localstack
+      - name: eoap-quickwin-s3
+        remoteChart: seaweedfs/seaweedfs
+        version: 4.48.0
         namespace: eoap-quickwin
         createNamespace: true
-        setValues:
-          service.type: ClusterIP
+        valuesFiles:
+          - seaweedfs-values.yaml
 
 portForward:
   - resourceType: service

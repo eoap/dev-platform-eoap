@@ -12,6 +12,7 @@ def main():
     parser.add_argument("--lab", default="*", help="Chapter, notebook, or glob under practice-labs")
     parser.add_argument("--timeout", type=int, default=1800, help="Seconds per cell")
     parser.add_argument("--list", choices=("true", "false"), default="false")
+    parser.add_argument("--python-kernel", default="mastering_env", help="Kernel for Python notebooks")
     parser.add_argument("--workspace", type=Path, default=Path("/workspace/mastering-app-package"))
     parser.add_argument("--output", type=Path, default=Path("/workspace/lab-results"))
     args = parser.parse_args()
@@ -49,7 +50,7 @@ def main():
         notebook = nbformat.read(source, as_version=4)
         kernel = notebook.metadata.get("kernelspec", {}).get("name", "python3")
         if kernel == "python3":
-            kernel = "mastering_env"
+            kernel = args.python_kernel
         target = output / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         print(f"[{index}/{len(notebooks)}] Running {relative} (kernel: {kernel})", flush=True)
