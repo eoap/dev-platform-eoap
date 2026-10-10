@@ -9,20 +9,23 @@ import sys
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--lab", default="*", help="Chapter, notebook, or glob under practice-labs")
+    parser.add_argument("--lab", default="*", help="Chapter, notebook, or glob under the notebook directory")
     parser.add_argument("--timeout", type=int, default=1800, help="Seconds per cell")
     parser.add_argument("--list", choices=("true", "false"), default="false")
     parser.add_argument("--python-kernel", default="mastering_env", help="Kernel for Python notebooks")
     parser.add_argument("--workspace", type=Path, default=Path("/workspace/mastering-app-package"))
+    parser.add_argument("--notebooks-dir", default="practice-labs", help="Notebook directory relative to the workspace")
     parser.add_argument("--output", type=Path, default=Path("/workspace/lab-results"))
     args = parser.parse_args()
     if args.timeout <= 0:
         parser.error("--timeout must be positive")
-    root = args.workspace / "practice-labs"
+    if Path(args.notebooks_dir).is_absolute() or ".." in Path(args.notebooks_dir).parts:
+        parser.error("--notebooks-dir must stay inside the workspace")
+    root = args.workspace / args.notebooks_dir
     if not root.is_dir():
-        parser.error(f"Practice labs not found: {root}")
+        parser.error(f"Notebook directory not found: {root}")
     if Path(args.lab).is_absolute() or ".." in Path(args.lab).parts:
-        parser.error("--lab must stay inside practice-labs")
+        parser.error("--lab must stay inside the notebook directory")
     notebooks = set()
     for match in root.glob(args.lab):
         if match.is_dir():
@@ -49,7 +52,8 @@ def main():
         relative = source.relative_to(root)
         notebook = nbformat.read(source, as_version=4)
         kernel = notebook.metadata.get("kernelspec", {}).get("name", "python3")
-        if kernel == "python3":
+        language = notebook.metadata.get("kernelspec", {}).get("language", "").lower()
+        if kernel == "python3" or language == "python":
             kernel = args.python_kernel
         target = output / relative
         target.parent.mkdir(parents=True, exist_ok=True)

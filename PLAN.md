@@ -175,8 +175,8 @@ This identifies the tested local artifact, not an approved production manifest.
 
 ### Confirmed current integration
 
-- Seven modules still declare `remoteChart: localstack/localstack`:
-  `dask-gateway`, `stac-eoap`, `machine-learning-process`,
+- Six modules still declare `remoteChart: localstack/localstack`:
+  `dask-gateway`, `machine-learning-process`,
   `event-driven-with-argo`, `advanced-tooling`, `application-package-patterns`,
   and `how-to`.
 - Module init scripts and AWS aliases contain release-specific LocalStack
@@ -255,7 +255,7 @@ adoption and storage migration retain separate validation requirements.
    test both architecture variants; verify tomlq and Python dependency health.
 2. Select the upstream Calrissian version or commit and validate its Dask CLI,
    schema, and packaged controller scripts in PDE.
-3. AMD64 mastering and Quickwin pilots are complete. Continue migrating simple
+3. AMD64 mastering, Quickwin, and STAC notebook pilots are complete. Continue migrating simple
    modules using explicit image overrides and separate SeaweedFS releases
    before changing the shared default.
 4. Remove redundant architecture-specific tool downloads from initialization;
@@ -370,7 +370,7 @@ Executed notebook locations and host artifact copies are recorded in
    was not separately exercised.
 3. Select a published PDE artifact with a manifest digest; verify yq/tomlq,
    dependency health, and supported AMD64/ARM64 module stacks.
-4. Quickwin migration and all four notebooks passed. Continue with the next
+4. Quickwin and STAC migration notebooks passed. Continue with the next
    module using explicit image overrides and the verified S3 pattern, auditing
    its cloned training content and required buckets first.
 5. Validate Dask cluster lifecycle and Argo artifact flows before migrating
@@ -379,7 +379,8 @@ Executed notebook locations and host artifact copies are recorded in
    remove LocalStack support and retire legacy image jobs after acceptance.
 
 Quickwin has now also been migrated and validated on AMD64, as recorded below.
-The remaining modules have not been migrated. The mastering pilot establishes an AMD64
+STAC migration is also implemented, as recorded below. The other remaining
+modules have not been migrated. The mastering pilot establishes an AMD64
 reference implementation, not completion of the repository-wide plan.
 
 ### Quickwin: implemented and validated on AMD64
@@ -437,3 +438,38 @@ was exercised; this does not establish ARM64 or other-cluster runtime results.
 A dirty training checkout retains its ref and edits during initialization,
 including the patched candidate checkout. Evidence paths and exact digests are
 recorded in [the mastering module README](mastering-app-package/README.md).
+
+
+### STAC: typed training workflows and AMD64 migration
+
+STAC now uses an explicit PDE AMD64 image override, a separate disposable
+SeaweedFS 4.48.0 release, and cluster-aware deployment/smoke/notebook tasks.
+The runner supports a configurable notebook directory and selects the module
+kernel for Python notebooks while retaining Bash kernels. Startup uses uv,
+initializes `results`, preserves a dirty training checkout, and selects
+`feature/typed-cwl-inputs`. Training fixes live in that repository rather than
+being rewritten during startup.
+
+Training commit `7e8fe5e` on `feature/typed-cwl-inputs` introduces CWL 1.2,
+URI records for references/endpoints/results, an OGC BBox AOI, EPSG and band
+enums, and examples for both processing and wrapped workflows. It uses
+EOEPCA's `eoap-cwlwrap==0.32.0` Python API and `cwl-loader==0.27.0`. It also
+corrects missing notebook dependencies, Click failure assertions, cwltool
+argument defaults, explicit staging network access, serial bounded downloads,
+and uploaded STAC root links.
+
+All five notebooks passed on Kubernetes v1.35.1/AMD64. The composed typed
+stage-in/application/stage-out workflow passed end to end. CWL validation and
+invalid-input rejection checks passed; S3 catalogs/items/root links resolved
+and all three output paths held readable 1832 × 2359 binary masks in
+EPSG:32611. Evidence is recorded in [the STAC README](stac-eoap/README.md).
+The training branch is committed locally and must be published before fresh
+clones can use it. ARM64, other-cluster execution, Dask, Argo, shared defaults,
+CI, and the six remaining storage releases still require work.
+
+
+STAC lifecycle checks also passed: S3 pod recreation discarded stored objects;
+workspace files survived, the old environment was retained as a backup, and
+redeployment recreated the bucket and a compatible Python environment. Training commit `d9c92ec` declares the PyYAML dependency exposed by environment
+recreation. The wrapping notebook passed again with the corrected environment. Mastering's editor was
+scaled down during STAC validation; its workspace PVC remains retained.

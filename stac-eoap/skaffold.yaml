@@ -4,6 +4,7 @@ metadata:
   name: eoap-stac
     
 deploy:
+  statusCheckDeadlineSeconds: 1200
   helm:
     releases:
       - name: eoap-stac
@@ -11,8 +12,9 @@ deploy:
         namespace: eoap-stac
         createNamespace: true
         setValues:
+          coder.coderImage: eoepca/pde-code-server:amd64
           coder.workspace: stac-eoap
-          coderstorageClassName: standard
+          coder.storageClassName: standard
           coder.workspaceStorage: 10Gi
           coderResources.limits.cpu: '2'
           coderResources.limits.memory: '6442450944'
@@ -23,12 +25,13 @@ deploy:
           bashrcScript: ./files/bash-rc,
           bashloginScript: ./files/bash-login
         }
-      - name: eoap-stac-localstack
-        remoteChart: localstack/localstack
+      - name: eoap-stac-s3
+        remoteChart: seaweedfs/seaweedfs
+        version: 4.48.0
         namespace: eoap-stac
         createNamespace: true
-        setValues:
-          service.type: ClusterIP
+        valuesFiles:
+          - seaweedfs-values.yaml
 portForward:
   - resourceType: service
     resourceName: code-server-service
