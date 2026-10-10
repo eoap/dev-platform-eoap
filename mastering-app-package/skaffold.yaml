@@ -12,7 +12,7 @@ deploy:
         namespace: eoap-mastering-app-package
         createNamespace: true
         setValues:
-          coder.coderImage: eoepca/pde-code-server:multi-amd64
+          coder.coderImage: eoepca/pde-code-server:amd64
           coder.workspace: mastering-app-package
           coder.storageClassName: standard
           coder.workspaceStorage: 10Gi

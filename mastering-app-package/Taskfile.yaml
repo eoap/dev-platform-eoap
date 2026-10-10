@@ -2,10 +2,15 @@ version: '3'
 
 vars:
   MINIKUBE_PROFILE: eoap-mastering-app-package
+  DRIVER: docker
   CPUS: '4'
   MEMORY: 8192
+  CONTAINER_RUNTIME: docker
   NAMESPACE: eoap-mastering-app-package
-  IMAGE: eoepca/pde-code-server:multi-amd64
+  IMAGE: eoepca/pde-code-server:amd64
+  LAB: '*'
+  CELL_TIMEOUT: '1800'
+  LABS_LIST: 'false'
 
 tasks:
   default:
@@ -21,9 +26,9 @@ tasks:
       - sh: command -v docker
         msg: Docker and the locally built PDE image are required.
       - sh: docker image inspect {{.IMAGE | shellQuote}} >/dev/null
-        msg: Build or load eoepca/pde-code-server:multi-amd64 into Docker first.
+        msg: Build or load eoepca/pde-code-server:amd64 into Docker first.
     cmds:
-      - minikube start -p {{.MINIKUBE_PROFILE | shellQuote}} --cpus={{.CPUS}} --memory={{.MEMORY}}
+      - minikube start -p {{.MINIKUBE_PROFILE | shellQuote}} --driver={{.DRIVER | shellQuote}} --cpus={{.CPUS}} --memory={{.MEMORY}} --container-runtime={{.CONTAINER_RUNTIME | shellQuote}}
       - minikube -p {{.MINIKUBE_PROFILE | shellQuote}} image load {{.IMAGE | shellQuote}}
 
   repos:
@@ -69,6 +74,23 @@ tasks:
           cmp "$test_dir/input" "$test_dir/output"
           echo "S3 upload/download check passed; removing test object"
         '
+
+  labs:
+    desc: Execute practice notebooks in order in the deployed editor, saving outputs
+    preconditions:
+      - sh: command -v kubectl
+        msg: Install kubectl first.
+    cmds:
+      - kubectl --context {{.MINIKUBE_PROFILE | shellQuote}} -n {{.NAMESPACE | shellQuote}} rollout status deployment/code-server-deployment --timeout=1200s
+      - |
+        kubectl --context {{.MINIKUBE_PROFILE | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec -i deployment/code-server-deployment -c code-server -- /opt/conda/bin/python - --lab {{.LAB | shellQuote}} --timeout {{.CELL_TIMEOUT | shellQuote}} --list {{.LABS_LIST | shellQuote}} < scripts/run-practice-labs.py
+
+  labs:list:
+    desc: List selected practice notebooks in execution order
+    cmds:
+      - task: labs
+        vars:
+          LABS_LIST: 'true'
 
   up:
     desc: Start Minikube, deploy, and test in sequence

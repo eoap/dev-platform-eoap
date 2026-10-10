@@ -14,19 +14,60 @@ fi
 
 code-server --install-extension ms-python.python --install-extension redhat.vscode-yaml --install-extension sbg-rabix.benten-cwl --install-extension ms-toolsai.jupyter
 
+python - <<'PY'
+import json
+from pathlib import Path
+import subprocess
+import tempfile
+import urllib.request
+
+with tempfile.TemporaryDirectory(prefix="eoap-extensions-") as directory:
+    for repo in ("eoap-validator-vscode", "cwl-metadata-editor", "cwl-uml-viewer"):
+        request = urllib.request.Request(
+            f"https://api.github.com/repos/eoap/{repo}/releases/latest",
+            headers={"Accept": "application/vnd.github+json", "User-Agent": "eoap-module-init"},
+        )
+        with urllib.request.urlopen(request, timeout=60) as response:
+            release = json.load(response)
+        assets = [asset for asset in release["assets"] if asset["name"].endswith(".vsix")]
+        if len(assets) != 1:
+            raise RuntimeError(f"{repo}: expected one VSIX asset, found {len(assets)}")
+        print(f"Installing {repo} {release['tag_name']}", flush=True)
+        destination = Path(directory) / f"{repo}.vsix"
+        with urllib.request.urlopen(assets[0]["browser_download_url"], timeout=120) as response:
+            destination.write_bytes(response.read())
+        subprocess.run(["code-server", "--install-extension", str(destination)], check=True)
+PY
+
 ln -sfn /workspace/.local/share/code-server/extensions /workspace/extensions
 
 mkdir -p /workspace/User/
 
 echo '{"workbench.colorTheme": "Visual Studio Dark"}' > /workspace/User/settings.json
 
-python -m venv /workspace/.venv
+# Match the Calrissian artifact installed in PDE, including its exact Git commit.
+calrissian_requirement=$(/opt/calrissian-venv/bin/python - <<'PY'
+from importlib.metadata import distribution
+import json
+
+package = distribution("calrissian")
+provenance = json.loads(package.read_text("direct_url.json") or "{}")
+vcs = provenance.get("vcs_info", {})
+if vcs.get("vcs") == "git" and vcs.get("commit_id"):
+    print(f"calrissian @ git+{provenance['url']}@{vcs['commit_id']}")
+else:
+    print(f"calrissian=={package.version}")
+PY
+)
+
+uv venv --allow-existing --seed --python /opt/conda/bin/python /workspace/.venv
 source /workspace/.venv/bin/activate
-/workspace/.venv/bin/python -m pip install --no-cache-dir rasterio click pystac loguru pyproj shapely scikit-image pystac rio_stac ipykernel "stactools[validate]" matplotlib pandas nose2
+# Calrissian pins typing-extensions 4.8.0; newer Jupyter clients require 4.13+.
+uv pip install --python /workspace/.venv/bin/python rasterio==1.5.2 click==8.5.0 pystac==1.15.2 loguru==0.7.3 pyproj==3.8.0 shapely==2.1.2 scikit-image pystac rio_stac "ipykernel==6.29.5" "jupyter-client==8.6.3" "stactools[validate]" matplotlib pandas nose2 "$calrissian_requirement"
+uv pip check --python /workspace/.venv/bin/python
 /workspace/.venv/bin/python -m ipykernel install --user --name mastering_env --display-name "Python (Mastering Application Package)"
 
-# Use PDE's kubectl and isolated upstream Calrissian rather than installing
-# architecture-specific binaries or shadowing Calrissian in the module venv.
+# Use PDE's kubectl rather than downloading architecture-specific binaries.
 mkdir -p /workspace/.aws
 aws configure set aws_access_key_id test
 aws configure set aws_secret_access_key test

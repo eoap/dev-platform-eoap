@@ -1,6 +1,6 @@
 # Mastering Application Package development module
 
-This module uses the locally tested `eoepca/pde-code-server:multi-amd64` image
+This module uses the locally tested `eoepca/pde-code-server:amd64` image
 and its own SeaweedFS Helm release (chart 4.48.0, image 4.48).
 
 Add the chart repository:
@@ -17,21 +17,43 @@ Helm, kubectl, Skaffold, and the locally built PDE image):
 cd mastering-app-package
 task up    # Start a dedicated cluster, load the image, deploy, and smoke-test
 task test  # Repeat readiness, editor HTTP, and S3 object round-trip checks
+task labs  # Execute all practice notebooks in order in the deployed editor
 task dev   # Watch the deployment and forward editor access to localhost:8000
 task stop  # Stop the dedicated cluster
 ```
 
 The default profile is `eoap-mastering-app-package`, with 4 CPUs and 8192 MiB
-memory. Override these with Task variables, for example
+memory, and the Docker driver and container runtime for Skaffold compatibility.
+Override these with Task variables, for example
 `task up MINIKUBE_PROFILE=training CPUS=6 MEMORY=12288`. Tasks select that profile
 explicitly. `task up` does not keep an editor port-forward running; use `task dev`
 for browser access. Smoke checks remove their temporary S3 object and do not
 exercise notebook or full training workflow execution.
 
+After deployment, run `task labs:list` to inspect the notebook order, or select
+a chapter with `task labs LAB=1-Application_Steps`. A relative notebook path or
+quoted glob also works, for example
+`task labs LAB='1-Application_Steps/crop.ipynb' CELL_TIMEOUT=3600`.
+For the existing validation cluster, add
+`MINIKUBE_PROFILE=eoap-mastering-app-package-docker` to these commands.
+The runner uses PDE's notebook execution tools and Bash kernel; Python notebooks
+use the module's `mastering_env` kernel. It stops on a reported execution error
+and saves executed notebooks, including failed-cell output, under a unique
+`/workspace/lab-results/` directory without overwriting source notebooks.
+The default timeout is 1800 seconds per cell. Run dependent notebooks in order:
+later notebooks consume files and container images produced by earlier labs.
+The labs execute their original commands, including clearing training `runs`
+directories, downloading data, building containers, and launching Kubernetes
+jobs. The module kernel includes Calrissian installed from the same Git commit
+or package version as PDE's isolated environment. The current benchmark still
+imports the removed `calrissian.k8s.delete_pods` API and needs updating for this
+Calrissian version. `task labs` is separate from `task up` and the
+deployment smoke checks.
+
 For the local AMD64 PDE build, load the image into Minikube before starting:
 
 ```bash
-minikube image load eoepca/pde-code-server:multi-amd64
+minikube image load eoepca/pde-code-server:amd64
 cd mastering-app-package
 skaffold dev
 ```
@@ -46,10 +68,12 @@ missing. The in-cluster endpoint is
 `http://eoap-mastering-app-package-s3-seaweedfs-all-in-one:8333`.
 The terminal also supplies an AWS endpoint alias.
 
-PDE supplies kubectl and isolated upstream Calrissian. The module environment
-no longer installs its own Calrissian or downloads an AMD64 kubectl binary.
-Existing workspaces may still contain those old executables; recreate only the
-module virtual environment to remove them, preserving notebooks and user files.
+PDE supplies kubectl and isolated upstream Calrissian. Initialization also
+installs matching Calrissian in the module environment for notebook imports,
+using the container package's provenance to select the exact Git commit or
+version. It does not download an AMD64 kubectl binary. Initialization installs
+the latest released VSIX assets for `eoap-validator-vscode`,
+`cwl-metadata-editor`, and `cwl-uml-viewer` from their GitHub release APIs.
 
 SeaweedFS runs in one all-in-one pod with `emptyDir` storage and no storage PVC.
 Objects are disposable: pod deletion/recreation or release removal loses them.
@@ -59,6 +83,25 @@ bucket; recreate `results` with `aws s3 mb s3://results`, or restart the coder p
 to rerun initialization. The chart keeps its credential Secret on uninstall;
 that Secret contains no S3 objects.
 
-Helm rendering/lint and AWS client configuration have been checked. Cluster
-startup, extensions, notebooks, object operations, and training workflows still
-require integration validation.
+Integration validation passed on 10 October 2026 using
+`eoepca/pde-code-server:amd64` on the Docker-backed Minikube profile
+`eoap-mastering-app-package-docker`. Cluster startup and image loading completed;
+`task deploy MINIKUBE_PROFILE=eoap-mastering-app-package-docker` and
+`task test MINIKUBE_PROFILE=eoap-mastering-app-package-docker` passed. Both
+deployments became ready, editor initialization installed the extensions and
+Python environment, the editor health endpoint returned HTTP 200, and an S3
+object upload/download matched its original content and was deleted afterward.
+The validation node's inherited DNS search suffix was removed to work around
+the home router resolving external names to loopback. KVM validation was blocked
+by VM outbound connectivity.
+
+Practice notebook tests ran on 10 October 2026: all 16 notebooks in chapters
+1–4 passed. The runner disables virtual-environment prompt changes so Bash
+kernel execution can continue after activation. The Kubernetes Calrissian lab
+failed when normalized difference was killed while writing its TIFF output;
+the released CWL tool specifies a 512 MiB memory limit. The benchmark was then
+tested separately and failed on the removed `calrissian.k8s.delete_pods` import.
+The Calrissian notebook's later Kubernetes Job cells were not reached.
+Executed notebooks are saved in the deployed workspace under
+`/workspace/lab-results/20261010T160242874353Z/` and
+`/workspace/lab-results/20261010T162844910580Z/` (benchmark).
