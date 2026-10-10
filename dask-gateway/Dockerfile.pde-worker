@@ -1,0 +1,10 @@
+# Build from the sibling dask-app-package training checkout.
+FROM docker.io/library/python:3.12.11-bookworm@sha256:bea386df48d7ee07eed0a1f3e6f9d5c0292c228b8d8ed2ea738b7a57b29c4470
+
+COPY requirements-runtime.txt /tmp/requirements-runtime.txt
+RUN pip install --no-cache-dir --no-deps -r /tmp/requirements-runtime.txt
+COPY cloudless-mosaic /app/cloudless-mosaic
+COPY eopf-sentinel-2 /app/eopf-sentinel-2
+RUN pip install --no-cache-dir --no-deps /app/cloudless-mosaic /app/eopf-sentinel-2 && \
+    pip check && dask-scheduler --version && dask-worker --version
+ENTRYPOINT []

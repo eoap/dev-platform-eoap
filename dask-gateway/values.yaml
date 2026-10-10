@@ -1,11 +1,16 @@
 gateway:
+  backend:
+    image:
+      name: eoap-dask-worker
+      tag: 2025.4.0-py312
+    imagePullSecrets: []
   extraConfig:
-    dask_gateway_config.py: |
-      c = get_config()
-      from dask_gateway_server.options import Options, String, Integer, Float
-      c.Backend.cluster_options = Options(
-        Float("worker_cores_limit", default=1, label="Worker Cores Limit"),
-        Float("worker_cores", default=1, label="Worker Cores"),
-        String("worker_memory", default="1 G", label="Worker Memory"),
-        String("image", default="daskgateway/dask-worker:latest", label="Worker Image")
-      )
+    dask_gateway_config.py: "from dask_gateway_server.options import Options, String,\
+      \ Float\nc.Backend.cluster_options = Options(\n    Float(\"worker_cores_limit\"\
+      , default=1, min=1, label=\"Worker CPU limit\"),\n    Float(\"worker_cores\"\
+      , default=1, min=0.1, label=\"Worker CPU request\"),\n    String(\"worker_memory\"\
+      , default=\"2G\", label=\"Worker memory\"),\n    String(\"image\", default=\"\
+      eoap-dask-worker:2025.4.0-py312\", label=\"Application and worker image\"),\n\
+      \    handler=lambda options: {\n        \"worker_cores_limit\": options.worker_cores_limit,\n\
+      \        \"worker_cores\": options.worker_cores,\n        \"worker_memory\"\
+      : options.worker_memory,\n        \"image\": options.image,\n    },\n)\n"

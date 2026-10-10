@@ -1,0 +1,24 @@
+# SeaweedFS chart 4.48.0; disposable storage for one training module.
+master:
+  enabled: false
+volume:
+  enabled: false
+filer:
+  enabled: false
+s3:
+  enabled: false
+  credentials:
+    admin:
+      accessKey: test
+      secretKey: test
+    read:
+      accessKey: training-read
+      secretKey: training-read
+allInOne:
+  enabled: true
+  replicas: 1
+  data:
+    type: emptyDir
+  s3:
+    enabled: true
+    enableAuth: true
