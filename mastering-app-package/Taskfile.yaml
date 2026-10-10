@@ -77,6 +77,28 @@ tasks:
 
   labs:
     desc: Execute practice notebooks in order in the deployed editor, saving outputs
+    cmds:
+      - task: '{{if and (eq .LAB "*") (ne .LABS_LIST "true")}}labs:all{{else}}labs:execute{{end}}'
+        vars:
+          LAB: '{{.LAB}}'
+          LABS_LIST: '{{.LABS_LIST}}'
+          CELL_TIMEOUT: '{{.CELL_TIMEOUT}}'
+
+  labs:all:
+    desc: Run all labs and load their rebuilt images before Kubernetes validation
+    cmds:
+      - task: labs:execute
+        vars:
+          LAB: '[1-4]*'
+          CELL_TIMEOUT: '{{.CELL_TIMEOUT}}'
+      - task: labs:kubernetes-images
+      - task: labs:execute
+        vars:
+          LAB: 5-Kubernetes
+          CELL_TIMEOUT: '{{.CELL_TIMEOUT}}'
+
+  labs:execute:
+    internal: true
     preconditions:
       - sh: command -v kubectl
         msg: Install kubectl first.
@@ -91,6 +113,19 @@ tasks:
       - task: labs
         vars:
           LABS_LIST: 'true'
+
+  labs:kubernetes-images:
+    desc: Load the four Podman images built by chapter 2 into the Minikube node
+    preconditions:
+      - sh: command -v kubectl
+        msg: Install kubectl first.
+      - sh: command -v minikube
+        msg: Install Minikube first.
+    cmds:
+      - |
+        kubectl --context {{.MINIKUBE_PROFILE | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec deployment/code-server-deployment -c code-server -- bash -euc 'for image in crop norm-diff otsu stac; do podman tag "localhost/$image:latest" "localhost/$image:metadata"; done'
+      - |
+        bash -euo pipefail -c 'kubectl --context "$1" -n "$2" exec deployment/code-server-deployment -c code-server -- podman save --multi-image-archive --format docker-archive localhost/crop:metadata localhost/norm-diff:metadata localhost/otsu:metadata localhost/stac:metadata | minikube -p "$1" image load --overwrite -' -- {{.MINIKUBE_PROFILE | shellQuote}} {{.NAMESPACE | shellQuote}}
 
   up:
     desc: Start Minikube, deploy, and test in sequence
