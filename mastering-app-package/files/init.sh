@@ -12,11 +12,11 @@ if [ ! -d mastering-app-package/.git ]; then
     git clone --branch feature/metadata 'https://github.com/eoap/mastering-app-package.git'
 else
     git -C mastering-app-package fetch origin feature/metadata
-    git -C mastering-app-package checkout feature/metadata
     if [ -z "$(git -C mastering-app-package status --porcelain)" ]; then
+        git -C mastering-app-package checkout feature/metadata
         git -C mastering-app-package merge --ff-only FETCH_HEAD
     else
-        echo "Preserving local training edits; skipping automatic fast-forward"
+        echo "Preserving local training checkout and edits; skipping automatic checkout and fast-forward"
     fi
 fi
 
