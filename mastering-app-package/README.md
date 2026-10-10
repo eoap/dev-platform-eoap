@@ -2,6 +2,8 @@
 
 This module uses the locally tested `eoepca/pde-code-server:amd64` image
 and its own SeaweedFS Helm release (chart 4.48.0, image 4.48).
+Initialization checks out the training repository's `feature/metadata` branch
+and fast-forwards existing checkouts without resetting local changes.
 
 Add the chart repository:
 
@@ -17,7 +19,7 @@ Helm, kubectl, Skaffold, and the locally built PDE image):
 cd mastering-app-package
 task up    # Start a dedicated cluster, load the image, deploy, and smoke-test
 task test  # Repeat readiness, editor HTTP, and S3 object round-trip checks
-task labs  # Execute all practice notebooks in order in the deployed editor
+task labs  # Run chapters 1–4, load their rebuilt images, then run chapter 5
 task dev   # Watch the deployment and forward editor access to localhost:8000
 task stop  # Stop the dedicated cluster
 ```
@@ -45,10 +47,24 @@ later notebooks consume files and container images produced by earlier labs.
 The labs execute their original commands, including clearing training `runs`
 directories, downloading data, building containers, and launching Kubernetes
 jobs. The module kernel includes Calrissian installed from the same Git commit
-or package version as PDE's isolated environment. The current benchmark still
-imports the removed `calrissian.k8s.delete_pods` API and needs updating for this
-Calrissian version. `task labs` is separate from `task up` and the
+or package version as PDE's isolated environment. `task labs` is separate from `task up` and the
 deployment smoke checks.
+
+The full `task labs` (or `task labs:all`) run loads chapter 2's rebuilt tool
+images into Minikube before chapter 5. For selected chapter runs, perform these
+steps explicitly:
+
+```bash
+task labs LAB='[1-4]*' MINIKUBE_PROFILE=eoap-mastering-app-package-docker
+task labs:kubernetes-images MINIKUBE_PROFILE=eoap-mastering-app-package-docker
+task labs LAB=5-Kubernetes MINIKUBE_PROFILE=eoap-mastering-app-package-docker
+```
+
+The image-loading task tags all four tool images with `metadata` and loads
+them into the node. The updated Kubernetes notebooks pack the checked-out CWL
+and use those images, so validation does not need a new published release.
+Local fixes in the training clone must also be copied into the deployed
+checkout while they remain unpublished.
 
 For the local AMD64 PDE build, load the image into Minikube before starting:
 
@@ -95,13 +111,37 @@ The validation node's inherited DNS search suffix was removed to work around
 the home router resolving external names to loopback. KVM validation was blocked
 by VM outbound connectivity.
 
-Practice notebook tests ran on 10 October 2026: all 16 notebooks in chapters
-1–4 passed. The runner disables virtual-environment prompt changes so Bash
-kernel execution can continue after activation. The Kubernetes Calrissian lab
-failed when normalized difference was killed while writing its TIFF output;
-the released CWL tool specifies a 512 MiB memory limit. The benchmark was then
-tested separately and failed on the removed `calrissian.k8s.delete_pods` import.
-The Calrissian notebook's later Kubernetes Job cells were not reached.
-Executed notebooks are saved in the deployed workspace under
-`/workspace/lab-results/20261010T160242874353Z/` and
-`/workspace/lab-results/20261010T162844910580Z/` (benchmark).
+Practice notebook validation of `feature/metadata` passed on 10 October 2026
+on profile `eoap-mastering-app-package-docker`: all 18 notebooks passed,
+including the packaged tools and staging images, typed scatter workflow,
+direct Calrissian run, Kubernetes Job, both benchmark executions, and report
+plots and tables. Chapter 1 was rerun successfully with the concurrent Hatch
+notebook edits. `task code:test:all` passed all 29 package and pipeline tests.
+A separate stage-out CWL roundtrip verified three objects and asset bytes in
+SeaweedFS and removed its test objects.
+
+The tested source was `b5275c0` with fixes committed as `ffc625f` (packaged CLI
+examples) and `de098fb` (Otsu memory), plus the uncommitted Hatch environment,
+kernel helper, Taskfile, and chapter 1 notebook edits copied from the host.
+The Hatch WIP remains uncommitted. Otsu requires 1024 MiB with these packaged
+tools; normalized difference retains 2048 MiB. Remote raster reads still need
+bounded retries. No Calrissian or application package release is needed:
+chapter 5 packs the local workflow and uses the rebuilt images loaded into
+Minikube. The full `task labs` sequence loads those images automatically.
+
+Initialization checks out `feature/metadata` and, when the kernel helper exists,
+installs isolated Hatch 1.16.2 with `virtualenv<21` and registers the four Bash
+kernels. This avoids the incompatible virtualenv 21 discovery API in Hatch.
+The updated initialization segment and notebook environments were exercised
+in the existing editor; a fresh deployment rollout was not performed.
+
+Successful executed notebooks are saved under:
+
+- `/workspace/lab-results/20261010T184815738179Z/` (chapters 1–4)
+- `/workspace/lab-results/20261010T193433912920Z/` (Hatch chapter 1 rerun)
+- `/workspace/lab-results/20261010T192341432327Z/` (chapter 5)
+
+Host copies are `/tmp/mastering-metadata-packaged-chapters-1-4`,
+`/tmp/mastering-metadata-hatch-chapter-1`, and
+`/tmp/mastering-metadata-packaged-kubernetes`. The stage-out roundtrip artifacts
+are in `/tmp/mastering-metadata-packaged-stage-out`.
