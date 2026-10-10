@@ -16,7 +16,7 @@ else
     git -C stac-eoap checkout "$training_ref"
     git -C stac-eoap merge --ff-only FETCH_HEAD
 fi
-if [ ! -f stac-eoap/notebooks/cwl-workflow/eoap-types.yaml ]; then
+if [ ! -f stac-eoap/scripts/cwl-docs.py ]; then
     echo "STAC typed-CWL training source is required; select $training_ref or copy the feature branch into the workspace" >&2
     exit 1
 fi
@@ -30,6 +30,7 @@ uv venv --allow-existing --seed --python /opt/conda/bin/python /workspace/.venv
 source /workspace/.venv/bin/activate
 # Use the current EOEPCA Python wrapping API.
 uv pip install --python /workspace/.venv/bin/python PyYAML anyio nest_asyncio stactools rasterio requests stac-asset click-logging tabulate tqdm pystac-client ipykernel loguru scikit-image rio_stac boto3==1.35.23 cwltool graphviz pandas asyncclick cwl-loader==0.27.0 eoap-cwlwrap==0.32.0
+/workspace/.venv/bin/python stac-eoap/scripts/cwl-docs.py --output /tmp/stac-cwl-docs
 uv pip check --python /workspace/.venv/bin/python
 /workspace/.venv/bin/python -m ipykernel install --user --name stac_env --display-name "Python (STAC)"
 

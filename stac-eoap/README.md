@@ -19,6 +19,7 @@ From this directory, deploy to an existing Kubernetes cluster:
 ```bash
 task deploy KUBE_CONTEXT=my-cluster
 task test KUBE_CONTEXT=my-cluster
+task cwl:docs KUBE_CONTEXT=my-cluster
 task labs:list KUBE_CONTEXT=my-cluster
 task labs KUBE_CONTEXT=my-cluster
 ```
@@ -60,8 +61,8 @@ Post-fix notebook checks are in `20261010T214255952481Z` and
 `/workspace/stac-typed-wrapped.log`. Host copies, including output integrity
 checks and the packed workflow, are in `/tmp/stac-typed-artifacts`.
 
-The training branch is committed locally and has not been pushed. A fresh
-clone requires publishing it first. The validation uses the available AMD64
+Publish the latest training branch commits before a fresh clone can use these
+fixes. The validation uses the available AMD64
 Minikube-backed cluster; ARM64 and other-cluster execution remain untested.
 
 SeaweedFS pod recreation discarded the S3 sentinel and previous results.
@@ -72,3 +73,20 @@ Recreation exposed a missing explicit PyYAML dependency; training commit
 `d9c92ec` and the init script now declare it. The wrapping notebook passed
 with the recreated environment in `20261010T214902634272Z`. Lifecycle
 evidence is in `/tmp/stac-typed-artifacts/lifecycle.json`.
+
+## Standalone CWL and documentation
+
+All six source CWL documents embed module-defined types. The application
+retains the approved shared OGC schema import. The wrapping notebook uses
+`eoap-cwlwrap` and `cwl-loader.dump_cwl`, then embeds the wrapper URI definition
+while preserving OGC imports. Do not use `cwltool --pack`.
+Initialization checks the documentation contract using the module's
+`scripts/cwl-docs.py`; `task cwl:docs` repeats that check and writes Markdown
+under `/workspace/lab-results/cwl-docs`. This is the module's equivalent
+documentation generator; transpiler-mate compatibility has not been tested.
+
+Training commit `c933015` adds these checks and definitions while retaining the
+OGC imports. Notebooks 01–03 passed in `20261010T215727173440Z`, and the final
+04–05 run passed in `20261010T220833487865Z`. The composed workflow passed;
+its result and log are `/workspace/stac-final-result.json` and
+`/workspace/stac-final-run.log`.

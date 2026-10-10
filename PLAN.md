@@ -51,6 +51,35 @@ ZOO is low priority and has been extracted into the sibling repository
 full-stack validation are deferred and do not block PDE adoption here. The coder
 chart and image sources were copied there to preserve its local dependencies.
 
+## E-learning module and CWL requirements
+
+The e-learning module source repositories are under
+`/data/work/github-com/eoap`. Update their notebooks, examples, and application
+packages alongside the deployment configuration when migration requires it.
+
+- Use CWL v1.2 for all affected CWL documents.
+- **DO NOT USE `cwltool --pack`.** Retain the module's existing CWL composition
+  and serialization approach, including `eoap-cwlwrap` and `cwl-loader.dump_cwl`
+  where applicable.
+- Use typed CWL inputs and outputs, including appropriate records, enums, and
+  schemas; update notebook examples and staging adapters to match those types.
+- Provide metadata that validates against transpiler-mate expectations for
+  `cwl2markdown`, or an equivalent documentation generator. Validate both the
+  metadata and generated documentation as part of module acceptance.
+- EOAP CWL documents must be standalone. Include any types they define in the
+  distributed CWL document itself; publishing a separate schema file alone
+  does not satisfy this requirement. Validate the final distributed document,
+  including packed application packages where applicable.
+- For STAC, retain the approved shared schema import
+  `$import: https://raw.githubusercontent.com/eoap/schemas/main/ogc.yaml`.
+  Embed module-defined types without replacing this shared OGC schema.
+- Make changes on a feature branch in each affected repository, preserving
+  existing work in progress.
+- Use Conventional Commits for commits in the deployment and module repositories.
+
+These requirements apply to remaining module work and to follow-up changes
+needed to bring already migrated modules into compliance.
+
 ## Verified findings
 
 ### Image and deployment integration
@@ -257,7 +286,9 @@ adoption and storage migration retain separate validation requirements.
    schema, and packaged controller scripts in PDE.
 3. AMD64 mastering, Quickwin, and STAC notebook pilots are complete. Continue migrating simple
    modules using explicit image overrides and separate SeaweedFS releases
-   before changing the shared default.
+   before changing the shared default. Update their source repositories on
+   feature branches to meet the e-learning and CWL requirements above, and
+   rerun notebook, CWL, and documentation validation after those changes.
 4. Remove redundant architecture-specific tool downloads from initialization;
    preserve module environments and extension installation initially.
 5. Exercise editor access, extension installation, notebook kernels, S3 access,
@@ -277,6 +308,12 @@ adoption and storage migration retain separate validation requirements.
 - No module overrides shared tools with incompatible architecture downloads.
 - Supported architectures pass agreed module checks, including notebook and CWL
   execution; Dask additionally passes cluster lifecycle checks.
+- Affected module sources use CWL v1.2 and typed inputs and outputs. Distributed
+  EOAP CWL documents include their defined types and validate as standalone
+  documents; metadata and documentation generation pass the selected
+  transpiler-mate `cwl2markdown` or equivalent checks.
+- Module and deployment changes are made on feature branches and committed
+  using Conventional Commits.
 - Existing user workspaces remain recoverable and user files are preserved.
 - Image publication ownership, version pins, CI coverage, and unsupported module
   architectures are documented.
@@ -441,6 +478,35 @@ recorded in [the mastering module README](mastering-app-package/README.md).
 
 
 ### STAC: typed training workflows and AMD64 migration
+
+The initial requirements audit found external module-defined types and missing
+metadata/documentation checks. The follow-up fixes embed EPSG and band enums
+in the application CWL and URI definitions in staging CWL. The shared OGC
+schema import is explicitly retained at the user's request:
+`$import: https://raw.githubusercontent.com/eoap/schemas/main/ogc.yaml`.
+Module-defined types must be included in their document; this approved shared
+schema remains an external dependency.
+
+The application metadata now identifies the STAC repository and its declared
+author. A module-local Markdown generator validates metadata, documented typed
+ports, and embedded definitions; it allows the approved OGC import and rejects
+other imports/includes. `task cwl:docs` also validates isolated copies with
+network fetching restricted to that OGC schema. This is the equivalent
+documentation-generation path; transpiler-mate compatibility is not claimed.
+
+Composition uses `eoap-cwlwrap` and serialization uses `cwl-loader.dump_cwl`.
+The wrapping notebook embeds the URI definition introduced by the wrapper
+while preserving OGC imports. **Do not use `cwltool --pack`.**
+
+Training commit `c933015` implements these fixes on `feature/typed-cwl-inputs`.
+Validation completed on 11 October 2026: all six source CWL documents passed
+metadata/Markdown generation and isolated validation with only the approved
+OGC schema fetch allowed. Notebooks 01–03 passed in UTC run
+`20261010T215727173440Z`; the final 04–05 run passed in
+`20261010T220833487865Z`. The final composed workflow passed and returned
+`s3://results/run-005/catalog.json`, with evidence in
+`/workspace/stac-final-run.log` and `/workspace/stac-final-result.json`.
+The new training commit still needs publishing before fresh clones can use it.
 
 STAC now uses an explicit PDE AMD64 image override, a separate disposable
 SeaweedFS 4.48.0 release, and cluster-aware deployment/smoke/notebook tasks.

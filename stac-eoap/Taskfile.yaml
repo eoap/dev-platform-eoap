@@ -76,6 +76,11 @@ tasks:
           echo "S3 upload/download check passed; removing test object"
         '
 
+  cwl:docs:
+    desc: Validate standalone CWL metadata and generate Markdown documentation
+    cmds:
+      - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec deployment/code-server-deployment -c code-server -- /workspace/.venv/bin/python /workspace/stac-eoap/scripts/cwl-docs.py --validate --output /workspace/lab-results/cwl-docs
+
   labs:
     desc: Execute STAC notebooks in order in the deployed editor
     cmds:
