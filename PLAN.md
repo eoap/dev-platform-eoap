@@ -1,7 +1,10 @@
 # PDE image adoption and SeaweedFS S3 migration
 
 Initial findings recorded on 10 October 2026. This document records investigation
-results and proposed work; migration decisions have not yet been approved.
+results, agreed migration scope, and remaining work. Updated after the
+`mastering-app-package` AMD64 pilot on 10 October 2026. The pilot is implemented
+and validated; repository-wide migration and multi-architecture acceptance
+remain incomplete.
 
 ## Objective
 
@@ -11,8 +14,9 @@ and ARM64 where the complete module stack permits it.
 
 Replace the transient S3 service currently supplied by LocalStack with
 SeaweedFS. Prefer a Helm-chart-based installation. This storage migration is
-requested work; exact chart versions, deployment values, and lifecycle policy
-remain to be determined from evidence rather than assumed.
+requested work. Chart 4.48.0 and disposable all-in-one storage have been
+selected and tested for the mastering pilot; rollout to other modules and
+lifecycle verification remain pending.
 
 SeaweedFS deployment scope is decided: each module gets its own SeaweedFS Helm
 release. Users run one module at a time; shared storage across modules is not
@@ -27,17 +31,20 @@ S3 configuration approach is decided: provide a default SeaweedFS configuration
 with initialized values and matching AWS CLI configuration for each module.
 Provision the configured credentials and initialize required buckets after S3
 readiness. Configure the CLI's credentials, region, endpoint, and addressing
-behavior consistently with SeaweedFS. Exact values and chart configuration keys
-must be verified before implementation; none are selected by this decision.
+behavior consistently with SeaweedFS. The mastering pilot verifies `test`
+credentials, region `us-east-1`, path addressing, and its HTTP S3 endpoint on
+port 8333. Other modules still need their own bucket and client inventories.
 
 Existing S3 data handling is decided: discard existing LocalStack objects; no
 data transfer is required. Drop LocalStack support completely in this repository,
 including deployment configuration, client settings, setup instructions, and
 fallback paths. This decision does not change the separate ZOO repository.
 
-The PDE multi-architecture implementation and yq correction are ongoing in
-`/data/work/github.com/eoepca/pde-code-server`. Their completion and validation
-remain prerequisites for adoption here.
+PDE multi-architecture support and the yq correction must still be verified
+against the artifact selected for repository-wide adoption. The source clone is
+`/data/work/github-com/eoepca/pde-code-server`. The mastering pilot uses the
+locally tested `eoepca/pde-code-server:amd64`; this does not establish ARM64
+support or a published manifest digest.
 
 ZOO is low priority and has been extracted into the sibling repository
 `/data/work/github.com/eoap/dev-platform-eoap-zoo`. Its image migration and
@@ -62,7 +69,7 @@ chart and image sources were copied there to preserve its local dependencies.
   PDE uses Conda Python and adds Java, GDAL, CWL tooling, isolated Calrissian,
   Skopeo, ORAS, and Trivy. These differences require runtime validation.
 
-### Checks against the built PDE image
+### Initial checks against the built PDE image
 
 The locally available `eoepca/pde-code-server:multi-amd64` was inspected and run
 in temporary containers. Its inspected image ID was
@@ -79,15 +86,21 @@ This identifies the tested local artifact, not an approved production manifest.
   time were not measured.
 - `yq` resolved to `/opt/conda/bin/yq`, the Python wrapper. Mike Farah's pinned
   binary at `/usr/local/bin/yq` worked, but unqualified `yq eval` failed. The PDE
-  correction must be verified against a rebuilt image.
-- No Kubernetes deployment, module package installation, editor extension test,
-  notebook execution, Podman execution, or ARM64 runtime test was performed here.
+  initial failure is resolved in the later AMD64 pilot artifact: unqualified
+  `yq eval` passed, `tomlq` reported its version, and isolated Calrissian
+  dependency checks passed. Equivalent ARM64 checks remain pending.
+- These initial container checks preceded the mastering deployment. Subsequent
+  AMD64 Kubernetes, extension, package, notebook, and Podman validation passed
+  using `eoepca/pde-code-server:amd64`, as recorded below. The initial image ID
+  above must not be treated as the identity of that later artifact. ARM64
+  runtime validation remains pending.
 
 ### Module initialization and persistent workspaces
 
-- `mastering-app-package`, `how-to`, and `machine-learning-process` download
-  AMD64-specific tools into module virtual environments. These can shadow PDE's
-  architecture-correct tools and must be removed or made architecture-aware.
+- The mastering module now uses PDE's kubectl instead of downloading an AMD64
+  binary. Architecture-specific downloads in `how-to` and
+  `machine-learning-process` remain to be reviewed and removed or made aware
+  of the target architecture.
 - Module scripts create isolated Python environments and install module-specific
   dependencies. PDE's globally installed packages do not automatically become
   available inside those environments.
@@ -109,11 +122,13 @@ This identifies the tested local artifact, not an approved production manifest.
   The inspected upstream HEAD was `a95d87d`.
 - Upstream includes `DaskGatewayRequirement`, cluster lifecycle code, Dask tests,
   `--dask-gateway-url`, and `--dask-script-configmap`.
-- The tested PDE image installs Calrissian 0.18.1. It has no `calrissian.dask`
-  module and exposes no Dask CLI options.
-- A custom fork is no longer required in principle. PDE must first use an
-  upstream release containing the merge, or a pinned upstream commit. Full
-  equivalence to the fork and real cluster execution have not been validated.
+- The initially inspected image contained Calrissian 0.18.1 without Dask
+  support. The later mastering pilot uses PDE's isolated Calrissian artifact
+  at `a95d87dd213d51b11faea7c6def4ced46d466a4a` (package version 0.19.0).
+  Kubernetes execution passed; Dask runtime behavior remains untested.
+- A custom fork is no longer required in principle. The mastering pilot uses
+  the pinned upstream commit. Full equivalence to the fork and real Dask
+  cluster execution have not been validated.
 - Identified upstream build pin:
   `a95d87dd213d51b11faea7c6def4ced46d466a4a` (15 January 2026), the merge of
   PR #214, which includes Dask integration fixes and additional test coverage.
@@ -121,8 +136,11 @@ This identifies the tested local artifact, not an approved production manifest.
   `calrissian @ git+https://github.com/duke-gcb/calrissian.git@a95d87dd213d51b11faea7c6def4ced46d466a4a`
   in PDE's isolated Calrissian environment. This commit requires
   `cwltool>=3.1.20260108082145`; recheck PDE's existing `cwl-utils==0.40` pin
-  against the resolved dependencies. Image builds and Dask runtime validation
-  against this pin remain pending.
+  against the resolved dependencies when selecting the shared artifact.
+  The mastering environment matches PDE's exact Calrissian Git provenance,
+  passes dependency checks, and executes Calrissian workflows successfully.
+  Dask CLI, schema, packaged resources, and cluster lifecycle validation
+  remain required before replacing the Dask fork.
 
 ### Repository maintenance
 
@@ -150,15 +168,15 @@ This identifies the tested local artifact, not an approved production manifest.
 | Legacy image retirement | Retire shared coder build only after migration validation | Decide rollback period and confirm the extracted ZOO repository can build its copied coder image and review historical workflows |
 | CI scope | Add useful module smoke checks and remove obsolete build references | Choose representative modules and available AMD64/ARM64 runners |
 | Branch integration | Reconcile migration with existing main/develop divergence | Review remote state and select target branch |
-| SeaweedFS chart and image pins | Prefer the upstream Helm chart | Inspect a selected chart release, its values and templates, and image manifests before selecting versions |
-| Default S3 configuration values | Provide initialized SeaweedFS defaults and matching AWS CLI configuration per module | Verify credential provisioning, rendered service addresses, region, addressing style, and TLS settings before selecting exact values |
+| SeaweedFS rollout | Reuse the mastering pilot's upstream chart 4.48.0 and image 4.48 where suitable | Verify per-module resources, required S3 operations, lifecycle behavior, and architecture support |
+| Default S3 configuration rollout | Pilot uses authenticated `test` credentials, `us-east-1`, HTTP port 8333, and path addressing | Verify each module's service name, buckets, clients, and any additional TLS requirements |
 
 ## SeaweedFS migration findings and work
 
 ### Confirmed current integration
 
-- Nine modules declare `remoteChart: localstack/localstack`: `mastering-app-package`,
-  `dask-gateway`, `stac-eoap`, `machine-learning-process`, `quickwin`,
+- Seven modules still declare `remoteChart: localstack/localstack`:
+  `dask-gateway`, `stac-eoap`, `machine-learning-process`,
   `event-driven-with-argo`, `advanced-tooling`, `application-package-patterns`,
   and `how-to`.
 - Module init scripts and AWS aliases contain release-specific LocalStack
@@ -194,9 +212,12 @@ helm repo add seaweedfs https://seaweedfs.github.io/seaweedfs/helm
 helm install seaweedfs seaweedfs/seaweedfs --values values.yaml
 ```
 
-This establishes a Helm installation source, not validated deployment values for
-this project. No chart release, S3 service name or port, topology, persistence
-mode, resource sizing, or architecture support has been selected or tested.
+The mastering pilot now pins chart 4.48.0 (image 4.48), enables one all-in-one
+pod with authenticated S3, and uses `emptyDir` data storage. Its verified
+endpoint is
+`http://eoap-mastering-app-package-s3-seaweedfs-all-in-one:8333`. Readiness,
+bucket initialization, and object operations passed on AMD64. Other-module
+sizing, ARM64 support, and teardown/restart lifecycle behavior remain unverified.
 
 ### Implementation and validation sequence
 
@@ -223,9 +244,10 @@ mode, resource sizing, or architecture support has been selected or tested.
    fallback paths as part of the migration. Discard existing LocalStack objects
    without transferring them; validate affected modules against SeaweedFS.
 
-No SeaweedFS deployment or S3 compatibility test has been run as part of these
-initial findings. PDE adoption and storage migration are separate changes with
-separate validation requirements.
+The mastering pilot completes the initial Helm/S3 compatibility pilot and
+verifies its packaged stage-out path. The remaining steps cover other modules,
+Argo artifacts, lifecycle tests, and repository-wide LocalStack removal. PDE
+adoption and storage migration retain separate validation requirements.
 
 ## Proposed implementation sequence
 
@@ -233,8 +255,9 @@ separate validation requirements.
    test both architecture variants; verify tomlq and Python dependency health.
 2. Select the upstream Calrissian version or commit and validate its Dask CLI,
    schema, and packaged controller scripts in PDE.
-3. Pilot a simple module such as `quickwin`, using explicit
-   image overrides before changing the shared default.
+3. AMD64 mastering and Quickwin pilots are complete. Continue migrating simple
+   modules using explicit image overrides and separate SeaweedFS releases
+   before changing the shared default.
 4. Remove redundant architecture-specific tool downloads from initialization;
    preserve module environments and extension installation initially.
 5. Exercise editor access, extension installation, notebook kernels, S3 access,
@@ -273,12 +296,112 @@ separate validation requirements.
 
 ## Module implementation progress
 
-Work proceeds one module at a time, starting with `mastering-app-package`.
-Its configuration now overrides the coder image with the tested local PDE
-AMD64 tag and replaces LocalStack with SeaweedFS chart 4.48.0, using one
-all-in-one pod and emptyDir storage. Initialization configures AWS CLI, waits
-for S3, and creates `results`; duplicate Calrissian installation and the AMD64
-kubectl download are removed. Helm lint/rendering and AWS default endpoint
-resolution pass. Full module integration validation remains pending. Other
-modules have not been migrated. See the module README for local-image setup,
-existing-environment handling, and disposable-storage behavior.
+### Mastering Application Package: implemented and validated on AMD64
+
+- Uses `eoepca/pde-code-server:amd64` as an explicit module override; the shared
+  coder default and other modules remain unchanged.
+- Replaces LocalStack with SeaweedFS chart 4.48.0, image 4.48, one all-in-one
+  pod, authenticated S3, and `emptyDir` data storage. Initializes `results`
+  after a bounded readiness wait and configures matching AWS CLI defaults.
+- Retains the module Python environment and installs the exact Calrissian
+  artifact identified from PDE's isolated environment. Uses uv for environment
+  creation, package installation, and dependency checking, and PDE's kubectl.
+- Installs the Python, YAML, CWL, and Jupyter extensions plus the latest release
+  VSIX assets for `eoap-validator-vscode`, `cwl-metadata-editor`, and
+  `cwl-uml-viewer`.
+- Checks out training branch `feature/metadata`, fast-forwarding existing
+  checkouts and skipping automatic merge when local edits exist. When the
+  training kernel helper exists, installs isolated Hatch
+  1.16.2 with `virtualenv<21` and registers four package-specific Bash kernels.
+- `task labs` runs chapters 1–4, loads their four rebuilt processing images
+  into Minikube with `metadata` tags, then runs chapter 5. Kubernetes notebooks
+  pack the checked-out CWL and use those local images; a new Calrissian or
+  application package release is not required for this validation path.
+
+Validation on 10 October 2026 used Docker-backed Minikube profile
+`eoap-mastering-app-package-docker`. Deployment readiness, editor HTTP 200,
+extension/environment initialization, and S3 upload/download cleanup passed.
+All 18 notebooks passed, including Podman image builds, packaged staging tools,
+typed scatter, direct Calrissian execution, the Kubernetes Job, both benchmark
+executions, and usage plots/tables. The new Hatch chapter 1 notebooks also
+passed on rerun, and `task code:test:all` passed all 29 package/pipeline tests.
+A separate stage-out CWL roundtrip verified catalog, item, and asset objects
+and asset bytes in SeaweedFS, then removed the test objects.
+
+The training snapshot was `b5275c0` plus `ffc625f` (packaged CLI example fixes)
+and `de098fb` (Otsu memory allocation), with concurrent uncommitted Hatch
+notebook/environment edits copied from the host clone. Training commit
+`c5c3f95` records the results. Otsu requires 1024 MiB for these inputs;
+normalized difference retains 2048 MiB. Remote raster reads needed bounded
+retries. Docker validation required removing an inherited DNS search suffix;
+KVM validation was blocked by VM outbound connectivity.
+
+Deployment changes are committed here as `7df4cb1` (metadata/Hatch startup),
+`ba02e70` (image loading before Kubernetes labs), and `922eaa9` (validation
+record). The earlier Hatch WIP was left
+uncommitted during notebook validation; the remote branch subsequently
+published it. Acceptance deployment updated the preserved training checkout
+to `77ef29b`. Copied WIP was backed up in a Git stash before that update.
+Unpublished training changes must still be copied into a deployed checkout.
+
+Fresh rollout and workspace acceptance checks subsequently passed. The module
+Python environment was recreated with the old environment retained as
+`/workspace/.venv-pre-migration-backup`; a workspace sentinel survived. A
+kernel check exposed Hatch interpreters stored in the init container's private
+home. The shared coder chart now sets init/editor home and Hatch data/cache
+paths to the workspace, and all five kernels pass in the new editor pod.
+Both workspace and Calrissian PVCs now use Helm's keep policy. SeaweedFS pod
+recreation and Skaffold delete/Helm uninstall followed by redeployment removed
+the S3 sentinel and preserved both PVCs and the workspace file. Initialization
+recreated `results`; editor and S3 smoke checks passed. Same-pod container
+restarts may retain data, which is permitted by the disposable-storage policy.
+
+Executed notebook locations and host artifact copies are recorded in
+[the module README](mastering-app-package/README.md).
+
+### Remaining acceptance checks and rollout
+
+1. Fresh mastering rollout, workspace reuse, environment recreation, and kernel
+   checks passed. Keep these checks when changing image/Python architectures.
+2. Disposable S3 behavior passed for pod recreation and Skaffold delete/Helm
+   uninstall followed by redeployment. A live `skaffold dev` shutdown signal
+   was not separately exercised.
+3. Select a published PDE artifact with a manifest digest; verify yq/tomlq,
+   dependency health, and supported AMD64/ARM64 module stacks.
+4. Quickwin migration and all four notebooks passed. Continue with the next
+   module using explicit image overrides and the verified S3 pattern, auditing
+   its cloned training content and required buckets first.
+5. Validate Dask cluster lifecycle and Argo artifact flows before migrating
+   those modules. Resolve undeployed-storage aliases and endpoint mismatches.
+6. Update shared defaults, CI, root documentation, and remaining modules;
+   remove LocalStack support and retire legacy image jobs after acceptance.
+
+Quickwin has now also been migrated and validated on AMD64, as recorded below.
+The remaining modules have not been migrated. The mastering pilot establishes an AMD64
+reference implementation, not completion of the repository-wide plan.
+
+### Quickwin: implemented and validated on AMD64
+
+Quickwin now overrides the coder image with `eoepca/pde-code-server:amd64` and
+uses its own SeaweedFS release, chart 4.48.0/image 4.48, with authenticated S3
+and disposable `emptyDir` storage. Initialization uses uv with PDE Python,
+preserves existing training checkouts, waits for S3, initializes `results`, and
+configures matching AWS credentials, region, endpoint, and path addressing.
+Module tasks cover startup, deployment, editor/S3 smoke checks, notebook
+execution, development, and cluster stop. The notebook runner accepts a Python
+kernel argument while retaining the mastering default.
+
+Fresh deployment and editor/S3 checks passed on Docker-backed Minikube profile
+`eoap-mastering-app-package-docker`, namespace `eoap-quickwin`, on 10 October
+2026. All four notebooks passed: application, container, CWL CommandLineTool,
+and CWL workflow. The tested training source was `f81b825` with a corrected
+container user argument. The original hard-coded UID 1000 could not write to
+PDE's UID 1001 workspace; initialization now substitutes the current UID/GID
+for that argument only. The same fix was saved uncommitted in the local
+Quickwin training clone and was not pushed. Artifact paths are recorded in
+[the Quickwin README](quickwin/README.md).
+
+Mastering's editor was scaled to zero while Quickwin ran on the same node;
+its PVCs and training files were retained. Published multi-platform artifact
+selection, ARM64 validation, Dask, Argo, other-module migration, shared-default
+changes, and CI/legacy-image retirement remain outstanding.
