@@ -1,5 +1,21 @@
 # Development platform for Earth Observation Application Package training modules
 
+## PDE module deployments
+
+The migrated modules provide Taskfiles for an existing Kubernetes context;
+Minikube setup is optional. Follow each module README for source branches,
+worker images, storage settings, and acceptance tasks.
+
+- [Dask application packages](dask-gateway/README.md)
+- [Inference application packages](inference-eoap/README.md)
+- [CWL application packages](cwl-eoap/README.md)
+- [Application package patterns](application-package-patterns/README.md)
+- [Contract-first application packages](eoap-contract-first/README.md)
+
+These deployments use PDE and dedicated disposable SeaweedFS storage. The
+older deployment walkthroughs below include historical deployment examples;
+use the module README and Taskfile for its current configuration.
+
 ## Requirements
 
 Before you begin, make sure you have the following tools installed and set up on your local environment:

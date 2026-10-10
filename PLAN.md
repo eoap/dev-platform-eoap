@@ -69,7 +69,7 @@ packages alongside the deployment configuration when migration requires it.
 - EOAP CWL documents must be standalone. Include any types they define in the
   distributed CWL document itself; publishing a separate schema file alone
   does not satisfy this requirement. Validate the final distributed document,
-  including packed application packages where applicable.
+  including composed application packages where applicable.
 - For STAC, retain the approved shared schema import
   `$import: https://raw.githubusercontent.com/eoap/schemas/main/ogc.yaml`.
   Embed module-defined types without replacing this shared OGC schema.
@@ -350,7 +350,7 @@ adoption and storage migration retain separate validation requirements.
   checkouts and skipping automatic merge when local edits exist. When the
   training kernel helper exists, installs isolated Hatch
   1.16.2 with `virtualenv<21` and registers four package-specific Bash kernels.
-- Earlier developer validation used locally packed CWL and Minikube-loaded
+- Earlier developer validation used locally composed CWL and Minikube-loaded
   `metadata` images. The current chapter 5 path downloads a selected published
   application package and typed inputs and uses registry images pinned by
   digest. `task labs:kubernetes` selects the release via
@@ -416,8 +416,8 @@ Executed notebook locations and host artifact copies are recorded in
    remove LocalStack support and retire legacy image jobs after acceptance.
 
 Quickwin has now also been migrated and validated on AMD64, as recorded below.
-STAC migration is also implemented, as recorded below. The other remaining
-modules have not been migrated. The mastering pilot establishes an AMD64
+STAC migration is also implemented, as recorded below. How-to, CWL, inference, Dask and application-package-patterns work is recorded
+below; remaining modules still need migration. The mastering pilot establishes an AMD64
 reference implementation, not completion of the repository-wide plan.
 
 ### Quickwin: implemented and validated on AMD64
@@ -445,6 +445,29 @@ Mastering's editor was scaled to zero while Quickwin ran on the same node;
 its PVCs and training files were retained. Published multi-platform artifact
 selection, ARM64 validation, Dask, Argo, other-module migration, shared-default
 changes, and CI/legacy-image retirement remain outstanding.
+
+### Quickwin review against the current requirements
+
+Review on 11 October 2026 confirms the AMD64 PDE/SeaweedFS deployment work,
+uv environment, bounded S3 readiness, and earlier four-notebook validation.
+It does not meet the later source requirements yet:
+
+- Both training CWL documents still declare v1.0 and use string parameters for
+  URI/AOI/band/CRS values; migrate to v1.2 and appropriate CWL records/enums.
+- Metadata/documentation-generation acceptance is not configured.
+- The training checkout is on `main` with the earlier UID fix uncommitted;
+  preserve it and move follow-up changes to a feature branch with Conventional
+  Commits.
+- Startup rewrites the container notebook. Move that fix into the training
+  source and select a compatible training ref instead of editing notebooks
+  during initialization.
+- Deployment tasks use `MINIKUBE_PROFILE` directly and `dev` starts Minikube;
+  separate `KUBE_CONTEXT` and optional local-cluster helpers as in STAC/how-to.
+- Workspace/environment recreation and disposable S3 lifecycle checks still
+  need explicit Quickwin evidence.
+
+The review leaves the existing Quickwin WIP intact. These are follow-up items;
+the earlier migration validation is not acceptance of the new CWL requirements.
 
 ### Published chapter 5 candidate validation
 
@@ -539,3 +562,111 @@ workspace files survived, the old environment was retained as a backup, and
 redeployment recreated the bucket and a compatible Python environment. Training commit `d9c92ec` declares the PyYAML dependency exposed by environment
 recreation. The wrapping notebook passed again with the corrected environment. Mastering's editor was
 scaled down during STAC validation; its workspace PVC remains retained.
+
+### How-to: implemented and validated on AMD64, 11 October 2026
+
+The deployment now uses PDE, upstream container Calrissian, uv, a retained
+workspace and its own disposable authenticated SeaweedFS. All nine standalone
+CWL v1.2 documents include URI/JSON records and band/CRS enums, described ports
+and repository/version/license/author metadata. The equivalent Markdown
+generator validates each document from an isolated copy.
+
+All ten real Calrissian workflow cases passed. Reprojection uses the CWL enum
+value `EPSG4326` and translates it to rasterio's `EPSG:4326`. Raster steps need
+2 GiB and color processing 4 GiB; the test-suite resource budget is 8 GB.
+Editor HTTP and S3 roundtrip passed. Restart acceptance preserved a workspace
+sentinel and the previous environment, created a fresh environment, discarded
+the previous S3 object and initialized `results`. Training commit `369cd7d`
+on `feature/pde-typed-cwl` records the source migration. Evidence paths are in
+[how-to/README.md](how-to/README.md).
+
+### CWL EOAP: implemented and validated on AMD64, 11 October 2026
+
+Uses PDE and dedicated SeaweedFS with cluster-context tasks. The source package
+uses CWL v1.2, an embedded URI record and a captured File output for raster
+bounds, with validated metadata and generated Markdown. Notebook jobs use URI
+records; container examples use the runtime UID/GID and install libexpat.
+All three real notebooks passed, including builds and CWL execution. Editor/S3
+checks and fresh-environment/workspace-retention/disposable-S3 lifecycle passed.
+Training commit `da43124` on `feature/pde-typed-cwl` records the changes.
+
+### Inference EOAP: implemented and validated on AMD64, 11 October 2026
+
+New deployment folder `inference-eoap` uses PDE and dedicated SeaweedFS. All
+three CWL documents are v1.2 with embedded URI schemas, described ports and
+validated metadata/Markdown. All six notebooks passed using the user-selected
+local 13-band STAC staging fixture and the actual ONNX model through Python,
+Podman, CommandLineTool and workflow paths. The fixture uses portable relative
+asset paths. The inference loop previously dropped the final partial batch;
+that is fixed and the focused regression passed. Authenticated Copernicus
+downloading remains a separate validation path; no credentials were supplied.
+Editor/S3 and workspace/environment/disposable-S3 lifecycle checks passed.
+Training commit `c5408c3` on `feature/pde-typed-cwl` records the source changes.
+
+### Dask Application Package: deployment implemented; full notebook acceptance in progress
+
+The existing `dask-gateway` folder deploys this course. It now uses PDE's
+upstream Calrissian, Dask Gateway 2025.4.0 matching the course protocol version,
+and its own SeaweedFS. All editor profiles share the same setup. The typed
+source uses the upstream `clusterMaxCores` spelling and embedded URI/Date/BBox/
+SpectralBand types with validated metadata and Markdown. The original
+one-step application adapters are exposed directly as CommandLineTools with
+the same interface to avoid the pinned runtime's nested custom-requirement
+validation failure. The Dask requirement remains mandatory.
+
+A bounded real Calrissian test passed: two workers computed a sum of squares
+of 328350 and the cluster was shut down. Editor/S3 and environment/workspace/
+disposable-S3 lifecycle checks passed. The published course images use Python
+3.10 while PDE uses Python 3.12, causing notebook task deserialization failure.
+A matching Python 3.12 worker with both course packages and one shared runtime
+dependency lock was built and loaded. The real cloudless notebook passed with
+two satellite items. Five regressions passed, covering nonzero CLI failures and
+current/legacy projection metadata. The EOPF notebook remains unvalidated:
+its remote STAC item endpoint returns HTTP 500 on repeated attempts. Worker
+artifact publication and architecture scope remain to be verified. Training
+commit: `2a336b8` on `feature/pde-typed-cwl`.
+
+### Application Package Patterns: deployment implemented; notebook acceptance in progress
+
+PDE, current eoap-cwlwrap/cwl-loader APIs and dedicated SeaweedFS are deployed.
+All 18 nonempty source/composed CWL documents validate as standalone v1.2
+packages with described metadata/ports and embedded module types; the existing
+shared OGC/GeoJSON schemas remain explicit imports. Wrapping uses eoap-cwlwrap
+and dump_cwl, then embeds the wrapper-introduced URI definition. No packing
+command is used. Diagram generation uses local Graphviz and PlantUML source,
+avoiding the external image server that returned HTTP 403. Ordinary Graphviz
+boxes resolve the record-node flat-edge rendering failure. All 12 notebooks
+passed real Landsat staging and application container execution, including
+S3 output cases. Bounded staging retries recover interrupted remote transfers
+and still fail after the last attempt. Training commit: `ff627a6` on
+`feature/pde-typed-cwl`. Editor/S3 smoke and retained-workspace/fresh-environment/disposable-S3
+lifecycle acceptance passed.
+
+### Contract-first: new deployment implemented and validated on AMD64
+
+The new `eoap-contract-first` folder deploys the existing sibling course using
+PDE, its locked uv tooling and dedicated SeaweedFS. Its source already meets
+the contract-first CWL requirements and was not modified. The `reference:test`
+gate passed: all three contract entrypoints, formatter, lint, strict typing,
+security, all 39 tests, supply-chain inventory/tests and strict documentation
+build. Real transpiler-mate artifact derivation including cwl2markdown passed.
+The task wrapper clears inherited Podman options so explicit no-container
+reference tests execute. Editor/S3 and retained-workspace/fresh-environment/
+disposable-S3 lifecycle passed. Supply-chain registry publication and container
+release tasks remain separate explicitly gated operations.
+
+### Shared acceptance and remaining rollout
+
+`task test:lifecycle` uses `scripts/test-module-lifecycle.sh` to recreate the
+environment while retaining a backup and the workspace PVC, restart disposable
+S3, and verify a fresh results bucket. Run it after workload tests finish.
+The tested deployment is the AMD64 Docker-backed local Kubernetes context
+`eoap-mastering-app-package-docker`; task `KUBE_CONTEXT` support does not
+establish acceptance on other clusters or ARM64. Feature commits have not been
+pushed; publish the training branches or seed their checkouts before fresh
+initialization selects them.
+
+Other pending work includes Quickwin's newly recorded CWL/type/metadata gaps,
+machine-learning-process, event-driven-with-argo artifact flow, advanced-tooling,
+undeclared-storage aliases, shared image/digest/ARM approval, legacy CI/image
+retirement and remaining root documentation cleanup.
