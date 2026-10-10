@@ -313,10 +313,12 @@ adoption and storage migration retain separate validation requirements.
   checkouts and skipping automatic merge when local edits exist. When the
   training kernel helper exists, installs isolated Hatch
   1.16.2 with `virtualenv<21` and registers four package-specific Bash kernels.
-- `task labs` runs chapters 1–4, loads their four rebuilt processing images
-  into Minikube with `metadata` tags, then runs chapter 5. Kubernetes notebooks
-  pack the checked-out CWL and use those local images; a new Calrissian or
-  application package release is not required for this validation path.
+- Earlier developer validation used locally packed CWL and Minikube-loaded
+  `metadata` images. The current chapter 5 path downloads a selected published
+  application package and typed inputs and uses registry images pinned by
+  digest. `task labs:kubernetes` selects the release via
+  `APPLICATION_PACKAGE_VERSION` and targets `KUBE_CONTEXT`; no local image
+  building or loading is needed. Minikube start/load helpers remain optional.
 
 Validation on 10 October 2026 used Docker-backed Minikube profile
 `eoap-mastering-app-package-docker`. Deployment readiness, editor HTTP 200,
@@ -405,3 +407,33 @@ Mastering's editor was scaled to zero while Quickwin ran on the same node;
 its PVCs and training files were retained. Published multi-platform artifact
 selection, ARM64 validation, Dask, Argo, other-module migration, shared-default
 changes, and CI/legacy-image retirement remain outstanding.
+
+### Published chapter 5 candidate validation
+
+Release `2.0.0-rc.39.1`, source `909a336`, was tested on 10 October 2026 using
+Kubernetes v1.35.1/AMD64 on the available Minikube-backed cluster. Chapter 5
+used the published packed CWL, typed scatter inputs, and four digest-pinned
+GHCR processing images. No local image loading was used for this validation.
+GitHub and GHCR OCI manifests matched, and the downloaded CWL matched its
+published layer digest. Direct Calrissian execution, the Kubernetes Job, both
+benchmarks, and notebook plots/tables passed.
+
+Post-run inspection exposed an example Job defect: root execution produced
+editor-unreadable output directories. Training commit `6148e77` aligns the Job
+with PDE UID/GID 1001:100, separates its temporary prefix, and asserts catalog
+readability. The Calrissian notebook passed again with that runtime override
+and the unchanged candidate CWL/images. Two STAC items and their 7205 × 5768
+binary masks were readable and georeferenced in EPSG:32610. A fresh candidate
+and another candidate test are required to include this source fix in the
+release; the current processing artifacts passed with the documented override.
+
+Deployment, smoke tests, notebook tasks, and development watching now accept
+`KUBE_CONTEXT` independently of local Minikube helpers. Chapter 5 and the full
+lab task use published artifacts via `APPLICATION_PACKAGE_VERSION`; local
+image loading is optional developer work. Cluster-specific runner images,
+namespaces, RBAC, RWX storage, user/group IDs, and node selectors must be
+configured for the target Kubernetes cluster. Only the available AMD64 cluster
+was exercised; this does not establish ARM64 or other-cluster runtime results.
+A dirty training checkout retains its ref and edits during initialization,
+including the patched candidate checkout. Evidence paths and exact digests are
+recorded in [the mastering module README](mastering-app-package/README.md).

@@ -3,8 +3,8 @@
 This module uses the locally tested `eoepca/pde-code-server:amd64` image
 and its own SeaweedFS Helm release (chart 4.48.0, image 4.48).
 Initialization checks out the training repository's `feature/metadata` branch
-and fast-forwards clean existing checkouts. Dirty checkouts keep local edits
-and skip the automatic fast-forward.
+and fast-forwards clean existing checkouts. Dirty checkouts keep their current ref and local edits
+and skip automatic checkout and fast-forward.
 
 Add the chart repository:
 
@@ -20,8 +20,8 @@ Helm, kubectl, Skaffold, and the locally built PDE image):
 cd mastering-app-package
 task up    # Start a dedicated cluster, load the image, deploy, and smoke-test
 task test  # Repeat readiness, editor HTTP, and S3 object round-trip checks
-task labs  # Run chapters 1–4, load their rebuilt images, then run chapter 5
-task dev   # Watch the deployment and forward editor access to localhost:8000
+task labs  # Run notebooks in order; chapter 5 uses the selected published release
+task dev   # Watch an existing cluster deployment and forward access to localhost:8000
 task stop  # Stop the dedicated cluster
 ```
 
@@ -51,21 +51,47 @@ jobs. The module kernel includes Calrissian installed from the same Git commit
 or package version as PDE's isolated environment. `task labs` is separate from `task up` and the
 deployment smoke checks.
 
-The full `task labs` (or `task labs:all`) run loads chapter 2's rebuilt tool
-images into Minikube before chapter 5. For selected chapter runs, perform these
-steps explicitly:
+Chapter 5 runs on any Kubernetes cluster configured for Calrissian. Set
+`KUBE_CONTEXT` for deployment, smoke checks, notebooks, and `task dev`;
+`MINIKUBE_PROFILE` is only the local cluster helper's profile and the default
+context when none is supplied. `task start`, `task up`, `task stop`, and
+`labs:kubernetes-images` remain optional Minikube conveniences.
+
+To validate a published candidate on an existing deployment:
 
 ```bash
-task labs LAB='[1-4]*' MINIKUBE_PROFILE=eoap-mastering-app-package-docker
-task labs:kubernetes-images MINIKUBE_PROFILE=eoap-mastering-app-package-docker
-task labs LAB=5-Kubernetes MINIKUBE_PROFILE=eoap-mastering-app-package-docker
+task labs:kubernetes KUBE_CONTEXT=my-cluster APPLICATION_PACKAGE_VERSION=2.0.0-rc.39.1
 ```
 
-The image-loading task tags all four tool images with `metadata` and loads
-them into the node. The updated Kubernetes notebooks pack the checked-out CWL
-and use those images, so validation does not need a new published release.
-Local fixes in the training clone must also be copied into the deployed
-checkout while they remain unpublished.
+The deployed training checkout must contain the release-aware chapter 5
+notebooks and `scripts/prepare-kubernetes-lab.sh`. For this candidate, a clean
+checkout can be selected explicitly without resetting local edits:
+
+```bash
+kubectl --context my-cluster -n eoap-mastering-app-package exec deployment/code-server-deployment -c code-server -- bash -euc 'cd /workspace/mastering-app-package; test -z "$(git status --porcelain)"; git fetch origin tag 2.0.0-rc.39.1; git checkout --detach 2.0.0-rc.39.1'
+```
+
+Initialization selects `feature/metadata` on the next editor restart when the
+checkout is clean; dirty checkouts preserve their current ref and edits.
+Use the matching released source for candidate validation until that branch
+contains the release-aware notebooks. Save local edits before switching refs.
+The release-ready check prevents the chapter 5 task from silently using an old
+local-image notebook. The upstream default release version is `2.0.0`; select
+a published candidate explicitly until the stable release exists.
+
+The notebooks download the selected packed CWL and matching typed inputs,
+validate the software version and digest-pinned registry references, and run
+Calrissian directly, through a Job, and twice for benchmarks. They require no
+local image builds or Minikube image loading. `task labs` also uses this published
+path; the image-loading task is retained only for separate local development.
+
+On another cluster, adjust `skaffold.yaml` for an accessible PDE runner image,
+namespace, and appropriate workspace and shared RWX storage classes. Configure
+Calrissian RBAC/service accounts, its `/calrissian` PVC and node selectors, and
+match those names and the runner image in the training `k8s-job.yaml`. Nodes need
+access to GHCR and the remote STAC data. The AMD64 PDE pilot image does not
+establish support for ARM64 nodes. Selecting a context alone does not provision
+these cluster-specific dependencies.
 
 For the local AMD64 PDE build, load the image into Minikube before starting:
 
@@ -129,7 +155,8 @@ The Hatch WIP remains uncommitted. Otsu requires 1024 MiB with these packaged
 tools; normalized difference retains 2048 MiB. Remote raster reads still need
 bounded retries. No Calrissian or application package release is needed:
 chapter 5 packs the local workflow and uses the rebuilt images loaded into
-Minikube. The full `task labs` sequence loads those images automatically.
+Minikube. These earlier local-image tests are developer validation; the current chapter 5
+path uses published release artifacts and does not load local images.
 
 Initialization checks out `feature/metadata` and, when the kernel helper exists,
 installs isolated Hatch 1.16.2 with `virtualenv<21` and registers the four Bash
@@ -155,3 +182,34 @@ Host copies are `/tmp/mastering-metadata-packaged-chapters-1-4`,
 `/tmp/mastering-metadata-hatch-chapter-1`, and
 `/tmp/mastering-metadata-packaged-kubernetes`. The stage-out roundtrip artifacts
 are in `/tmp/mastering-metadata-packaged-stage-out`.
+
+Published candidate `2.0.0-rc.39.1` was validated on 10 October 2026 against
+source tag `909a336f0a368747df2491dfaa66198e6053dd8f`, using Kubernetes v1.35.1
+on AMD64 with context `eoap-mastering-app-package-docker`. Minikube supplied
+the test cluster; the notebooks used GitHub release assets and GHCR pulls,
+without local tool-image loading. Direct Calrissian execution, the Job, both
+benchmark executions, usage plots, and report tables passed. All four processing
+images were pulled successfully from GHCR by their released digests.
+
+The downloaded CWL matched the OCI layer digest
+`sha256:ecaec0c512f372434e687050c8aa56fd39444dc5b8f6628d97016bf9c979a5f0`.
+The GitHub release manifest matched the manifest fetched from GHCR at
+`ghcr.io/eoap/mastering-app-package/cwl/app-water-bodies-cloud-native@sha256:7d75d00cae2e5b8e5873d6694cb9c28ab5171819bf04b7203cef2c6c8e8d7398`.
+
+The original Job completed but ran as root, producing a catalog unreadable by
+the editor user. Training commit `6148e77` changes the example Job to PDE's
+UID/GID 1001:100, uses a fresh `job-tmp-` prefix, and adds a catalog-readability
+assertion. The Calrissian notebook was rerun successfully with that override,
+using the exact same released CWL and image digests. Inspection as the editor
+verified two STAC items with readable 7205 × 5768 binary `uint8` masks in
+EPSG:32610. Publish and retest a new candidate to include the notebook/Job fix;
+these results validate the current processing artifacts with the documented
+Job configuration override. No artifacts or commits were pushed.
+
+Successful notebook copies are `/tmp/mastering-rc39-notebooks` (original
+chapter 5 execution, including both benchmarks) and
+`/tmp/mastering-rc39-job-fixed` (Calrissian rerun with the readability check).
+Their deployed paths are `/workspace/lab-results/20261010T204251011633Z/` and
+`/workspace/lab-results/20261010T205747977662Z/`. Release manifests, image-pull
+events, original/fixed Job status and logs, and a machine-readable result record
+are saved in `/tmp/mastering-rc39-artifacts/`.
