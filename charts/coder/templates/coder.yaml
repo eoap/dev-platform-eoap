@@ -38,6 +38,19 @@ spec:
             cpu: '1'
             memory: '1Gi'
         imagePullPolicy: IfNotPresent
+        env:
+          - name: HOME
+            value: /workspace
+          - name: HATCH_DATA_DIR
+            value: /workspace/.local/share/hatch
+          - name: HATCH_CACHE_DIR
+            value: /workspace/.cache/hatch
+          - name: XDG_CONFIG_HOME
+            value: /workspace/.local
+          - name: XDG_DATA_HOME
+            value: /workspace/.local/share/
+          - name: XDG_RUNTIME_DIR
+            value: /workspace/.local
       containers:
         - name: code-server
           image: {{ .Values.coder.coderImage }}
@@ -71,6 +84,10 @@ spec:
               mountPath: /etc/dask
             {{- end }}
           env:
+          - name: HATCH_DATA_DIR
+            value: /workspace/.local/share/hatch
+          - name: HATCH_CACHE_DIR
+            value: /workspace/.cache/hatch
           - name: XDG_CONFIG_HOME
             value: /workspace/.local
           - name: XDG_DATA_HOME
@@ -141,6 +158,8 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: code-server-pvc
+  annotations:
+    helm.sh/resource-policy: keep
 spec:
   accessModes:
     - ReadWriteOnce
