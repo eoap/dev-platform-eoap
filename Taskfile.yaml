@@ -68,15 +68,6 @@ tasks:
         skaffold dev
     silent: false
 
-  ogc-api-processes-with-zoo:
-    desc: 'Runs skaffold dev on ogc-api-processes-with-zoo'
-    cmds:
-      - |
-        set -x
-        cd ogc-api-processes-with-zoo
-        skaffold dev
-    silent: false
-  
   quickwin:
     desc: 'Runs skaffold dev on quickwin'
     cmds:

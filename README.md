@@ -47,7 +47,6 @@ While it's optional, it can significantly improve your workflow. You can downloa
 
 ```
 helm repo add localstack https://helm.localstack.cloud
-helm repo add zoo-project https://zoo-project.github.io/charts/
 ```
 
 ### Checking the requirements
@@ -117,3 +116,8 @@ No artifacts found to watch
 Press Ctrl+C to exit
 Watching for changes...
 ```
+
+## ZOO-based modules
+
+The ZOO deployment module has moved to the sibling repository
+[`dev-platform-eoap-zoo`](../dev-platform-eoap-zoo/README.md).
