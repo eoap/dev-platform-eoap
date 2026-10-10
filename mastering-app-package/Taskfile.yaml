@@ -1,0 +1,93 @@
+version: '3'
+
+vars:
+  MINIKUBE_PROFILE: eoap-mastering-app-package
+  CPUS: '4'
+  MEMORY: 8192
+  NAMESPACE: eoap-mastering-app-package
+  IMAGE: eoepca/pde-code-server:multi-amd64
+
+tasks:
+  default:
+    desc: Start the cluster, deploy the module, and run smoke checks
+    cmds:
+      - task: up
+
+  start:
+    desc: Start the module's Minikube cluster and load the local PDE image
+    preconditions:
+      - sh: command -v minikube
+        msg: Install Minikube first.
+      - sh: command -v docker
+        msg: Docker and the locally built PDE image are required.
+      - sh: docker image inspect {{.IMAGE | shellQuote}} >/dev/null
+        msg: Build or load eoepca/pde-code-server:multi-amd64 into Docker first.
+    cmds:
+      - minikube start -p {{.MINIKUBE_PROFILE | shellQuote}} --cpus={{.CPUS}} --memory={{.MEMORY}}
+      - minikube -p {{.MINIKUBE_PROFILE | shellQuote}} image load {{.IMAGE | shellQuote}}
+
+  repos:
+    desc: Register the SeaweedFS Helm repository
+    preconditions:
+      - sh: command -v helm
+        msg: Install Helm first.
+    cmds:
+      - helm repo add seaweedfs https://seaweedfs.github.io/seaweedfs/helm
+      - helm repo update seaweedfs
+
+  deploy:
+    desc: Deploy to the selected Minikube profile without continuous watching
+    preconditions:
+      - sh: command -v skaffold
+        msg: Install Skaffold first.
+    cmds:
+      - task: repos
+      - skaffold run --kube-context {{.MINIKUBE_PROFILE | shellQuote}} --detect-minikube=false --status-check=true
+
+  test:
+    desc: Check deployment readiness, editor HTTP, and S3 upload/download/delete
+    preconditions:
+      - sh: command -v kubectl
+        msg: Install kubectl first.
+    cmds:
+      - kubectl --context {{.MINIKUBE_PROFILE | shellQuote}} -n {{.NAMESPACE | shellQuote}} rollout status deployment/eoap-mastering-app-package-s3-seaweedfs-all-in-one --timeout=300s
+      - kubectl --context {{.MINIKUBE_PROFILE | shellQuote}} -n {{.NAMESPACE | shellQuote}} rollout status deployment/code-server-deployment --timeout=1200s
+      - |
+        kubectl --context {{.MINIKUBE_PROFILE | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec deployment/code-server-deployment -c code-server -- python -c 'import urllib.request; r=urllib.request.urlopen("http://127.0.0.1:8080/healthz", timeout=10); assert r.status == 200; print("Editor HTTP check passed")'
+      - |
+        kubectl --context {{.MINIKUBE_PROFILE | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec deployment/code-server-deployment -c code-server -- bash -c '
+          set -euo pipefail
+          test_dir=$(mktemp -d)
+          object_key="deployment-check/$(cat /proc/sys/kernel/random/uuid)"
+          endpoint=http://eoap-mastering-app-package-s3-seaweedfs-all-in-one:8333
+          trap '\''aws --endpoint-url "$endpoint" s3api delete-object --bucket results --key "$object_key" >/dev/null; rm -rf "$test_dir"'\'' EXIT
+          aws --endpoint-url "$endpoint" s3api head-bucket --bucket results
+          printf "EOAP deployment check\n" > "$test_dir/input"
+          aws --endpoint-url "$endpoint" s3api put-object --bucket results --key "$object_key" --body "$test_dir/input" >/dev/null
+          aws --endpoint-url "$endpoint" s3api head-object --bucket results --key "$object_key" >/dev/null
+          aws --endpoint-url "$endpoint" s3api get-object --bucket results --key "$object_key" "$test_dir/output" >/dev/null
+          cmp "$test_dir/input" "$test_dir/output"
+          echo "S3 upload/download check passed; removing test object"
+        '
+
+  up:
+    desc: Start Minikube, deploy, and test in sequence
+    cmds:
+      - task: start
+      - task: deploy
+      - task: test
+
+  dev:
+    desc: Start Minikube and watch the deployment with editor forwarding on port 8000
+    preconditions:
+      - sh: command -v skaffold
+        msg: Install Skaffold first.
+    cmds:
+      - task: start
+      - task: repos
+      - skaffold dev --kube-context {{.MINIKUBE_PROFILE | shellQuote}} --detect-minikube=false
+
+  stop:
+    desc: Stop the module's Minikube cluster
+    cmds:
+      - minikube stop -p {{.MINIKUBE_PROFILE | shellQuote}}

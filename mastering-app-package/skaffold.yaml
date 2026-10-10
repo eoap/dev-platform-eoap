@@ -4,6 +4,7 @@ metadata:
   name: eoap-mastering-app-package
     
 deploy:
+  statusCheckDeadlineSeconds: 1200
   helm:
     releases:
       - name: eoap-mastering-app-package
@@ -11,6 +12,7 @@ deploy:
         namespace: eoap-mastering-app-package
         createNamespace: true
         setValues:
+          coder.coderImage: eoepca/pde-code-server:multi-amd64
           coder.workspace: mastering-app-package
           coder.storageClassName: standard
           coder.workspaceStorage: 10Gi
@@ -25,12 +27,13 @@ deploy:
           bashrcScript: ./files/bash-rc,
           bashloginScript: ./files/bash-login
         }
-      - name: eoap-mastering-app-package-localstack
-        remoteChart: localstack/localstack
+      - name: eoap-mastering-app-package-s3
+        remoteChart: seaweedfs/seaweedfs
+        version: 4.48.0
         namespace: eoap-mastering-app-package
         createNamespace: true
-        setValues:
-          service.type: ClusterIP
+        valuesFiles:
+          - seaweedfs-values.yaml
 
 portForward:
   - resourceType: service

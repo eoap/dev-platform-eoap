@@ -1,5 +1,5 @@
 alias ll="ls -l"
 
-alias aws="aws --endpoint-url=http://eoap-mastering-app-package-localstack:4566"
+alias aws="aws --endpoint-url=http://eoap-mastering-app-package-s3-seaweedfs-all-in-one:8333"
 
-source /workspace/.venv/bin/activate   
+source /workspace/.venv/bin/activate
