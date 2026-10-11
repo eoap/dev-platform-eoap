@@ -2,6 +2,7 @@ version: '3'
 
 vars:
   MINIKUBE_PROFILE: eoap-quickwin
+  KUBE_CONTEXT: '{{.MINIKUBE_PROFILE}}'
   DRIVER: docker
   CPUS: '4'
   MEMORY: 8192
@@ -47,7 +48,7 @@ tasks:
         msg: Install Skaffold first.
     cmds:
       - task: repos
-      - skaffold run --kube-context {{.MINIKUBE_PROFILE | shellQuote}} --detect-minikube=false --status-check=true
+      - skaffold run --kube-context {{.KUBE_CONTEXT | shellQuote}} --detect-minikube=false --status-check=true
 
   test:
     desc: Check deployment readiness, editor HTTP, and S3 upload/download/delete
@@ -55,12 +56,12 @@ tasks:
       - sh: command -v kubectl
         msg: Install kubectl first.
     cmds:
-      - kubectl --context {{.MINIKUBE_PROFILE | shellQuote}} -n {{.NAMESPACE | shellQuote}} rollout status deployment/eoap-quickwin-s3-seaweedfs-all-in-one --timeout=300s
-      - kubectl --context {{.MINIKUBE_PROFILE | shellQuote}} -n {{.NAMESPACE | shellQuote}} rollout status deployment/code-server-deployment --timeout=1200s
+      - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} rollout status deployment/eoap-quickwin-s3-seaweedfs-all-in-one --timeout=300s
+      - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} rollout status deployment/code-server-deployment --timeout=1200s
       - |
-        kubectl --context {{.MINIKUBE_PROFILE | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec deployment/code-server-deployment -c code-server -- python -c 'import urllib.request; r=urllib.request.urlopen("http://127.0.0.1:8080/healthz", timeout=10); assert r.status == 200; print("Editor HTTP check passed")'
+        kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec deployment/code-server-deployment -c code-server -- python -c 'import urllib.request; r=urllib.request.urlopen("http://127.0.0.1:8080/healthz", timeout=10); assert r.status == 200; print("Editor HTTP check passed")'
       - |
-        kubectl --context {{.MINIKUBE_PROFILE | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec deployment/code-server-deployment -c code-server -- bash -c '
+        kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec deployment/code-server-deployment -c code-server -- bash -c '
           set -euo pipefail
           test_dir=$(mktemp -d)
           object_key="deployment-check/$(cat /proc/sys/kernel/random/uuid)"
@@ -78,9 +79,16 @@ tasks:
   labs:
     desc: Execute Quickwin notebooks in order in the deployed editor
     cmds:
-      - kubectl --context {{.MINIKUBE_PROFILE | shellQuote}} -n {{.NAMESPACE | shellQuote}} rollout status deployment/code-server-deployment --timeout=1200s
+      - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} rollout status deployment/code-server-deployment --timeout=1200s
       - |
-        kubectl --context {{.MINIKUBE_PROFILE | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec -i deployment/code-server-deployment -c code-server -- /opt/conda/bin/python - --workspace /workspace/quickwin --python-kernel quickwin_env --lab {{.LAB | shellQuote}} --timeout {{.CELL_TIMEOUT | shellQuote}} --list {{.LABS_LIST | shellQuote}} < ../mastering-app-package/scripts/run-practice-labs.py
+        kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec deployment/code-server-deployment -c code-server -- /workspace/.venv/bin/python /workspace/quickwin/scripts/run-practice-labs.py --workspace /workspace/quickwin --python-kernel quickwin_env --lab {{.LAB | shellQuote}} --timeout {{.CELL_TIMEOUT | shellQuote}} --list {{.LABS_LIST | shellQuote}}
+
+      - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec deployment/code-server-deployment -c code-server -- bash -c 'if [ "{{.LABS_LIST}}" != true ] && [ "{{.LAB}}" = "*" ]; then /workspace/.venv/bin/python /workspace/quickwin/scripts/check-results.py; fi'
+
+  test:lifecycle:
+    desc: Verify workspace retention, fresh locked environment, and disposable S3
+    cmds:
+      - bash ../scripts/test-module-lifecycle.sh {{.KUBE_CONTEXT | shellQuote}} {{.NAMESPACE | shellQuote}} eoap-quickwin-s3-seaweedfs-all-in-one /workspace/.venv
 
   labs:list:
     desc: List selected Quickwin notebooks
@@ -97,14 +105,13 @@ tasks:
       - task: test
 
   dev:
-    desc: Start Minikube and watch the deployment with editor forwarding on port 8000
+    desc: Watch deployment on the selected Kubernetes context with editor forwarding on port 8000
     preconditions:
       - sh: command -v skaffold
         msg: Install Skaffold first.
     cmds:
-      - task: start
       - task: repos
-      - skaffold dev --kube-context {{.MINIKUBE_PROFILE | shellQuote}} --detect-minikube=false
+      - skaffold dev --kube-context {{.KUBE_CONTEXT | shellQuote}} --detect-minikube=false
 
   stop:
     desc: Stop the module's Minikube cluster

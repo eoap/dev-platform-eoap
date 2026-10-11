@@ -28,7 +28,7 @@ Defaults shown here come from the checked-in module Taskfiles and init scripts. 
 | `inference-eoap` | [inference-eoap](https://github.com/eoap/inference-eoap) | `eoap-inference` | Six labs plus regression tests via `labs` | [Module README](../../inference-eoap/README.md) |
 | `dask-gateway` | [dask-app-package](https://github.com/eoap/dask-app-package) | `eoap-dask-gateway` | `test:dask` and selected notebooks | [Module README](../../dask-gateway/README.md) |
 | `eoap-contract-first` | [eoap-contract-first](https://github.com/eoap/eoap-contract-first) | `eoap-contract-first` | Source `reference:test` via `labs` | [Module README](../../eoap-contract-first/README.md) |
-| `quickwin` | [quickwin](https://github.com/eoap/quickwin) | `eoap-quickwin` | Four notebooks via `labs` | [Module README](../../quickwin/README.md); current contract/context gaps |
+| `quickwin` | [quickwin](https://github.com/eoap/quickwin) | `eoap-quickwin` | Four notebooks via `labs` | [Module README](../../quickwin/README.md); typed CWL v1.2; release-preparation feature |
 
 Dask uses a deployment directory named `dask-gateway` but a course checkout named `dask-app-package`. How-to is a training module name, separate from this documentation's how-to section. Contract-first uses reference tasks rather than a notebook runner. These differences matter when navigating workspaces and choosing acceptance commands.
 

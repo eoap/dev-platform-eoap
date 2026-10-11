@@ -18,7 +18,7 @@ Use Task from a module directory, or its explicit `--dir` option. `task --list-a
 | `labs:list` | Lists notebook selection without execution | Available in notebook modules; not how-to, patterns or contract-first |
 | `test:lifecycle` | Backs up/recreates environment and resets S3 | How-to, CWL, inference, patterns, Dask and contract-first; run after workloads |
 
-Quickwin is an exception: it uses `MINIKUBE_PROFILE` as context, and its `dev` task includes Minikube startup. STAC and mastering do not currently expose `test:lifecycle`. The root Taskfile mostly launches older Skaffold workflows; module Taskfiles are the detailed interface.
+Quickwin now separates `KUBE_CONTEXT` from `MINIKUBE_PROFILE`; `dev` uses the selected cluster without starting Minikube, and `test:lifecycle` verifies retained workspaces, environment recreation and disposable S3. STAC and mastering do not currently expose `test:lifecycle`. The root Taskfile mostly launches older Skaffold workflows; module Taskfiles are the detailed interface.
 
 ## Shared variables
 

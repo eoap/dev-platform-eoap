@@ -30,7 +30,7 @@ The shared coder image default is still the legacy `ghcr.io/eoap/dev-platform-eo
 | Dask | `feature/pde-typed-cwl` | `DASK_TRAINING_REF` |
 | Contract-first | `main` | `EOAP_CONTRACT_FIRST_TRAINING_REF` |
 
-These are shell variables read in the init container; they are not automatically forwarded from a host export. Refer to [source selection](../how-to/work-with-training-source.md) before changing them. Quickwin's existing clone/startup behavior and source rewriting are recorded as follow-up work.
+These are shell variables read in the init container; they are not automatically forwarded from a host export. Refer to [source selection](../how-to/work-with-training-source.md) before changing them. Quickwin reads `QUICKWIN_TRAINING_REF` (default `feature/typed-cwl-release`), preserves dirty workspaces, and installs the module's hash-locked environment without rewriting notebooks.
 
 ## Runtime paths
 

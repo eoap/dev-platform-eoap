@@ -466,8 +466,25 @@ It does not meet the later source requirements yet:
 - Workspace/environment recreation and disposable S3 lifecycle checks still
   need explicit Quickwin evidence.
 
-The review leaves the existing Quickwin WIP intact. These are follow-up items;
-the earlier migration validation is not acceptance of the new CWL requirements.
+Quickwin follow-up is now published on `feature/typed-cwl-release` in
+[PR #7](https://github.com/eoap/quickwin/pull/7), targeting 2.0.0. It embeds
+URI/BBox records and CRS/band enums in standalone CWL v1.2 documents, updates
+notebook jobs, locks Python/container dependencies, and validates metadata using
+actual transpiler-mate conversion. Publication is an explicit main-branch action
+gated on four real-data notebook executions and scientific STAC/GeoTIFF checks.
+The container UID fix is in training source; module startup selects a GitHub ref
+without rewriting notebooks. Module tasks now separate Kubernetes context from
+local Minikube helpers and expose the shared lifecycle check. Clean CI acceptance of final feature commit `a98a0c9` passed all four real
+Sentinel-2 notebooks, four scientific STAC/GeoTIFF checks, CWL validation,
+transpiler-mate metadata checks and strict docs on
+[run 38160206253](https://github.com/eoap/quickwin/actions/runs/38160206253).
+Minikube deployment/editor/S3 smoke and the explicitly approved lifecycle
+check passed (retained workspace and old environment; fresh hash-locked
+environment; disposable S3 reset). Full notebook acceptance is
+blocked by truncated remote COG range transfers: a tile received 571,623 of
+1,477,634 required bytes. Host range requests also time out, while the same
+commit passes real-data CI. Restore reliable data transfer and rerun `task labs`
+before promotion. No Quickwin 2.0.0 release or new processing image is published.
 
 ### Published chapter 5 candidate validation
 

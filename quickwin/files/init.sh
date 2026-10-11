@@ -6,21 +6,16 @@ fi
 set -euo pipefail
 cd /workspace
 
+training_ref=${QUICKWIN_TRAINING_REF:-feature/typed-cwl-release}
 if [ ! -d quickwin/.git ]; then
-    git clone 'https://github.com/eoap/quickwin.git'
+    git clone --branch "$training_ref" 'https://github.com/eoap/quickwin.git'
+elif [ -n "$(git -C quickwin status --porcelain)" ]; then
+    echo "Preserving local Quickwin checkout and edits"
+else
+    git -C quickwin fetch --tags origin "$training_ref"
+    git -C quickwin checkout "$training_ref"
+    git -C quickwin merge --ff-only FETCH_HEAD
 fi
-
-# The legacy notebook hard-codes UID 1000, while PDE runs as UID 1001.
-# Update only that command argument; preserve all other notebook content.
-python - <<'PYTHON'
-from pathlib import Path
-notebook = Path('/workspace/quickwin/practice-labs/2 - Container.ipynb')
-if notebook.is_file():
-    source = notebook.read_text()
-    updated = source.replace('--user=1000:100', '--user=$(id -u):$(id -g)')
-    if updated != source:
-        notebook.write_text(updated)
-PYTHON
 
 code-server --install-extension ms-python.python --install-extension redhat.vscode-yaml --install-extension sbg-rabix.benten-cwl --install-extension ms-toolsai.jupyter
 ln -sfn /workspace/.local/share/code-server/extensions /workspace/extensions
@@ -29,8 +24,8 @@ echo '{"workbench.colorTheme": "Visual Studio Dark"}' > /workspace/User/settings
 
 uv venv --allow-existing --seed --python /opt/conda/bin/python /workspace/.venv
 source /workspace/.venv/bin/activate
-# Use the Click version selected for the tested notebook environment.
-uv pip install --python /workspace/.venv/bin/python rasterio click==8.1.8 pystac loguru pyproj shapely scikit-image rio_stac ipykernel "stactools[validate]"
+uv pip sync --python /workspace/.venv/bin/python --require-hashes /workspace/quickwin/requirements-notebooks.txt
+/workspace/.venv/bin/python /workspace/quickwin/scripts/cwl-docs.py --validate
 uv pip check --python /workspace/.venv/bin/python
 /workspace/.venv/bin/python -m ipykernel install --user --name quickwin_env --display-name "Python (Quickwin)"
 
