@@ -1,0 +1,19 @@
+api:
+  image: eoap-titiler-eopf:local
+  resources:
+    requests: {cpu: 250m, memory: 512Mi}
+    limits: {cpu: '2', memory: 4Gi}
+client:
+  image: nginxinc/nginx-unprivileged:1.28-alpine
+  resources:
+    requests: {cpu: 50m, memory: 32Mi}
+    limits: {cpu: 500m, memory: 256Mi}
+workspaceClaim: code-server-pvc
+workflowClaim: calrissian-claim
+trainingPath: /workspace/zarr-cloud-native-format
+storePath: /workspace/zarr-cloud-native-format/titiler-data
+collectionId: water-bodies
+itemId: water-bodies
+
+# Skaffold supplies the feature-branch HTML through --set-file.
+clientHtml: ""

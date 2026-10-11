@@ -1,0 +1,5 @@
+apiVersion: v2
+name: zarr-viewer
+version: 0.1.0
+description: TiTiler EOPF and the module's HTML viewer on shared training volumes
+type: application

@@ -670,3 +670,20 @@ Other pending work includes Quickwin's newly recorded CWL/type/metadata gaps,
 machine-learning-process, event-driven-with-argo artifact flow, advanced-tooling,
 undeclared-storage aliases, shared image/digest/ARM approval, legacy CI/image
 retirement and remaining root documentation cleanup.
+
+### Zarr: editor, TiTiler server and client deployed and validated on AMD64
+
+`zarr-cloud-native-format` now builds the sibling `feature/zarr-conventions`
+checkout's pinned compatible TiTiler derivative and deploys separate server and
+client services beside the PDE editor. Read-only shared mounts expose completed
+catalogs through atomic publication at `titiler-data`. The client uses a
+same-origin API proxy, published STAC metadata and server-advertised variable
+paths. The current upstream TiTiler main branch targets a STAC API; the local-store
+reader is pinned by digest with guarded GeoZarr/time fixes.
+
+Editor/server/client/proxy readiness and actual module-produced GeoZarr rendering
+passed on `eoap-mastering-app-package-docker`, including overviews, nonempty PNG
+pixels, public TileJSON URLs and distinct time slices. A reproducible local-input
+fixture task exercises the module writer and GeoZarr validation without remote EO
+product downloads. Full remote producer notebooks and other clusters/architectures
+remain separate acceptance. This module uses shared files rather than an S3 alias.

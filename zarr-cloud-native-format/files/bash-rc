@@ -1,5 +1,3 @@
-alias ll="ls -l"
-
-alias aws="aws --endpoint-url=http://eoap-cwl-localstack:4566"
-
-source /workspace/.venv/bin/activate   
+alias ll='ls -l'
+source /workspace/.venv/bin/activate
+export TITILER_EOPF_URL=http://titiler-eopf:8080
