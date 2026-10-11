@@ -619,21 +619,37 @@ its remote STAC item endpoint returns HTTP 500 on repeated attempts. Worker
 artifact publication and architecture scope remain to be verified. Training
 commit: `2a336b8` on `feature/pde-typed-cwl`.
 
-### Application Package Patterns: deployment implemented; notebook acceptance in progress
+### Application Package Patterns: 2.0.0 release preparation
 
-PDE, current eoap-cwlwrap/cwl-loader APIs and dedicated SeaweedFS are deployed.
-All 18 nonempty source/composed CWL documents validate as standalone v1.2
-packages with described metadata/ports and embedded module types; the existing
-shared OGC/GeoJSON schemas remain explicit imports. Wrapping uses eoap-cwlwrap
-and dump_cwl, then embeds the wrapper-introduced URI definition. No packing
-command is used. Diagram generation uses local Graphviz and PlantUML source,
-avoiding the external image server that returned HTTP 403. Ordinary Graphviz
-boxes resolve the record-node flat-edge rendering failure. All 12 notebooks
-passed real Landsat staging and application container execution, including
-S3 output cases. Bounded staging retries recover interrupted remote transfers
-and still fail after the last attempt. Training commit: `ff627a6` on
-`feature/pde-typed-cwl`. Editor/S3 smoke and retained-workspace/fresh-environment/disposable-S3
-lifecycle acceptance passed.
+The published `feature/pde-typed-cwl` branch integrates upstream Markdown lessons
+with CWL v1.2 and embedded typed contracts. The hash-locked Python 3.12
+environment uses eoap-cwlwrap 0.32.0 and cwl-loader 0.27.0. Seventeen source and
+staging documents validate, all twelve generated wrappers validate, 27 existing
+runner tests pass, and typed PlantUML/SVG diagrams render locally. No packing
+command is used; approved external OGC/GeoJSON imports remain intact.
+
+Mastering 2.0.0 stage-in's 60-second transfer timeout blocked real Landsat reuse.
+Mastering PR #18 and published candidate `2.0.1-rc.44.1` add configurable timeout
+and asset selection, plus independent stage-in/out CWL artifacts on GHCR. The
+patterns lock records both OCI CWL and container digests. The typed adapter
+selects green/red/nir08 bands; DEM staging uses the container's native stac-asset
+library and signing support. Both staging paths operate on real EO data.
+
+Clean source `4a1de5c` passed sixteen-case Minikube acceptance:
+twelve patterns and four optional-port cases. [Matching CI](https://github.com/eoap/application-package-patterns/actions/runs/38153992055)
+passed all sixteen cases, 27 runner tests and strict documentation. Checks cover readable S3 STAC
+links/assets, georeferenced rasters intersecting the requested area, and the
+finite scalar normalized-index mean for pattern 6. Editor/S3 smoke and retained-workspace/fresh-environment/disposable-S3
+lifecycle checks pass. Stage-out disables upload caching and assigns distinct
+S3 prefixes to scattered results. Evidence is saved at
+`/workspace/lab-results/patterns-4a1de5c.zip`; lifecycle cleared the uploaded S3
+objects after validation. The former modified workspace is preserved separately. The module initializes
+from GitHub and published GHCR dependencies without sibling host checkouts.
+
+Patterns PR #15 prepares 2.0.0. Stable promotion requires promotion of the upstream mastering staging candidate
+and updating the lock to that stable publication.
+Publication CI validates the source and refuses replacement of existing CWL
+tags before publishing original and wrapped release artifacts.
 
 ### Contract-first: new deployment implemented and validated on AMD64
 

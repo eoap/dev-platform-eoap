@@ -16,7 +16,7 @@ else
     git -C application-package-patterns checkout "$training_ref"
     git -C application-package-patterns merge --ff-only FETCH_HEAD
 fi
-if [ ! -f application-package-patterns/scripts/cwl-docs.py ]; then
+if [ ! -f application-package-patterns/scripts/cwl-docs.py ] || [ ! -f application-package-patterns/requirements-notebooks.txt ]; then
     echo "application-package-patterns typed-CWL training source is required; select $training_ref or copy the feature branch into the workspace" >&2
     exit 1
 fi
@@ -30,8 +30,8 @@ uv venv --allow-existing --seed --python /opt/conda/bin/python /workspace/.venv
 source /workspace/.venv/bin/activate
 ln -sfn /opt/calrissian-venv/bin/calrissian /workspace/.venv/bin/calrissian
 # Calrissian remains in the container-provided isolated environment.
-uv pip install --python /workspace/.venv/bin/python PyYAML rasterio requests pystac ipykernel nbclient nbformat "eoap-cwlwrap==0.32.0" "cwl-loader==0.27.0" "cwl2puml==0.49.1" pillow plantuml graphviz cwltool
-/workspace/.venv/bin/python application-package-patterns/scripts/cwl-docs.py --output /tmp/howto-cwl-docs
+uv pip sync --python /workspace/.venv/bin/python --require-hashes /workspace/application-package-patterns/requirements-notebooks.txt
+/workspace/.venv/bin/python application-package-patterns/scripts/cwl-docs.py --output /tmp/patterns-cwl-docs
 uv pip check --python /workspace/.venv/bin/python
 /workspace/.venv/bin/python -m ipykernel install --user --name patterns_env --display-name "Python (application-package-patterns)"
 

@@ -20,9 +20,27 @@ path addressing, credentials `test`/`test`, initialized bucket `results`.
 Only the AMD64 local Kubernetes configuration has been selected for acceptance;
 other architectures and storage providers need their own validation.
 
-All 12 notebooks passed on the local AMD64 cluster with real Landsat staging
-and application containers. CWL metadata/documentation and editor/S3 smoke
-checks passed. Training changes are committed on `feature/pde-typed-cwl` as
-`ff627a6`; this branch must be published or seeded for fresh deployments.
-Run `task test:lifecycle` after notebook execution to check retained workspaces,
-fresh environments and disposable S3.
+The training feature branch now targets 2.0.0 with twelve typed CWL patterns and
+four additional optional-port acceptance cases. Lessons are Markdown pages;
+`task labs` executes their wrapped CWL with Calrissian using real EO data.
+`task wrap` composes the standalone documents through eoap-cwlwrap.
+
+The hash-locked Python environment and immutable image references come from the
+training checkout. `mastering-staging.lock.json` records the independently
+published GHCR stage-in/out CWL and containers from mastering 2.0.1-rc.44.1.
+The stage-in adapter downloads the green, red and nir08 assets required by these
+patterns with a 300-second transfer timeout. No sibling host clone is required.
+
+All sixteen acceptance cases passed from clean commit `4a1de5c` on AMD64
+Minikube, followed by editor/S3 smoke and retained-workspace/fresh-environment/
+disposable-S3 lifecycle checks. Stage-out disables upload caching and gives
+each result its own S3 prefix, preventing scattered-output collisions.
+Evidence: `/workspace/lab-results/patterns-4a1de5c.zip` and
+`/calrissian/patterns/20261011T160535Z`. Lifecycle validation cleared the
+uploaded S3 objects after their contents were checked and the evidence saved.
+
+[PR acceptance CI](https://github.com/eoap/application-package-patterns/actions/runs/38153992055)
+passed all sixteen cases, 27 runner tests and strict documentation. Stable
+promotion requires promotion of the upstream mastering staging candidate and
+updating the lock to its stable publication.
+The release preparation is tracked in training PR #15 and mastering PR #18.

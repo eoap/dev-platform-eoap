@@ -9,9 +9,6 @@ vars:
   CONTAINER_RUNTIME: docker
   NAMESPACE: eoap-application-package-patterns
   IMAGE: eoepca/pde-code-server:amd64
-  LAB: 'pattern-*.ipynb'
-  CELL_TIMEOUT: '1800'
-  LABS_LIST: 'false'
 
 tasks:
   default:
@@ -82,18 +79,15 @@ tasks:
       - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec deployment/code-server-deployment -c code-server -- /workspace/.venv/bin/python /workspace/application-package-patterns/scripts/cwl-docs.py --validate --output /workspace/lab-results/cwl-docs
 
   labs:
-    desc: Execute application-package-patterns notebooks in order in the deployed editor
+    desc: Execute twelve wrapped patterns and four optional-port cases with real EO data
     cmds:
       - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} rollout status deployment/code-server-deployment --timeout=1200s
-      - |
-        kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec -i deployment/code-server-deployment -c code-server -- /opt/conda/bin/python - --workspace /workspace/application-package-patterns --python-kernel patterns_env --notebooks-dir docs --lab {{.LAB | shellQuote}} --timeout {{.CELL_TIMEOUT | shellQuote}} --list {{.LABS_LIST | shellQuote}} < ../mastering-app-package/scripts/run-practice-labs.py
+      - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec deployment/code-server-deployment -c code-server -- /workspace/.venv/bin/python /workspace/application-package-patterns/scripts/run-acceptance.py
 
-  labs:list:
-    desc: List selected application-package-patterns notebooks
+  wrap:
+    desc: Compose standalone workflows using eoap-cwlwrap and mastering staging
     cmds:
-      - task: labs
-        vars:
-          LABS_LIST: 'true'
+      - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec deployment/code-server-deployment -c code-server -- /workspace/.venv/bin/python /workspace/application-package-patterns/scripts/wrap-pattern.py
 
   test:lifecycle:
     desc: Verify fresh environments, retained workspaces, and disposable S3 data (run after labs)
