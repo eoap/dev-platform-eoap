@@ -18,7 +18,7 @@ The runner fails on cell errors, but examples must also assert subprocess result
 
 Inference acceptance uses a deterministic local STAC fixture and runs the actual ONNX model. It isolates model and packaging behavior from authenticated downloading. This is a useful, explicitly bounded claim: it does not establish that Copernicus credentials or network staging work.
 
-Patterns uses real remote Landsat staging, and cloudless Dask acceptance uses two real satellite items. These paths exercise network and data integration but can fail when upstream services fail. Bounded retries recover transient transfers; exhausted retries still fail. EOPF's HTTP 500 remains a blocked science path, even though independent gateway computation and teardown pass.
+Patterns uses real remote Landsat staging, and cloudless Dask acceptance uses two real satellite items. These paths exercise network and data integration but can fail when upstream services fail. Bounded retries recover transient transfers; exhausted retries still fail. EOPF's earlier HTTP 500 outage recovered; the real bounded notebook and typed CWL path now pass. Its full-tile capacity remains unverified. Record endpoint outages separately from independent gateway computation and teardown.
 
 The distinction belongs in the evidence. A fixture is neither automatically inadequate nor automatically equivalent to live downloading: its value depends on the boundary being validated.
 
