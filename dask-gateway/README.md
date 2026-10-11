@@ -1,32 +1,16 @@
 # Dask application package module
 
-This folder deploys the `dask-app-package` course: PDE, upstream Calrissian's
-Dask Gateway integration, Dask Gateway, and authenticated disposable SeaweedFS.
-All three editor profiles share the same initialization and S3 endpoint.
+Deploy the `eoap/dask-app-package` course with PDE, upstream Calrissian's Dask
+Gateway integration, Dask Gateway 2025.4.0, and disposable authenticated
+SeaweedFS. The module targets Kubernetes; `task start` optionally creates a
+Minikube cluster. Configure storage classes for your cluster.
 
-Use `task deploy KUBE_CONTEXT=<context>`, `task test`, and `task cwl:docs`.
-The optional `task start` starts Minikube. Configure the storage classes for your
-cluster. Use `task labs LAB=eopf-sentinel-2/notebook.ipynb` or
-`task labs LAB=cloudless-mosaic/notebook.ipynb` for a chosen notebook.
-Full satellite jobs require considerably more resources than deployment smoke tests.
+## Prepare and deploy the candidate
 
-The training feature branch is `feature/pde-typed-cwl`; publish or copy that
-checkout into the persistent workspace for testing. Calrissian comes from the
-PDE isolated environment. There is no Terradue Calrissian fork installation.
-
-Typed URI, Date, BBox, and SpectralBand definitions are embedded in each CWL
-application package. Upstream Calrissian requires `clusterMaxCores` (plural).
-Application images must also contain compatible Dask scheduler/worker commands;
-Calrissian selects the application's image when provisioning its Dask cluster.
-
-The gateway chart is pinned to 2025.4.0 to match the course client and application
-images, following the [Dask custom-image guidance](https://gateway.dask.org/install-kube.html#using-a-custom-image).
-
-## Matching notebook workers
-
-PDE notebooks use Python 3.12. Published course images use Python 3.10, which
-failed Dask task deserialization when used from the PDE client. Build the
-matching worker from the sibling training feature checkout before local use:
+Initialization checks out the published GitHub branch `feature/pde-typed-cwl`
+inside the editor. No sibling host checkout is required. During release
+preparation, build the matching candidate from that GitHub source and make it
+available to the cluster:
 
 ```bash
 task worker:build
@@ -34,24 +18,52 @@ task worker:load MINIKUBE_PROFILE=<running-profile>
 task deploy KUBE_CONTEXT=<context>
 ```
 
-`Dockerfile.pde-worker` installs both course packages and their shared
-`requirements-runtime.txt` lock on Python 3.12.11. The editor installs the same
-lock. The supplied worker tag is `eoap-dask-worker:2025.4.0-py312`; for another
-cluster, make this image available to its runtime or publish your worker image
-and change the backend and `daskGateway.image` settings. No worker image is
-published by these tasks. The legacy Dockerfile/CI builds remain unchanged
-pending the repository-wide image retirement decision.
+For another cluster, publish the worker image to an accessible registry and
+configure the backend and `daskGateway.image` values. The temporary default is
+`eoap-dask-worker:2.0.0-candidate`. Accepted CI builds will publish the shared
+application/worker image under the existing cloudless-mosaic and
+EOPF-sentinel-2 GHCR package names; the deployment will adopt a verified
+published digest before stable promotion. These tasks do not publish images.
 
-Notebook tasks default to two workers. Cloudless validation uses `MAX_ITEMS=2`
-(default in the task); set a larger value for the original full search. Use
-`DASK_MAX_WORKERS` and `DASK_WORKER_CORES_LIMIT` for larger cluster budgets.
+Python 3.12, Dask/Distributed/Gateway 2025.4.0 and the hash-locked course runtime
+match between notebook clients and workers. Both processing commands and Dask
+scheduler/worker executables are in the same image. The image defines UID 1001
+for Calrissian's non-root jobs. The editor installs the notebook and build
+locks with uv; Calrissian stays in PDE's isolated environment.
 
-## Validation on the local AMD64 cluster
+## Validate
 
-The bounded Calrissian two-worker job, cluster teardown, editor/S3 smoke checks,
-and retained-workspace/fresh-environment lifecycle checks passed. The real
-cloudless notebook passed with two satellite items and matching Python 3.12
-workers. Five regression tests cover nonzero processing failures and current
-`proj:code`/legacy `proj:epsg` metadata. Full EOPF notebook acceptance remains
-blocked by HTTP 500 from its remote STAC item endpoint; this is not a passed
-scientific workflow. Worker images remain local and ARM64 is untested.
+```bash
+task test KUBE_CONTEXT=<context>
+task cwl:docs KUBE_CONTEXT=<context>
+task test:dask KUBE_CONTEXT=<context>
+task labs:all KUBE_CONTEXT=<context>
+task test:cwl KUBE_CONTEXT=<context>
+```
+
+Smoke tests check readiness, editor HTTP and real S3 upload/download/delete.
+The distributed test creates two workers, checks the computed result, and
+verifies cluster disposal. `labs:all` runs both real-data notebook lessons and
+checks STAC assets, GeoTIFF coordinates and scientific value ranges.
+`test:cwl` executes both typed scientific CWL jobs through Calrissian.
+
+Acceptance uses two real Sentinel-2 acquisitions at 100 m for cloudless mosaics
+and a centred 1024-pixel window from the original real EOPF Zarr acquisition.
+The EOPF window is explicit and its STAC footprint is derived from the output
+GeoTIFF. Set `MAX_ITEMS` and `EOPF_WINDOW` for larger workloads; omit the window
+when invoking the application directly to process the full tile. No synthetic
+EO samples replace source imagery.
+
+CWL v1.2 documents embed their URI, Date, BBox, CRS and SpectralBand types.
+The CRS input is quoted EPSG code `"4326"`. Dask Gateway is a mandatory custom
+requirement. Metadata is validated against transpiler-mate's actual model in
+an isolated environment; its generic cwl2oci parser does not support the Dask
+requirement. CWL packing is never used.
+
+## Release preparation status
+
+Locked dependencies, six regression tests, standalone CWL validation,
+metadata validation and strict documentation builds passed. Minikube editor/S3
+checks and the rebuilt Calrissian two-worker job passed, including cluster
+teardown. Both real-data notebooks and geographic/scientific asset checks passed. Both typed scientific CWL jobs also passed, including all five raster checks
+and cluster disposal. Clean-commit acceptance and publication CI are in progress; this is not a release-readiness assertion. ARM64 remains untested.

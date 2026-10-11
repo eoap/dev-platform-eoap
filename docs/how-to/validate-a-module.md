@@ -56,6 +56,6 @@ Keep credential values out of evidence. Record whether data is a local fixture, 
 
 A module is ready for a declared target when its required gates pass against the intended source and artifacts, with reproducible setup and accessible evidence. Distinguish local acceptance from a published release. Publication includes compatible source refs, image availability and appropriate immutable artifact identities.
 
-If an external endpoint fails, record the blocked scientific workflow and successful independent checks separately. The current Dask EOPF limitation is an example. Do not change an acceptance note to “passed” because the cause is external.
+If an external endpoint fails, record the blocked scientific workflow and successful independent checks separately. The earlier Dask EOPF endpoint outage illustrates this distinction; it recovered and the real bounded notebook now passes. Do not change an acceptance note to “passed” because the cause is external.
 
 For another architecture or cluster, repeat the relevant gates there. The known AMD64 result does not establish ARM64 or multi-node RWX compatibility.

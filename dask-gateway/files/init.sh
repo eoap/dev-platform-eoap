@@ -12,12 +12,12 @@ if [ ! -d dask-app-package/.git ]; then
 elif [ -n "$(git -C dask-app-package status --porcelain)" ]; then
     echo "Preserving local dask-app-package checkout and edits"
 else
-    git -C dask-app-package fetch origin "$training_ref"
+    git -C dask-app-package fetch --tags origin "$training_ref"
     git -C dask-app-package checkout "$training_ref"
     git -C dask-app-package merge --ff-only FETCH_HEAD
 fi
 if [ ! -f dask-app-package/scripts/cwl-docs.py ]; then
-    echo "Dask typed-CWL training source is required; select $training_ref or copy the feature branch into the workspace" >&2
+    echo "Dask typed-CWL training source is required; select $training_ref from GitHub" >&2
     exit 1
 fi
 
@@ -30,8 +30,9 @@ uv venv --allow-existing --seed --python /opt/conda/bin/python /workspace/.venv
 source /workspace/.venv/bin/activate
 ln -sfn /opt/calrissian-venv/bin/calrissian /workspace/.venv/bin/calrissian
 # Calrissian remains in the container-provided isolated environment.
-uv pip install --python /workspace/.venv/bin/python PyYAML ipykernel nbclient nbformat cwltool -r /workspace/dask-app-package/requirements-runtime.txt -e /workspace/dask-app-package/eopf-sentinel-2 -e /workspace/dask-app-package/cloudless-mosaic
-/workspace/.venv/bin/python dask-app-package/scripts/cwl-docs.py --output /tmp/howto-cwl-docs
+uv pip sync --python /workspace/.venv/bin/python --require-hashes /workspace/dask-app-package/requirements-notebooks.txt /workspace/dask-app-package/requirements-build.txt
+uv pip install --python /workspace/.venv/bin/python --no-deps --no-build-isolation -e /workspace/dask-app-package/eopf-sentinel-2 -e /workspace/dask-app-package/cloudless-mosaic
+/workspace/.venv/bin/python dask-app-package/scripts/cwl-docs.py --output /tmp/dask-cwl-docs
 uv pip check --python /workspace/.venv/bin/python
 /workspace/.venv/bin/python -m ipykernel install --user --name dask_env --display-name "Python (Dask Application Package)"
 

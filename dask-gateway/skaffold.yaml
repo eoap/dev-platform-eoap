@@ -33,7 +33,7 @@ deploy:
         daskGateway.daskGatewayUrl: http://traefik-dask-gateway.eoap-dask-gateway.svc.cluster.local:80
         kaniko.enabled: false
         coder.coderImage: eoepca/pde-code-server:amd64
-        daskGateway.image: eoap-dask-worker:2025.4.0-py312
+        daskGateway.image: eoap-dask-worker:2.0.0-candidate
       setFiles:
         initScript: ./files/init.sh
         bashrcScript: ./files/bash-rc

@@ -618,28 +618,37 @@ downloading remains a separate validation path; no credentials were supplied.
 Editor/S3 and workspace/environment/disposable-S3 lifecycle checks passed.
 Training commit `c5408c3` on `feature/pde-typed-cwl` records the source changes.
 
-### Dask Application Package: deployment implemented; full notebook acceptance in progress
+### Dask Application Package: 2.0.0 release preparation in progress
 
-The existing `dask-gateway` folder deploys this course. It now uses PDE's
-upstream Calrissian, Dask Gateway 2025.4.0 matching the course protocol version,
-and its own SeaweedFS. All editor profiles share the same setup. The typed
-source uses the upstream `clusterMaxCores` spelling and embedded URI/Date/BBox/
-SpectralBand types with validated metadata and Markdown. The original
-one-step application adapters are exposed directly as CommandLineTools with
-the same interface to avoid the pinned runtime's nested custom-requirement
-validation failure. The Dask requirement remains mandatory.
+The `dask-gateway` module initializes `eoap/dask-app-package` from the published
+`feature/pde-typed-cwl` branch. Deployment and worker builds use GitHub, without
+sibling host checkouts. The course and both applications target 2.0.0, with
+hash-locked Python 3.12 runtime, notebook/build and isolated validation/metadata
+environments. Dask/Distributed/Gateway are all 2025.4.0. One image contains both
+course applications and matching scheduler/worker commands; it defines UID
+1001 for Calrissian's non-root execution.
 
-A bounded real Calrissian test passed: two workers computed a sum of squares
-of 328350 and the cluster was shut down. Editor/S3 and environment/workspace/
-disposable-S3 lifecycle checks passed. The published course images use Python
-3.10 while PDE uses Python 3.12, causing notebook task deserialization failure.
-A matching Python 3.12 worker with both course packages and one shared runtime
-dependency lock was built and loaded. The real cloudless notebook passed with
-two satellite items. Five regressions passed, covering nonzero CLI failures and
-current/legacy projection metadata. The EOPF notebook remains unvalidated:
-its remote STAC item endpoint returns HTTP 500 on repeated attempts. Worker
-artifact publication and architecture scope remain to be verified. Training
-commit: `2a336b8` on `feature/pde-typed-cwl`.
+Standalone CWL v1.2 documents embed URI/Date/BBox/CRS/SpectralBand schemas,
+use quoted EPSG code `"4326"`, and retain the mandatory Dask Gateway requirement.
+Pinned Calrissian contract validation, six regressions, actual transpiler-mate
+metadata-model validation and strict MkDocs passed. Generic cwl2oci parsing
+still does not accept the mandatory Dask extension; no OCI conversion or CWL
+packing is claimed.
+
+Minikube editor/S3 smoke checks and the corrected two-worker Calrissian job
+passed, including the expected sum of squares and cluster disposal. Both real-data notebooks and geographic/scientific output checks passed.
+Both typed scientific CWL jobs and cluster disposal passed. Clean-commit
+acceptance and publication CI remain in progress.
+Acceptance uses two real cloudless acquisitions and an explicit 1024-pixel
+window from the original EOPF Zarr product, with footprint derived from the
+output raster. The EOPF STAC endpoint is now accessible; the earlier HTTP 500
+blocker is no longer the current release gate.
+
+Publication CI accepts both real lessons and both scientific CWL jobs on pinned
+Kubernetes before publishing candidate GHCR aliases with immutable digests.
+Adoption of a verified public image, clean-commit acceptance and review remain
+required before stable promotion. Worker defaults are temporarily local for
+candidate testing. ARM64 and full-tile resource capacity remain unverified.
 
 ### Application Package Patterns: stable 2.0.0 released and accepted
 

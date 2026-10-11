@@ -60,10 +60,12 @@ For Kubernetes execution, inspect task pod events/logs, RBAC, shared `/calrissia
 
 Distinguish HTTP status errors, authentication, missing items, expired signed URLs, incomplete transfers and timeouts. Rerun only after confirming the failure is transient or after fixing its cause. Bounded network retries must eventually fail rather than masking missing data.
 
-The recorded EOPF item endpoint returned HTTP 500; full EOPF science execution remains blocked despite successful independent Dask checks. Inference's local staging fixture validates real ONNX inference without proving authenticated Copernicus downloading.
+The EOPF item endpoint previously returned HTTP 500 but recovered; bounded real EOPF notebook acceptance now passes. Full-tile capacity remains unverified. Inference's local staging fixture validates real ONNX inference without proving authenticated Copernicus downloading.
 
 ## Dask workers cannot deserialize tasks
 
-Confirm Python, Dask/distributed versions and package dependencies match between notebook clients and workers. The published course worker images use Python 3.10 whereas PDE uses 3.12; the matching local worker and shared runtime lock address that observed mismatch.
+Confirm Python, Dask/distributed versions and package dependencies match between notebook clients and workers. Older published course worker images use Python 3.10 whereas PDE uses 3.12; the matching local worker and shared runtime lock address that observed mismatch.
 
 Use the Dask module's `worker:build` and `worker:load` tasks for Minikube, then verify the backend image setting and cleanly rerun the workload. Inspect worker memory/CPU limits if deserialization succeeds but computation fails. See [Dask configuration](../reference/configuration.md#dask-workers).
+
+For `getpwuid(): uid not found: 1001` in a Dask init container, use the corrected candidate image, which defines the Calrissian execution account. Scientific CWL also needs an explicit main-container RAM budget; a disposal sidecar exiting successfully does not prove processing succeeded. Verify the root catalog and all raster assets.
