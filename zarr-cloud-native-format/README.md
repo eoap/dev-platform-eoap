@@ -4,7 +4,7 @@ Deploy the PDE editor, SeaweedFS, a GeoParquet-backed STAC API, upstream TiTiler
 
 ## Deploy and open
 
-The viewer is included in this platform checkout at `viewer/index.html`; Skaffold packages it into the client deployment. Stage-out uses mastering's published `2.0.0-rc.42.1` GHCR container pinned by digest, verified against real Sentinel-2 GeoZarr output. The course source is cloned from GitHub by initialization. One temporary development dependency remains: deployment invokes `training:sync` to overlay unpublished course changes from the sibling Zarr checkout. This dependency must be removed before a standalone platform checkout is accepted.
+The viewer is included in this platform checkout at `viewer/index.html`; Skaffold packages it into the client deployment. Stage-out uses mastering's published `2.0.0` GHCR container pinned by digest, verified against real Sentinel-2 GeoZarr output. The course source is cloned from GitHub by initialization. One temporary development dependency remains: deployment invokes `training:sync` to overlay unpublished course changes from the sibling Zarr checkout. This dependency must be removed before a standalone platform checkout is accepted.
 
 ```sh
 cd zarr-cloud-native-format

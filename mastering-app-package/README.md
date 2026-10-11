@@ -57,18 +57,18 @@ Chapter 5 runs on any Kubernetes cluster configured for Calrissian. Set
 context when none is supplied. `task start`, `task up`, `task stop`, and
 `labs:kubernetes-images` remain optional Minikube conveniences.
 
-To validate a published candidate on an existing deployment:
+To validate a published release on an existing deployment:
 
 ```bash
-task labs:kubernetes KUBE_CONTEXT=my-cluster APPLICATION_PACKAGE_VERSION=2.0.0-rc.42.1
+task labs:kubernetes KUBE_CONTEXT=my-cluster APPLICATION_PACKAGE_VERSION=2.0.0
 ```
 
 The deployed training checkout must contain the release-aware chapter 5
-notebooks and `scripts/prepare-kubernetes-lab.sh`. For this candidate, a clean
+notebooks and `scripts/prepare-kubernetes-lab.sh`. For this release, a clean
 checkout can be selected explicitly without resetting local edits:
 
 ```bash
-kubectl --context my-cluster -n eoap-mastering-app-package exec deployment/code-server-deployment -c code-server -- bash -euc 'cd /workspace/mastering-app-package; test -z "$(git status --porcelain)"; git fetch origin tag 2.0.0-rc.42.1; git checkout --detach 2.0.0-rc.42.1'
+kubectl --context my-cluster -n eoap-mastering-app-package exec deployment/code-server-deployment -c code-server -- bash -euc 'cd /workspace/mastering-app-package; test -z "$(git status --porcelain)"; git fetch origin tag 2.0.0; git checkout --detach 2.0.0'
 ```
 
 Initialization selects `feature/metadata` on the next editor restart when the
@@ -77,7 +77,7 @@ Use the matching released source for candidate validation until that branch
 contains the release-aware notebooks. Save local edits before switching refs.
 The release-ready check prevents the chapter 5 task from silently using an old
 local-image notebook. The upstream default release version is `2.0.0`; select
-a published candidate explicitly until the stable release exists.
+a published candidate explicitly when validating a forthcoming release.
 
 The notebooks download the selected packed CWL and matching typed inputs,
 validate the software version and digest-pinned registry references, and run
@@ -226,4 +226,16 @@ Zarr separately used the CI-published stage-out image to upload its real four-da
 ghcr.io/eoap/mastering-app-package/stage-out:2.0.0-rc.42.1@sha256:2f1dc2182308fd1249cfc02146bd91c8c522adff2bdeb33ed1c294e08946c5d2
 ```
 
-Stage-out recursively uploads directory assets and complete enclosing Zarr v2/v3 stores, including root metadata and sibling overview groups. Nine stage-out regressions, Ruff, Bandit and mypy passed locally. Stable `2.0.0` has not been published; update downstream image pins to its verified digest after stable CI publication.
+Stage-out recursively uploads directory assets and complete enclosing Zarr v2/v3 stores, including root metadata and sibling overview groups. Nine stage-out regressions, Ruff, Bandit and mypy passed locally. Stable `2.0.0` was subsequently published and validated as described below.
+
+## Stable 2.0.0 publication
+
+[Release 2.0.0](https://github.com/eoap/mastering-app-package/releases/tag/2.0.0) was published on 11 October 2026 after [PR #17](https://github.com/eoap/mastering-app-package/pull/17) promoted the accepted candidate tree to main (`66ff3ea`). [Release CI](https://github.com/eoap/mastering-app-package/actions/runs/38131738350) passed 41 tests, scanned and published all six processing containers, and validated and verified three CWL/OCI packages. The source tree matches `2.0.0-rc.42.1`; notebook acceptance above applies to that source. The stable notebook suite was not rerun.
+
+Zarr now consumes this immutable stable stage-out reference:
+
+```text
+ghcr.io/eoap/mastering-app-package/stage-out:2.0.0@sha256:2974b42df1722ebf4d220c041e4345a94553b1bb81188b545fd58c70e93f490a
+```
+
+The stable container completed a real Calrissian stage-out of the retained Northern California Sentinel-2 output. STAC bounds, S3 Zarr assets, NDWI and water-body PNG rendering, and distinct time-selected images passed through the viewer proxy.

@@ -741,3 +741,20 @@ still needs removal for standalone platform deployment acceptance.
 Temporary in-place storage CPU reservation reductions were restored after
 validation, without storage pod restarts. Stable 2.0.0 remains unpublished;
 promote the accepted source through stable CI, then update downstream digest pins.
+
+### Mastering stable 2.0.0 published
+
+On 11 October 2026, PR #17 promoted the validated candidate tree to main
+(`66ff3ea`). Release CI run 38131738350 passed all 41 tests, scanned and
+published six GHCR processing images, verified three CWL/OCI packages, and
+published the non-prerelease GitHub tag `2.0.0`. Main's source tree matches
+`2.0.0-rc.42.1`; the prior notebook evidence remains applicable without claiming
+a new full stable notebook run.
+
+The Zarr chart and live publication settings now use the stable stage-out
+image pinned to `sha256:2974b42df1722ebf4d220c041e4345a94553b1bb81188b545fd58c70e93f490a`.
+A real Calrissian stage-out of the retained Northern California Sentinel-2
+output passed, followed by S3/STAC bounds and asset checks, NDWI and water
+rendering, and distinct time-selected PNGs through TiTiler-EOPF. This completes
+the mastering stable publication and Zarr stage-out image reuse gate. The
+Zarr training-source overlay dependency remains a separate pending item.
