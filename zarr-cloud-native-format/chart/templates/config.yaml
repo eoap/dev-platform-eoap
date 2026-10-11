@@ -8,6 +8,8 @@ data:
   titiler-eopf-config.js: |
     window.EOAP_TITILER_CONFIG = {
       apiBaseUrl: "/api",
+      stacBaseUrl: "/stac",
+      assetId: {{ .Values.assetId | toJson }},
       dataBaseUrl: "/data/",
       collectionId: {{ .Values.collectionId | toJson }},
       itemId: {{ .Values.itemId | toJson }}
@@ -34,6 +36,10 @@ data:
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_read_timeout 180s;
         proxy_buffering off;
+      }
+      location /stac/ {
+        proxy_pass http://zarr-stac-api:8080/;
+        proxy_set_header Host $http_host;
       }
       location /data/ {
         alias {{ .Values.storePath }}/;

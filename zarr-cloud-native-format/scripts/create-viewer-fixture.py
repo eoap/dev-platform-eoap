@@ -126,18 +126,11 @@ subprocess.run(
         str(root / "input"),
         "--resolution",
         "100",
+        "--stac-object-type",
+        "item",
         "--overview-levels",
         "2",
     ],
     cwd=root / "output",
-    check=True,
-)
-subprocess.run(
-    [
-        str(venv / "python"),
-        "/workspace/zarr-cloud-native-format/scripts/publish-titiler-store.py",
-        "--data-root",
-        str(root / "output"),
-    ],
     check=True,
 )

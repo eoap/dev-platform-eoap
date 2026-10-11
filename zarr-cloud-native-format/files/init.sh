@@ -17,7 +17,13 @@ ln -sfn /workspace/.local/share/code-server/extensions /workspace/extensions
 mkdir -p /workspace/User
 printf '%s\n' '{"workbench.colorTheme":"Visual Studio Dark"}' > /workspace/User/settings.json
 uv venv --allow-existing --seed --python /opt/conda/bin/python /workspace/.venv
-uv pip install --python /workspace/.venv/bin/python ipykernel nbclient nbformat cwltool matplotlib loguru click graphviz pillow PyYAML rioxarray "cwl-loader==0.27.0" "eoap-cwlwrap==0.32.0" "cwl2puml==0.49.1" "stactools[validate]" -e /workspace/zarr-cloud-native-format/command-line-tools/stac-zarr
+uv pip install --python /workspace/.venv/bin/python ipykernel nbclient nbformat cwltool boto3 "rustac==0.9.17" matplotlib loguru click graphviz pillow PyYAML rioxarray "cwl-loader==0.27.0" "eoap-cwlwrap==0.32.0" "cwl2puml==0.49.1" "stactools[validate]" -e /workspace/zarr-cloud-native-format/command-line-tools/stac-zarr
 uv pip check --python /workspace/.venv/bin/python
 /workspace/.venv/bin/python -m ipykernel install --user --name cwl_eoap_env --display-name 'Python (Zarr EOAP)'
 mkdir -p /workspace/zarr-cloud-native-format/titiler-runs
+
+export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-test}
+export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-test}
+export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
+export AWS_ENDPOINT_URL=http://zarr-s3-seaweedfs-all-in-one:8333
+aws --endpoint-url "$AWS_ENDPOINT_URL" s3api head-bucket --bucket results >/dev/null 2>&1 || aws --endpoint-url "$AWS_ENDPOINT_URL" s3api create-bucket --bucket results >/dev/null

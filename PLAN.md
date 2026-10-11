@@ -687,3 +687,20 @@ pixels, public TileJSON URLs and distinct time slices. A reproducible local-inpu
 fixture task exercises the module writer and GeoZarr validation without remote EO
 product downloads. Full remote producer notebooks and other clusters/architectures
 remain separate acceptance. This module uses shared files rather than an S3 alias.
+
+### Zarr S3 / TiTiler 0.12.2 integration
+
+SeaweedFS now supplies this module's local S3 service. The Zarr feature checkout
+adds an eoap-cwlwrap composition for the final producer catalog, item-mode STAC
+publication, full-store asset URLs and group-based multiscale layout entries.
+The mastering `feature/zarr-stage-out` branch extends stage-out for recursive
+assets and enclosing Zarr stores, and fixes temporary-root STAC links.
+
+The development platform runs the unmodified upstream TiTiler 0.12.2 image,
+pinned by digest, and a database-free stac-fastapi-geoparquet service. Metadata
+indexes are uploaded with the S3 catalog and mirrored on the workspace PVC for
+API queries. TiTiler resolves STAC assets through the API and reads arrays directly
+from SeaweedFS. Actual wrapped stage-out pods, S3 publication, GeoParquet lookup,
+NDWI/water-body tiles and distinct time slices passed on the local AMD64 context.
+The full remote-data producer workflow remains separate acceptance. Disposable
+SeaweedFS replacement requires bucket recreation and republication of outputs.

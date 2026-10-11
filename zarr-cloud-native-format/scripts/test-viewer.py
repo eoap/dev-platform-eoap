@@ -8,7 +8,8 @@ import os
 base = os.environ.get("VIEWER_URL", "http://titiler-eopf-client:8080").rstrip("/")
 collection = os.environ.get("COLLECTION_ID", "water-bodies")
 item = os.environ.get("ITEM_ID", collection)
-route = f"{base}/api/collections/{collection}/items/{item}"
+asset = os.environ.get("ASSET_ID", "measurements")
+route = f"{base}/api/collections/{collection}/items/{item}/assets/{asset}"
 
 
 def get(url):
@@ -18,10 +19,13 @@ def get(url):
 
 assert b"titiler-eopf-config.js" in get(base + "/")
 assert b'"/api"' in get(base + "/titiler-eopf-config.js")
-metadata = json.loads(get(f"{base}/data/{collection}/collection.json"))
+metadata = json.loads(get(f"{base}/stac/collections/{collection}"))
+item_metadata = json.loads(get(f"{base}/stac/collections/{collection}/items/{item}"))
+assert item_metadata["assets"][asset]["href"].startswith("s3://"), item_metadata
+assert item_metadata["assets"][asset]["href"].endswith(".zarr"), item_metadata
 keys = json.loads(get(route + "/dataset/keys"))
 print("Dataset keys:", keys)
-variable = next(key for key in keys if key.endswith(":ndwi"))
+variable = next(key for key in keys if key.split(":")[-1] == "ndwi")
 query = urlencode(
     {"variables": variable, "rescale": "-1,1", "colormap_name": "viridis", "bidx": 1}
 )

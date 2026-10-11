@@ -37,8 +37,20 @@ spec:
           command: [uvicorn]
           args: ["titiler.eopf.main:app", "--host", "0.0.0.0", "--port", "8080"]
           env:
-            - name: TITILER_EOPF_STORE_URL
-              value: {{ printf "file://%s/" $.Values.storePath | quote }}
+            - name: TITILER_EOPF_STAC_API_URL
+              value: http://zarr-stac-api:8080
+            - name: AWS_ENDPOINT_URL
+              value: {{ $.Values.s3.endpoint | quote }}
+            - name: AWS_ALLOW_HTTP
+              value: 'true'
+            - name: AWS_VIRTUAL_HOSTED_STYLE_REQUEST
+              value: 'false'
+            - name: AWS_REGION
+              value: {{ $.Values.s3.region | quote }}
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom: {secretKeyRef: {name: zarr-s3-credentials, key: accessKey}}
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom: {secretKeyRef: {name: zarr-s3-credentials, key: secretKey}}
             - name: TITILER_EOPF_API_ROOT_PATH
               value: /api
             - name: TITILER_EOPF_CACHE_ENABLE

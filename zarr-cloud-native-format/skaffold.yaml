@@ -5,6 +5,13 @@ metadata:
 deploy:
   helm:
     releases:
+    - name: zarr-s3
+      remoteChart: seaweedfs/seaweedfs
+      version: 4.48.0
+      namespace: zarr-cloud-native-format
+      createNamespace: true
+      valuesFiles:
+      - seaweedfs-values.yaml
     - name: zarr-cloud-native-format
       chartPath: ../charts/coder
       namespace: zarr-cloud-native-format
@@ -31,7 +38,8 @@ deploy:
       setFiles:
         clientHtml: ../../zarr-cloud-native-format/examples/titiler-eopf-client.html
       setValueTemplates:
-        api.image: '{{.IMAGE_FULLY_QUALIFIED_eoap_titiler_eopf}}'
+        stac.image: '{{.IMAGE_FULLY_QUALIFIED_eoap_zarr_stac_api}}'
+        stageOutImage: '{{.IMAGE_FULLY_QUALIFIED_eoap_zarr_stage_out}}'
   statusCheckDeadlineSeconds: 1200
 portForward:
 - resourceType: service
@@ -51,9 +59,13 @@ portForward:
   localPort: 8090
 build:
   artifacts:
-  - image: eoap-titiler-eopf
-    context: ../../zarr-cloud-native-format
+  - image: eoap-zarr-stac-api
+    context: docker/stac-api
     docker:
-      dockerfile: docker/titiler-eopf-patched/Dockerfile
+      dockerfile: Dockerfile
+  - image: eoap-zarr-stage-out
+    context: ../../mastering-app-package/water-bodies/command-line-tools/stage-out
+    docker:
+      dockerfile: Dockerfile
   local:
     push: false

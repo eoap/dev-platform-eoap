@@ -1,49 +1,67 @@
 # Zarr cloud native format
 
-Deploy the learning editor together with EOPF-Explorer/TiTiler-EOPF and the module's existing Leaflet JavaScript client. The server reads completed GeoZarr stores from the shared workspace or Calrissian output volume; both viewer deployments mount these volumes read-only.
+Deploy the PDE editor, SeaweedFS, a GeoParquet-backed STAC API, upstream TiTiler-EOPF **0.12.2**, and the module's Leaflet HTML client. The producer outputs are staged to S3; TiTiler resolves their STAC assets through the API and reads Zarr data directly from SeaweedFS. No database is needed.
 
-## Deploy and open the viewer
+## Deploy and open
 
-The training clone must be at `../../zarr-cloud-native-format`, on `feature/zarr-conventions`, with its viewer changes. Skaffold builds `docker/titiler-eopf-patched/Dockerfile` and packages the HTML client in a ConfigMap from that checkout. The editor checks out the same branch; `task deploy` copies the local client and publication helper into the editor, so unpublished feature changes can be tested.
+Keep the sibling training clones at `../../zarr-cloud-native-format` (`feature/zarr-conventions`) and `../../mastering-app-package` (`feature/zarr-stage-out`). Skaffold builds the STAC API image and updated mastering stage-out image, and packages the client from the local feature checkout. `training:sync` copies the unpublished module changes into the editor without replacing its Git checkout.
 
 ```sh
 cd zarr-cloud-native-format
-# Select an existing Kubernetes context. The PDE image must be available to its nodes.
 task deploy KUBE_CONTEXT=eoap-mastering-app-package-docker
-task test KUBE_CONTEXT=eoap-mastering-app-package-docker
-task viewer KUBE_CONTEXT=eoap-mastering-app-package-docker
+task test
+task viewer
 ```
 
-Open <http://localhost:8090>. The client calls `/api/` on the same origin; Nginx proxies it to `titiler-eopf:8080` and serves published STAC metadata under `/data/`. Browsers never need Kubernetes service DNS. `task dev` forwards the editor to port 8000, raw API to 8010, and client to 8090; Client edits trigger a new ConfigMap deployment; `task training:sync` refreshes the publication helper and source examples in the editor. The API documentation is at <http://localhost:8090/api/api.html>.
+Open <http://localhost:8090>. The client uses `/stac/` for metadata and `/api/` for per-asset TiTiler routes, through the same Nginx origin. API documentation is at <http://localhost:8090/api/api.html>. `task dev` forwards editor/API/client ports 8000/8010/8090; run `task training:sync` after deployment to copy unpublished module changes when using this command.
 
-The two ClusterIP services are `titiler-eopf` and `titiler-eopf-client`. For other clusters, configure Skaffold image building/pushing and a registry reachable by the nodes, and adapt the coder chart's storage class. The viewer pods have required affinity with the editor so the RWO workspace volume stays on the same node. This deployment does not require an S3 server.
+The namespace contains these services:
 
-## Publish module outputs
+| Service | Port | Purpose |
+|---|---|---|
+| `code-server-service` | 8080 | Learning editor |
+| `zarr-s3-seaweedfs-all-in-one` | 8333 | S3-compatible storage |
+| `zarr-stac-api` | 8080 | STAC API over a GeoParquet metadata index |
+| `titiler-eopf` | 8080 | Upstream 0.12.2 tile server |
+| `titiler-eopf-client` | 8080 | HTML client and same-origin proxy |
 
-Run the producer workflow from the training checkout in the editor, retaining its CWL result JSON. Publish the `zarr_stac_catalog` output:
+Other clusters require suitable storage classes, image build/push settings and a registry reachable by their nodes. Shared RWO mounts use affinity with the editor. Acceptance here covers the AMD64 Docker-backed Minikube context.
+
+## Publish and display outputs
+
+Use **item-mode** producer results: `cwl-tests/jobs/producer-job-item.yml`. The updated writer references the complete Zarr store and generates group-based multiscale layout entries supported by TiTiler 0.12.2.
 
 ```sh
 task viewer:publish RESULTS=/workspace/zarr-cloud-native-format/cwl-tests/results.json
-# Or publish a completed catalog directly:
+# Or stage a completed catalog directly:
 task viewer:publish DATA_ROOT=/calrissian/results/my-run
-# Then check rendering:
+# An already staged wrapped-workflow result is indexed without another upload:
+task viewer:publish RESULTS=/workspace/zarr-cloud-native-format/cwl-tests/results-s3.json
 task test:viewer
 ```
 
-Use paths visible inside the editor and mounted under `/workspace` or `/calrissian`. A catalog root contains `<collection>/<item>.zarr`, a Zarr v3 `zarr.json`, and the producer's STAC metadata. Publication atomically updates `titiler-data`, a symlink to that catalog root; it does not copy large arrays or replace an existing directory. The task restarts TiTiler because its process caches open datasets. Publish only completed stores, and avoid modifying a served store in place.
+The publication task executes an **eoap-cwlwrap** workflow with mastering's stage-out tool using the PDE's isolated Calrissian environment. It uploads the complete Zarr store, rewrites STAC links and returns a catalog URI. Only after successful upload does it generate the metadata index and refresh the STAC API and TiTiler. Each run receives a unique S3 prefix.
 
-The defaults are collection and item ID `water-bodies`. Set other IDs in the viewer form or change `collectionId`/`itemId` in `chart/values.yaml`. Collection outputs supply render definitions and time values from `collection.json`; item outputs also expose item metadata. The client resolves STAC measurement names against TiTiler's advertised dataset keys.
+Credentials and the resolved stage-out image come from the deployed Secret/ConfigMap. Temporary job files containing credentials are removed after execution. Local output paths must be visible in the editor under `/workspace` or `/calrissian`.
 
-## Validate the integration without downloading EO products
+The GeoParquet index preserves asset URLs, render definitions and time metadata. A portable `items.parquet` is stored alongside the catalog in S3. The STAC API queries an atomic local mirror in `titiler-index` on the shared PVC; the Zarr arrays are read directly from S3. Publishing the same collection ID replaces its active index, while other collection IDs remain available. Old version files and S3 prefixes remain for inspection.
+
+The defaults are collection/item `water-bodies` and asset `measurements`. Collection/item IDs can be changed in the viewer form; configure other defaults in `chart/values.yaml`. The client resolves render expressions against advertised variable names, including root names such as `ndwi`.
+
+## Reproduce the S3 rendering checks
 
 ```sh
 task test:viewer:fixture
 ```
 
-This deliberately switches publication to a small local fixture. It generates two georeferenced raster dates, runs the module's actual `stac-zarr` writer with overviews and GeoZarr validation, and checks STAC metadata, dataset keys, same-origin TileJSON URLs, nonempty PNG pixels, and distinct time-selected tiles. It does not execute the full remote-data water-body workflow. Publish your producer results again to return to your learning outputs.
+This switches the active water-bodies collection to a small fixture. It generates two raster dates, runs the actual module writer and GeoZarr validation, executes wrapped stage-out in a real Kubernetes pod, builds the index, and checks STAC lookup, S3 asset URLs, same-origin TileJSON, nonempty tiles, both measurements and distinct time slices. It does not execute the full remote EO-product workflow. Publish your learning outputs afterwards to return to them.
 
-## TiTiler compatibility
+The module's producer lab now includes a wrapping step. Its `cwl:wrap:producer` task generates a standalone CWL v1.2 graph with the final catalog's stage-out; the platform builds the required updated image locally. No packing command is used. See the [training publication guide](https://github.com/eoap/zarr-cloud-native-format/blob/feature/zarr-conventions/docs/how-to/titiler-eopf-kubernetes.md).
 
-The image uses the upstream local-store commit `b0beec2a9c44ff030e2eef5cfc4622bd9ac19565`, pinned by its GHCR digest in the training Dockerfile. Current upstream `main` uses a STAC API configuration and cannot be substituted for the filesystem reader in this deployment. The existing derived-image patch is guarded against unexpected upstream code and handles GeoZarr layout entries pointing to DataArrays, variable-specific overview selection, and nanosecond time selectors.
+## Configuration and storage lifecycle
 
-Client scripts and map backgrounds use public CDN/OSM services and need browser network access. The HTML client remains the module's existing Leaflet implementation.
+TiTiler's upstream 0.12.2 image is pinned by digest. Its `TITILER_EOPF_STAC_API_URL` points at `zarr-stac-api`; S3 endpoint and credentials target SeaweedFS. The historical local-reader patch image is no longer built by this deployment. The GeoParquet API dependencies are pinned to a tested compatible set, and DuckDB extensions are bundled into its image.
+
+SeaweedFS uses chart 4.48.0 and disposable `emptyDir` storage, matching other modules. Default training credentials are `test`/`test`, bucket `results`, region `us-east-1`. Change matching credentials in `seaweedfs-values.yaml` and `chart/values.yaml`. After a SeaweedFS pod replacement, recreate the bucket and republish outputs: the retained metadata index may reference objects that were removed with disposable storage. The fixture task republishes generated data after the bucket is available.
+
+Client scripts and map backgrounds require browser access to the public CDN/OSM services.
