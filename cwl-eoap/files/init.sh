@@ -6,7 +6,7 @@ fi
 set -euo pipefail
 cd /workspace
 
-training_ref=${CWL_EOAP_TRAINING_REF:-feature/pde-typed-cwl}
+training_ref=${CWL_EOAP_TRAINING_REF:-1.0.0}
 if [ ! -d cwl-eoap/.git ]; then
     git clone --branch "$training_ref" 'https://github.com/eoap/cwl-eoap.git'
 elif [ -n "$(git -C cwl-eoap status --porcelain)" ]; then

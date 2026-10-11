@@ -837,3 +837,28 @@ PVC at `/workspace/zarr-notebook-acceptance/20261011T124320825498Z`.
 Platform initialization now defaults to the stable `2.0.0` source tag, and its
 publication-guide link targets that tag. Published immutable processor images
 and mastering stage-out 2.0.0 can be reused without sibling host checkouts.
+
+### CWL EOAP 1.0.0: clean-checkout acceptance and stable release
+
+The pending notebook assertion and hash-lock commits were published to
+`feature/pde-typed-cwl`. Repository-owned acceptance CI now installs the locked
+Python 3.12 environment and Podman, validates standalone CWL and generated
+Markdown, executes all three notebooks with real EO data, and builds MkDocs
+strictly. CI retains executed notebooks and generated documentation artifacts.
+
+Clean acceptance exposed an optional `env | grep CWL` diagnostic failing when
+there are no CWL variables, and editor Bash startup selecting an older venv.
+Commits `99e549d` and `8d1c115` fix these without skipping processing checks.
+All three notebooks passed from clean GitHub checkout `8d1c115` on Minikube with
+a freshly installed hash-locked environment. Executed notebooks are retained
+at `/workspace/cwl-release-acceptance-8d1c115/notebooks/20261011T131118292822Z`.
+
+Feature PR #4 and main promotion PR #5 were merged. Main `74c252c` has exactly
+the accepted feature tree and passed
+[acceptance CI 38142401563](https://github.com/eoap/cwl-eoap/actions/runs/38142401563).
+Annotated tag [1.0.0](https://github.com/eoap/cwl-eoap/releases/tag/1.0.0) is
+published as a stable release with the typed CWL example, input job, and locked
+Python requirements. Teaching containers are built locally by the notebooks.
+Platform initialization now defaults to tag `1.0.0`; existing edited workspaces
+are preserved. The previous overlay acceptance is superseded by this clean
+checkout evidence, with AMD64 remaining the tested architecture.
