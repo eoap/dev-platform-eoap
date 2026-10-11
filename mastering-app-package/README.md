@@ -60,7 +60,7 @@ context when none is supplied. `task start`, `task up`, `task stop`, and
 To validate a published candidate on an existing deployment:
 
 ```bash
-task labs:kubernetes KUBE_CONTEXT=my-cluster APPLICATION_PACKAGE_VERSION=2.0.0-rc.39.1
+task labs:kubernetes KUBE_CONTEXT=my-cluster APPLICATION_PACKAGE_VERSION=2.0.0-rc.42.1
 ```
 
 The deployed training checkout must contain the release-aware chapter 5
@@ -68,7 +68,7 @@ notebooks and `scripts/prepare-kubernetes-lab.sh`. For this candidate, a clean
 checkout can be selected explicitly without resetting local edits:
 
 ```bash
-kubectl --context my-cluster -n eoap-mastering-app-package exec deployment/code-server-deployment -c code-server -- bash -euc 'cd /workspace/mastering-app-package; test -z "$(git status --porcelain)"; git fetch origin tag 2.0.0-rc.39.1; git checkout --detach 2.0.0-rc.39.1'
+kubectl --context my-cluster -n eoap-mastering-app-package exec deployment/code-server-deployment -c code-server -- bash -euc 'cd /workspace/mastering-app-package; test -z "$(git status --porcelain)"; git fetch origin tag 2.0.0-rc.42.1; git checkout --detach 2.0.0-rc.42.1'
 ```
 
 Initialization selects `feature/metadata` on the next editor restart when the
@@ -213,3 +213,17 @@ Their deployed paths are `/workspace/lab-results/20261010T204251011633Z/` and
 `/workspace/lab-results/20261010T205747977662Z/`. Release manifests, image-pull
 events, original/fixed Job status and logs, and a machine-readable result record
 are saved in `/tmp/mastering-rc39-artifacts/`.
+
+## Release candidate 2.0.0-rc.42.1 acceptance
+
+[Candidate 2.0.0-rc.42.1](https://github.com/eoap/mastering-app-package/releases/tag/2.0.0-rc.42.1) includes the Zarr-aware stage-out fix merged through [PR #16](https://github.com/eoap/mastering-app-package/pull/16). CI passed 41 tests, validated CWL, built and scanned all six containers, and published verified OCI artifacts.
+
+On the AMD64 Minikube context `eoap-mastering-app-package-docker`, both chapter 5 notebooks passed against the candidate's published artifacts: direct Calrissian execution, Kubernetes Job execution with readable outputs, and both benchmark runs with report/plot generation. Executed notebooks are retained at `/workspace/lab-results/20261011T091130190835Z`. Chapters 1–4 (16 notebooks) passed against the preceding `rc.41.1` source; that run's remaining Kubernetes tests were stopped to validate the new candidate instead. A full 18-notebook run exclusively against `rc.42.1` was not performed.
+
+Zarr separately used the CI-published stage-out image to upload its real four-date California Sentinel-2 GeoZarr output. STAC lookup, S3 array reads, NDWI/water tiles and distinct time slices passed through TiTiler 0.12.2. The verified image is:
+
+```text
+ghcr.io/eoap/mastering-app-package/stage-out:2.0.0-rc.42.1@sha256:2f1dc2182308fd1249cfc02146bd91c8c522adff2bdeb33ed1c294e08946c5d2
+```
+
+Stage-out recursively uploads directory assets and complete enclosing Zarr v2/v3 stores, including root metadata and sibling overview groups. Nine stage-out regressions, Ruff, Bandit and mypy passed locally. Stable `2.0.0` has not been published; update downstream image pins to its verified digest after stable CI publication.

@@ -4,7 +4,7 @@ Deploy the PDE editor, SeaweedFS, a GeoParquet-backed STAC API, upstream TiTiler
 
 ## Deploy and open
 
-Keep the sibling training clones at `../../zarr-cloud-native-format` (`feature/zarr-conventions`) and `../../mastering-app-package` (`feature/zarr-stage-out`). Skaffold builds the STAC API image and updated mastering stage-out image, and packages the client from the local feature checkout. `training:sync` copies the unpublished module changes into the editor without replacing its Git checkout.
+The viewer is included in this platform checkout at `viewer/index.html`; Skaffold packages it into the client deployment. Stage-out uses mastering's published `2.0.0-rc.42.1` GHCR container pinned by digest, verified against real Sentinel-2 GeoZarr output. The course source is cloned from GitHub by initialization. One temporary development dependency remains: deployment invokes `training:sync` to overlay unpublished course changes from the sibling Zarr checkout. This dependency must be removed before a standalone platform checkout is accepted.
 
 ```sh
 cd zarr-cloud-native-format
@@ -47,6 +47,8 @@ Credentials and the resolved stage-out image come from the deployed Secret/Confi
 The GeoParquet index preserves asset URLs, render definitions and time metadata. A portable `items.parquet` is stored alongside the catalog in S3. The STAC API queries an atomic local mirror in `titiler-index` on the shared PVC; the Zarr arrays are read directly from S3. Publishing the same collection ID replaces its active index, while other collection IDs remain available. Old version files and S3 prefixes remain for inspection.
 
 The defaults are collection/item `water-bodies` and asset `measurements`. Collection/item IDs can be changed in the viewer form; configure other defaults in `chart/values.yaml`. The client resolves render expressions against advertised variable names, including root names such as `ndwi`.
+
+Published STAC Items include `tilejson` links for NDWI and water classification, with `bidx=1` selecting the first acquisition. They use root-relative viewer paths (`/api/...`). XYZ templates are obtained from TileJSON rather than embedded in the STAC Item.
 
 ## Reproduce the S3 rendering checks
 

@@ -36,10 +36,9 @@ deploy:
       namespace: zarr-cloud-native-format
       createNamespace: true
       setFiles:
-        clientHtml: ../../zarr-cloud-native-format/examples/titiler-eopf-client.html
+        clientHtml: ./viewer/index.html
       setValueTemplates:
         stac.image: '{{.IMAGE_FULLY_QUALIFIED_eoap_zarr_stac_api}}'
-        stageOutImage: '{{.IMAGE_FULLY_QUALIFIED_eoap_zarr_stage_out}}'
   statusCheckDeadlineSeconds: 1200
 portForward:
 - resourceType: service
@@ -61,10 +60,6 @@ build:
   artifacts:
   - image: eoap-zarr-stac-api
     context: docker/stac-api
-    docker:
-      dockerfile: Dockerfile
-  - image: eoap-zarr-stage-out
-    context: ../../mastering-app-package/water-bodies/command-line-tools/stage-out
     docker:
       dockerfile: Dockerfile
   local:

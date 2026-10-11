@@ -715,3 +715,29 @@ use the separate `viewer-smoke-fixture` collection and cannot replace this EO
 output. Producer notebook execution and other clusters/architectures remain
 separate checks. Disposable SeaweedFS replacement requires bucket recreation and
 republication of outputs.
+
+### Mastering rc.42.1: released stage-out accepted for Zarr reuse
+
+The Zarr directory-asset blocker is fixed in mastering develop via PR #16.
+Release CI run 38126039457 published `2.0.0-rc.42.1` from commit `270a632`:
+41 tests, CWL checks, six container builds/scans, and verified OCI publication
+passed. Stage-out supports complete Zarr v2/v3 stores, subgroup assets, and
+normalized STAC roots; nine local regressions plus lint/security/typing passed.
+
+Both chapter 5 notebooks passed against the new candidate's published artifacts
+on the AMD64 Docker-backed Minikube context, including direct Calrissian,
+Kubernetes Job/readability and two benchmark/report executions. Evidence is at
+`/workspace/lab-results/20261011T091130190835Z`. Sixteen earlier notebooks passed
+with rc.41.1 source; its remaining Kubernetes run was superseded, so do not claim
+an exclusive full 18-notebook rc.42.1 run.
+
+The published stage-out image also staged the real California Sentinel-2
+GeoZarr output through Calrissian; S3/STAC lookup and TiTiler 0.12.2 NDWI/water
+rendering and distinct time slices passed. Zarr now uses that GHCR image pinned
+by digest instead of building the sibling mastering checkout. Its viewer is
+included in the platform checkout. The remaining Zarr training-source overlay
+still needs removal for standalone platform deployment acceptance.
+
+Temporary in-place storage CPU reservation reductions were restored after
+validation, without storage pod restarts. Stable 2.0.0 remains unpublished;
+promote the accepted source through stable CI, then update downstream digest pins.

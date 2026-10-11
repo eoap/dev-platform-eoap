@@ -39,5 +39,5 @@ s3:
   region: us-east-1
   accessKey: test
   secretKey: test
-stageOutImage: eoap-zarr-stage-out:local
+stageOutImage: ghcr.io/eoap/mastering-app-package/stage-out:2.0.0-rc.42.1@sha256:2f1dc2182308fd1249cfc02146bd91c8c522adff2bdeb33ed1c294e08946c5d2
 assetId: measurements

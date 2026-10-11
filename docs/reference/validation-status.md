@@ -6,7 +6,7 @@ Recorded execution used an AMD64 Docker-backed Minikube cluster, context `eoap-m
 
 | Module | Recorded passing acceptance | Limits/follow-up |
 | --- | --- | --- |
-| [Mastering](../../mastering-app-package/README.md) | 18 notebooks, Hatch rerun, 29 package/pipeline tests, S3 staging and workspace/environment checks; published chapter 5 candidate execution | Candidate `2.0.0-rc.39.1` needed a notebook Job UID/readability override; new candidate needed to include that source fix |
+| [Mastering](../../mastering-app-package/README.md) | `2.0.0-rc.42.1`: 41 CI tests, six published containers, both chapter 5 notebooks (direct Calrissian, Job/readability, two benchmarks), real Zarr stage-out/TiTiler reuse; chapters 1–4 passed with preceding rc.41.1 source | Stable 2.0.0 remains unpublished; exclusive full 18-notebook rc.42.1 run and other architectures/clusters not established |
 | [Quickwin](../../quickwin/README.md) | Four notebooks and PDE/S3 startup smoke | CWL remains v1.0/string-based; metadata, context interface, source rewriting and explicit lifecycle follow-up |
 | [STAC](../../stac-eoap/README.md) | Five notebooks, six source documents/docs, invalid inputs, wrapped staging/application/output, readable georeferenced outputs, lifecycle | Required source branch publication or local seeding; retained shared OGC dependency |
 | [How-to](../../how-to/README.md) | Nine CWL documents/docs, ten real Calrissian cases, smoke and lifecycle | Resource requirements exceed small-cluster defaults; HTTP/PVC workflows and separate S3 smoke |

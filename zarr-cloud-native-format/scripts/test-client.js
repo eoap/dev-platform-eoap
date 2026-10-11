@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
 const vm = require('vm');
-const filename = process.argv[2] || path.resolve(__dirname, '../../../zarr-cloud-native-format/examples/titiler-eopf-client.html');
+const filename = process.argv[2] || path.resolve(__dirname, '../viewer/index.html');
 const html = fs.readFileSync(filename, 'utf8');
 for (const match of html.matchAll(/<script>([\s\S]*?)<\/script>/g)) new vm.Script(match[1]);
 const parse = html.slice(html.indexOf('function parseMeasurementFromExpression'), html.indexOf('function getRenders'));
