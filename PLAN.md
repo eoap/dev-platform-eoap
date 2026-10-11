@@ -791,3 +791,24 @@ on the editor PVC under `/workspace/zarr-notebook-acceptance/`, in runs
 candidate and execution of the failing notebooks are required before promotion.
 The seven approved Trivy exceptions apply only to candidate testing; stable CI
 clears them and retains its vulnerability gate.
+
+### Zarr rc.81.1: full notebook acceptance passed
+
+Feature commit `7e6f58d` fixes the occurrence processor's missing rioxarray
+accessor registration and updates exploitation to use the measurement asset's
+cube metadata, variables, Zarr group, and projection when exporting a GeoTIFF.
+An occurrence regression verifies raster export, CRS, transform, and values and
+is included in scoped CI tests. Platform commit `98ed256` installs nest-asyncio.
+
+[Candidate 2.0.0-rc.81.1](https://github.com/eoap/zarr-cloud-native-format/releases/tag/2.0.0-rc.81.1)
+published successfully in [CI run 38137099764](https://github.com/eoap/zarr-cloud-native-format/actions/runs/38137099764).
+All **nine practice notebooks passed together** on 2026-10-11 using Calrissian on
+Minikube, the exact published source tag, matching release CWL, and immutable
+published images. This includes real EO processing of four Sentinel-2
+observations, exploitation, and the occurrence consumer. Executed notebooks are
+retained on the editor PVC at
+`/workspace/zarr-notebook-acceptance/20261011T120215449598Z`.
+
+This closes the rc.80.1 notebook blockers. It does not waive the stable security
+gate: approved exceptions remain candidate-only, and EOPF dependency findings
+must be resolved or separately approved before stable publication.
