@@ -60,7 +60,7 @@ For Kubernetes execution, inspect task pod events/logs, RBAC, shared `/calrissia
 
 Distinguish HTTP status errors, authentication, missing items, expired signed URLs, incomplete transfers and timeouts. Rerun only after confirming the failure is transient or after fixing its cause. Bounded network retries must eventually fail rather than masking missing data.
 
-The EOPF item endpoint previously returned HTTP 500 but recovered; bounded real EOPF notebook acceptance now passes. Full-tile capacity remains unverified. Inference's local staging fixture validates real ONNX inference without proving authenticated Copernicus downloading.
+The EOPF item endpoint previously returned HTTP 500 but recovered; bounded real EOPF notebook acceptance now passes. Dask full-tile capacity remains unverified. Inference now passes all six notebooks with authenticated CDSE S3 input and full-tile ONNX inference; its synthetic fixture is a separate development check. The CDSE staging tool requires CWL `NetworkAccess`; omitting it launches nested containers without network access.
 
 ## Dask workers cannot deserialize tasks
 

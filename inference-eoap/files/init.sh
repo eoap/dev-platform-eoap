@@ -6,15 +6,19 @@ fi
 set -euo pipefail
 cd /workspace
 
-training_ref=${INFERENCE_EOAP_TRAINING_REF:-feature/pde-typed-cwl}
+training_ref=${INFERENCE_EOAP_TRAINING_REF:-39cab012f0e6cbc20e8391e81694ad41319b2295}
 if [ ! -d inference-eoap/.git ]; then
-    git clone --branch "$training_ref" 'https://github.com/eoap/inference-eoap.git'
-elif [ -n "$(git -C inference-eoap status --porcelain)" ]; then
+    git clone 'https://github.com/eoap/inference-eoap.git'
+fi
+training_branch=$(git -C inference-eoap symbolic-ref --quiet --short HEAD || true)
+training_upstream=$(git -C inference-eoap rev-parse --abbrev-ref --symbolic-full-name '@{upstream}' 2>/dev/null || true)
+if [ -n "$(git -C inference-eoap status --porcelain)" ]; then
     echo "Preserving local inference-eoap checkout and edits"
+elif [[ "$training_branch" == feature/* ]] && { [ -z "$training_upstream" ] || [ "$(git -C inference-eoap rev-list --count "${training_upstream}..HEAD")" -gt 0 ]; }; then
+    echo "Preserving local feature branch $training_branch and its commits"
 else
-    git -C inference-eoap fetch origin "$training_ref"
-    git -C inference-eoap checkout "$training_ref"
-    git -C inference-eoap merge --ff-only FETCH_HEAD
+    git -C inference-eoap fetch --tags origin "$training_ref"
+    git -C inference-eoap checkout --detach FETCH_HEAD
 fi
 if [ ! -f inference-eoap/scripts/cwl-docs.py ]; then
     echo "inference-eoap typed-CWL training source is required; select $training_ref or copy the feature branch into the workspace" >&2
@@ -30,8 +34,8 @@ uv venv --allow-existing --seed --python /opt/conda/bin/python /workspace/.venv
 source /workspace/.venv/bin/activate
 ln -sfn /opt/calrissian-venv/bin/calrissian /workspace/.venv/bin/calrissian
 # Calrissian remains in the container-provided isolated environment.
-uv pip install --python /workspace/.venv/bin/python PyYAML rasterio requests pystac click loguru numpy onnx onnxruntime rio-stac ipykernel nbclient nbformat bash_kernel cwltool pytest
-/workspace/.venv/bin/python inference-eoap/scripts/cwl-docs.py --output /tmp/howto-cwl-docs
+uv pip sync --python /workspace/.venv/bin/python --require-hashes /workspace/inference-eoap/requirements-notebooks.txt
+/workspace/.venv/bin/python inference-eoap/scripts/cwl-docs.py --output /tmp/inference-cwl-docs
 /workspace/.venv/bin/python -m bash_kernel.install
 uv pip check --python /workspace/.venv/bin/python
 /workspace/.venv/bin/python -m ipykernel install --user --name inference_env --display-name "Python (inference-eoap)"

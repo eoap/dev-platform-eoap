@@ -942,3 +942,36 @@ Application/staging CWL and locked requirements are release assets. Platform
 initialization now defaults to this tag and syncs the hash-locked environment.
 Prior copied-workspace acceptance is superseded by the clean release evidence.
 Other architectures remain unvalidated.
+
+### Inference 2.0.0: authenticated real-data candidate accepted
+
+Published feature `feature/pde-typed-cwl` is frozen at `39cab012f0e6cbc20e8391e81694ad41319b2295`.
+All six notebooks passed from that clean intended-release checkout with real
+Copernicus S3 credentials supplied through the ignored platform `.env`. Staging
+downloaded the complete 66-file, 906,601,938-byte Sentinel-2 L1C SAFE product and
+converted all thirteen bands to 10 m COGs. No synthetic pixels establish this
+acceptance. Seven regressions, three standalone CWL v1.2 contracts, locked strict
+documentation and editor/S3 smoke passed. The earlier fixture-only acceptance is
+superseded for release readiness.
+
+Fixes include the misspelled token environment variable, current STAC/OData
+endpoints, explicit CWL NetworkAccess, HTTP error handling, actual ONNX per-chip
+output handling, final partial batches/edge chips and noninteractive locked
+Python lesson environments. Full-tile inference declares 8 GiB minimum/maximum
+RAM; editor acceptance uses an 8-CPU/24-GiB limit. Startup pins the published
+source and preserves edits and unpublished feature commits. No packing is used.
+
+[Candidate CI 38171221762](https://github.com/eoap/inference-eoap/actions/runs/38171221762)
+passed at the frozen commit and published `2.0.0-rc.55` images and checksummed
+standalone CWL. All three image manifests are anonymously accessible. The exact
+published candidate workflow passed Calrissian as a Kubernetes job; scientific
+checks confirmed 10980×10980 rasters with original CRS/transform/bounds, model
+class range and the actual model's prediction for the final edge chip. Evidence
+is retained at `/calrissian/inference-release/20261011T201938Z`; executed notebook
+paths and immutable references are in
+[inference-eoap/acceptance/2.0.0-rc.55.json](inference-eoap/acceptance/2.0.0-rc.55.json).
+
+[PR #1](https://github.com/eoap/inference-eoap/pull/1) is ready for review with green
+feature and PR CI. Stable 2.0.0 promotion/publication remains pending. Acceptance
+covers CDSE S3 and AMD64 Minikube; OAuth token downloading, ARM64 and other
+clusters have not been accepted.

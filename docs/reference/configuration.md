@@ -25,7 +25,7 @@ The shared coder image default is still the legacy `ghcr.io/eoap/dev-platform-eo
 | STAC | `feature/typed-cwl-inputs` | `STAC_TRAINING_REF` |
 | How-to | `2.0.0` | `HOWTO_TRAINING_REF` |
 | CWL EOAP | `feature/pde-typed-cwl` | `CWL_EOAP_TRAINING_REF` |
-| Inference | `feature/pde-typed-cwl` | `INFERENCE_EOAP_TRAINING_REF` |
+| Inference | `39cab012f0e6cbc20e8391e81694ad41319b2295` | `INFERENCE_EOAP_TRAINING_REF` |
 | Patterns | `2.0.0` | `APPLICATION_PACKAGE_PATTERNS_TRAINING_REF` |
 | Dask | `f428aed638e571368992bc51535ae4ae888f2210` | `DASK_TRAINING_REF` |
 | Contract-first | `main` | `EOAP_CONTRACT_FIRST_TRAINING_REF` |

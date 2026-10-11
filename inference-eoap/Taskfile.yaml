@@ -12,6 +12,9 @@ vars:
   LAB: '*'
   CELL_TIMEOUT: '1800'
   LABS_LIST: 'false'
+  LOCAL_FIXTURE: '1'
+  ENV_FILE: ../.env
+  PACKAGE: ''
 
 tasks:
   default:
@@ -91,8 +94,27 @@ tasks:
     cmds:
       - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec deployment/code-server-deployment -c code-server -- /workspace/.venv/bin/python -m pytest /workspace/inference-eoap/tests -q
 
+  test:science:
+    desc: Verify real classification georeferencing, class range and the final edge prediction
+    cmds:
+      - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec -i deployment/code-server-deployment -c code-server -- /workspace/.venv/bin/python - < scripts/validate-real-outputs.py
+
+  test:kubernetes:
+    desc: Run a downloaded immutable candidate workflow with Calrissian and real staged input
+    preconditions:
+      - sh: test -f {{.PACKAGE | shellQuote}}
+        msg: Set PACKAGE to the downloaded candidate tile-based-classification CWL.
+    cmds:
+      - python3 scripts/run-calrissian.py --context {{.KUBE_CONTEXT | shellQuote}} --namespace {{.NAMESPACE | shellQuote}} --package {{.PACKAGE | shellQuote}}
+      - task: test:science
+
   labs:
-    desc: Execute inference labs in dependency order with local staging and the real ONNX model
+    desc: Execute all six notebooks with authenticated real Sentinel-2 data
+    cmds:
+      - task: labs:authenticated
+
+  labs:fixture:
+    desc: Run development regressions with synthetic staging and the actual model (not EO release acceptance)
     cmds:
       - task: test:code
       - task: labs:run
@@ -109,10 +131,23 @@ tasks:
   labs:run:
     desc: Execute inference-eoap notebooks in order in the deployed editor
     cmds:
-      - task: fixture
+      - '{{if eq .LOCAL_FIXTURE "1"}}task fixture KUBE_CONTEXT={{.KUBE_CONTEXT | shellQuote}}{{else}}true{{end}}'
       - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} rollout status deployment/code-server-deployment --timeout=1200s
       - |
-        kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec -i deployment/code-server-deployment -c code-server -- env EOAP_INFERENCE_LOCAL_FIXTURE=1 /opt/conda/bin/python - --workspace /workspace/inference-eoap --python-kernel inference_env --notebooks-dir practice-labs --lab {{.LAB | shellQuote}} --timeout {{.CELL_TIMEOUT | shellQuote}} --list {{.LABS_LIST | shellQuote}} < ../mastering-app-package/scripts/run-practice-labs.py
+        kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec -i deployment/code-server-deployment -c code-server -- env EOAP_INFERENCE_LOCAL_FIXTURE={{.LOCAL_FIXTURE | shellQuote}} /opt/conda/bin/python - --workspace /workspace/inference-eoap --python-kernel inference_env --notebooks-dir practice-labs --lab {{.LAB | shellQuote}} --timeout {{.CELL_TIMEOUT | shellQuote}} --list {{.LABS_LIST | shellQuote}} < ../mastering-app-package/scripts/run-practice-labs.py
+
+  labs:authenticated:
+    desc: Run all six notebooks with real CDSE S3 staging using local .env credentials
+    cmds:
+      - |
+        kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec deployment/code-server-deployment -c code-server -- bash -c '
+          set -euo pipefail
+          cd /workspace/inference-eoap
+          podman build --format docker -f tile-based-classification/command-line-tools/stage-in/Dockerfile -t localhost/stage-in:latest .
+          podman build --format docker -f tile-based-classification/command-line-tools/sen2cog/Dockerfile -t docker.io/library/sen2cog:latest .
+        '
+      - python3 scripts/run-authenticated-labs.py --context {{.KUBE_CONTEXT | shellQuote}} --namespace {{.NAMESPACE | shellQuote}} --env-file {{.ENV_FILE | shellQuote}} --timeout {{.CELL_TIMEOUT | shellQuote}}
+      - task: test:science
 
   labs:list:
     desc: List selected inference-eoap notebooks
