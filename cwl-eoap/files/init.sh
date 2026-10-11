@@ -16,8 +16,8 @@ else
     git -C cwl-eoap checkout "$training_ref"
     git -C cwl-eoap merge --ff-only FETCH_HEAD
 fi
-if [ ! -f cwl-eoap/scripts/cwl-docs.py ]; then
-    echo "cwl-eoap typed-CWL training source is required; select $training_ref or copy the feature branch into the workspace" >&2
+if [ ! -f cwl-eoap/scripts/cwl-docs.py ] || [ ! -f cwl-eoap/requirements-notebooks.txt ]; then
+    echo "cwl-eoap typed-CWL training source and notebook lock are required; select $training_ref or copy the feature branch into the workspace" >&2
     exit 1
 fi
 
@@ -26,11 +26,11 @@ ln -sfn /workspace/.local/share/code-server/extensions /workspace/extensions
 mkdir -p /workspace/User/
 echo '{"workbench.colorTheme": "Visual Studio Dark"}' > /workspace/User/settings.json
 
-uv venv --allow-existing --seed --python /opt/conda/bin/python /workspace/.venv
+uv venv --allow-existing --python 3.12 /workspace/.venv
 source /workspace/.venv/bin/activate
-ln -sfn /opt/calrissian-venv/bin/calrissian /workspace/.venv/bin/calrissian
+uv pip sync --python /workspace/.venv/bin/python --require-hashes /workspace/cwl-eoap/requirements-notebooks.txt
 # Calrissian remains in the container-provided isolated environment.
-uv pip install --python /workspace/.venv/bin/python PyYAML rasterio requests pystac click loguru pyproj shapely ipykernel nbclient nbformat bash_kernel check-jsonschema yq cwltool
+ln -sfn /opt/calrissian-venv/bin/calrissian /workspace/.venv/bin/calrissian
 /workspace/.venv/bin/python cwl-eoap/scripts/cwl-docs.py --output /tmp/howto-cwl-docs
 /workspace/.venv/bin/python -m bash_kernel.install
 uv pip check --python /workspace/.venv/bin/python
