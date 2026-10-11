@@ -768,7 +768,26 @@ It checks CWL v1.2, release metadata, public entrypoints and immutable GHCR imag
 before replacing prepared files. Current notebooks no longer download 0.5.0 or
 pull a mutable latest consumer. Seven rejection/acceptance regressions passed;
 all nine notebook structures and Bash cell syntax validate, and MkDocs builds.
-The matching notebooks have not yet passed execution against newly published
-artifacts. Candidate CI remains the publication gate; previous candidate runs
-failed container builds/scans. Do not mark the module release ready from source
-checks alone. Platform deployment no longer overlays a sibling checkout.
+Platform deployment no longer overlays a sibling checkout.
+
+### Zarr rc.80.1: Minikube notebook acceptance
+
+Candidate `2.0.0-rc.80.1` (source `b782d08`, CI run `38134949070`, attempt 2)
+published all seven processor images and the three matching CWL/OCI packages.
+On 2026-10-11, all nine practice notebooks were attempted on Minikube using
+those published artifacts and Calrissian. The six component notebooks and the
+full producer passed with real EO observations. Two release blockers remain:
+
+- Exploitation reads `cube:dimensions` from the wrong STAC object and raises
+  `RequiredPropertyMissing` after successfully opening the produced data.
+- The released occurrence container lacks registration of the rioxarray accessor
+  and raises `AttributeError: 'DataArray' object has no attribute 'rio'`.
+
+The editor also lacked `nest_asyncio`; the platform initialization now installs
+it, and the repaired environment passes `uv pip check`. Executed notebooks remain
+on the editor PVC under `/workspace/zarr-notebook-acceptance/`, in runs
+`20261011T112929547132Z`, `20261011T114404006696Z` (exploitation retry), and
+`20261011T114338546278Z` (consumer). Acceptance is **7/9 passed**; a corrected
+candidate and execution of the failing notebooks are required before promotion.
+The seven approved Trivy exceptions apply only to candidate testing; stable CI
+clears them and retains its vulnerability gate.
