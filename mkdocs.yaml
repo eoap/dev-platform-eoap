@@ -1,0 +1,103 @@
+site_name: EOAP Self-learning and Module Development
+theme:
+  logo: imgs/icon-eoap.png
+  name: material
+  features:
+  - navigation.tabs
+  - navigation.tabs.sticky
+  - content.code.copy
+  palette:
+  - media: '(prefers-color-scheme: light)'
+    scheme: default
+    toggle:
+      icon: material/toggle-switch-off-outline
+      name: Switch to dark mode
+  - media: '(prefers-color-scheme: dark)'
+    scheme: slate
+    toggle:
+      icon: material/toggle-switch
+      name: Switch to light mode
+plugins:
+- search
+- mermaid2:
+    version: 10.6.0
+- glightbox:
+    auto_caption: true
+    caption_position: bottom
+    zoomable: true
+    draggable: true
+    skip_classes:
+    - mermaid
+markdown_extensions:
+- toc:
+    permalink: true
+- abbr
+- admonition
+- footnotes
+- tables
+- attr_list
+- md_in_html
+- pymdownx.details
+- pymdownx.caret
+- pymdownx.mark
+- pymdownx.tilde
+- pymdownx.arithmatex:
+    generic: true
+- pymdownx.inlinehilite
+- pymdownx.highlight:
+    anchor_linenums: true
+    line_spans: __span
+- pymdownx.snippets:
+    base_path: ./
+- pymdownx.tabbed:
+    alternate_style: true
+- pymdownx.superfences:
+    custom_fences:
+    - name: mermaid
+      class: mermaid
+      format: !!python/name:pymdownx.superfences.fence_div_format
+extra_css:
+- stylesheets/extra.css
+extra_javascript:
+- javascripts/mathjax.js
+- https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+nav:
+- Home: README.md
+- Tutorials:
+  - First learning session: tutorials/first-learning-session.md
+  - Validate a module change: tutorials/validate-a-module-change.md
+- How-to guides:
+  - Set up a cluster: how-to/set-up-a-cluster.md
+  - Work with training source: how-to/work-with-training-source.md
+  - Run labs and collect results: how-to/run-labs.md
+  - Validate a module: how-to/validate-a-module.md
+  - Develop typed CWL: how-to/develop-typed-cwl.md
+  - Add a module: how-to/add-a-module.md
+  - Manage lifecycle: how-to/manage-lifecycle.md
+  - Troubleshoot: how-to/troubleshoot.md
+- Reference:
+  - Learning pathways and modules: reference/learning-pathways.md
+  - Tasks and runner: reference/tasks-and-runner.md
+  - Configuration: reference/configuration.md
+  - CWL contract: reference/cwl-contract.md
+  - Validation status: reference/validation-status.md
+  - Diagram sources: diagrams/README.md
+- Explanation:
+  - Architecture: explanation/architecture.md
+  - C4 model:
+    - Overview and notation: explanation/c4/README.md
+    - 'Level 1: System context': explanation/c4/system-context.md
+    - 'Level 2: Containers': explanation/c4/containers.md
+    - 'Level 3: Components': explanation/c4/components.md
+    - 'Level 4: Code': explanation/c4/code.md
+  - Storage and environments: explanation/storage-and-environments.md
+  - Validation model: explanation/validation-model.md
+site_description: Learn EO Application Packaging and develop, test and validate e-learning
+  modules on Kubernetes and Minikube.
+repo_url: https://github.com/eoap/dev-platform-eoap
+repo_name: eoap/dev-platform-eoap
+edit_uri: edit/main/docs/
+hooks:
+- scripts/mkdocs_hooks.py
+extra:
+  source_ref: main
