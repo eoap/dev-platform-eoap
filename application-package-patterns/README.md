@@ -1,46 +1,22 @@
-# application-package-patterns development module
+# Application package patterns module
 
-Deploy the `application-package-patterns` training checkout in the EOEPCA PDE editor. The deployment
-uses `eoepca/pde-code-server:amd64` and a dedicated authenticated SeaweedFS 4.48.0
-release with disposable S3 data. Workspace and Calrissian PVCs are retained.
+Deploy [application-package-patterns 2.0.0](https://github.com/eoap/application-package-patterns/releases/tag/2.0.0) in the EOEPCA PDE editor. Initialization clones the published GitHub tag and preserves edited checkouts. Deployment needs only this dev-platform-eoap checkout, outbound access and the PDE image; no sibling training clone is required.
 
-Run `task start` for the optional local Minikube setup, or select an existing
-Kubernetes cluster with `task deploy KUBE_CONTEXT=<context>`. Then run `task test`,
-`task cwl:docs`, and `task labs` using the same context. `task dev` forwards the
-editor to localhost:8000. Configure the storage classes in `skaffold.yaml` for
-your cluster; the supplied `standard` class is the tested local configuration.
+The module uses `eoepca/pde-code-server:amd64` and dedicated authenticated SeaweedFS (chart 4.48.0). Workspace and Calrissian PVCs are retained; S3 uses disposable storage. Select an existing Kubernetes cluster with `task deploy KUBE_CONTEXT=<context>`, or use `task start` for local Minikube. Configure the storage classes in `skaffold.yaml` for your cluster; `standard` was used for local acceptance. Run subsequent tasks with the same context.
 
-Training source: https://github.com/eoap/application-package-patterns. Feature-branch changes must be
-published or copied into the persistent workspace before deploying them. Init
-preserves existing edited checkouts. No registry or Git publication is performed
-by the validation tasks.
+- `task test`: deployment readiness, editor HTTP and S3 upload/download/delete.
+- `task cwl:docs`: standalone CWL contract and metadata validation.
+- `task wrap`: compose standalone workflows through eoap-cwlwrap.
+- `task labs`: all twelve real-data patterns and four optional-port cases through Calrissian.
+- `task test:lifecycle`: retained workspace, fresh environment and disposable S3 checks; run after saving outputs.
+- `task dev`: editor forwarding to localhost:8000.
 
-S3 endpoint: `http://eoap-application-package-patterns-s3-seaweedfs-all-in-one:8333`, region `us-east-1`,
-path addressing, credentials `test`/`test`, initialized bucket `results`.
-Only the AMD64 local Kubernetes configuration has been selected for acceptance;
-other architectures and storage providers need their own validation.
+Lessons are Markdown pages backed by executable CWL. The Python 3.12 environment is hash-locked. The staging lock records published mastering 2.0.1 stage-in/out CWL and container digests on GHCR. The typed stage-in adapter downloads the required green/red/nir08 assets with a 300-second timeout; DEM staging uses native stac-asset transfers and signing. Stage-out disables upload caching and assigns distinct S3 prefixes to scattered results.
 
-The training feature branch now targets 2.0.0 with twelve typed CWL patterns and
-four additional optional-port acceptance cases. Lessons are Markdown pages;
-`task labs` executes their wrapped CWL with Calrissian using real EO data.
-`task wrap` composes the standalone documents through eoap-cwlwrap.
+The release publishes fourteen original and twelve wrapped CWL packages, with portable transpiler-mate OCI annotations. For example, `ghcr.io/eoap/application-package-patterns/cwl/pattern-1:2.0.0` exposes the local File/Directory application, while `ghcr.io/eoap/application-package-patterns/cwl/pattern-1-wrapped:2.0.0` adds typed URI staging and S3 publication. Typed remote-input jobs accompany the wrapped execution path. Publication verifies immutable pull-backs, annotations, file contents and CWL entrypoints.
 
-The hash-locked Python environment and immutable image references come from the
-training checkout. `mastering-staging.lock.json` records the independently
-published GHCR stage-in/out CWL and containers from mastering 2.0.1-rc.44.1.
-The stage-in adapter downloads the green, red and nir08 assets required by these
-patterns with a 300-second transfer timeout. No sibling host clone is required.
+S3 endpoint: `http://eoap-application-package-patterns-s3-seaweedfs-all-in-one:8333`; region `us-east-1`, path addressing, training credentials `test`/`test`, bucket `results`.
 
-All sixteen acceptance cases passed from clean commit `4a1de5c` on AMD64
-Minikube, followed by editor/S3 smoke and retained-workspace/fresh-environment/
-disposable-S3 lifecycle checks. Stage-out disables upload caching and gives
-each result its own S3 prefix, preventing scattered-output collisions.
-Evidence: `/workspace/lab-results/patterns-4a1de5c.zip` and
-`/calrissian/patterns/20261011T160535Z`. Lifecycle validation cleared the
-uploaded S3 objects after their contents were checked and the evidence saved.
+All sixteen cases passed from fresh checkout/environment `c02c778` on AMD64 Minikube, using the published stable staging dependencies. The promoted/tagged commit `0774ea9` has the same tree. [Release CI](https://github.com/eoap/application-package-patterns/actions/runs/38157522966) passed all sixteen cases, 27 runner tests, 26 OCI metadata checks, strict documentation and publication verification. Every published package also resolves anonymously. Scientific checks cover resolvable STAC links, readable georeferenced rasters intersecting the requested area, distinct output catalogs and a finite normalized-index mean for the scalar case.
 
-[PR acceptance CI](https://github.com/eoap/application-package-patterns/actions/runs/38153992055)
-passed all sixteen cases, 27 runner tests and strict documentation. Stable
-promotion requires promotion of the upstream mastering staging candidate and
-updating the lock to its stable publication.
-The release preparation is tracked in training PR #15 and mastering PR #18.
+Evidence: `/workspace/lab-results/patterns-c02c778-stable.zip` and `/calrissian/patterns-stable/20261011T165020Z`. Earlier lifecycle checks passed and retained edited workspaces; the final stable-dependency run followed them. Other architectures and Kubernetes storage/network configurations require their own acceptance.

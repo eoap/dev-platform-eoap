@@ -15,7 +15,7 @@ Use Task from a module directory, or its explicit `--dir` option. `task --list-a
 | `up` / default | Runs start, deploy and smoke in sequence | Creates/uses the local profile; unsuitable when only selecting a remote context |
 | `cwl:docs` | Validates/generates contract documentation | Implemented by STAC, how-to, CWL, inference, patterns, Dask and contract-first |
 | `labs` | Executes the module's learning acceptance | Meaning depends on the module |
-| `labs:list` | Lists notebook selection without execution | Available in notebook modules; not how-to or contract-first |
+| `labs:list` | Lists notebook selection without execution | Available in notebook modules; not how-to, patterns or contract-first |
 | `test:lifecycle` | Backs up/recreates environment and resets S3 | How-to, CWL, inference, patterns, Dask and contract-first; run after workloads |
 
 Quickwin is an exception: it uses `MINIKUBE_PROFILE` as context, and its `dev` task includes Minikube startup. STAC and mastering do not currently expose `test:lifecycle`. The root Taskfile mostly launches older Skaffold workflows; module Taskfiles are the detailed interface.
@@ -35,7 +35,7 @@ Quickwin is an exception: it uses `MINIKUBE_PROFILE` as context, and its `dev` t
 | `CELL_TIMEOUT` | `1800` | Timeout per notebook cell in seconds |
 | `LABS_LIST` | `false` | Runner list mode |
 
-Changing `IMAGE` or `NAMESPACE` alone is insufficient to migrate a deployment: update corresponding chart/Skaffold configuration too. How-to requests 16384 MiB; Dask requests 8 CPUs and 16384 MiB. Patterns defaults to `pattern-*.ipynb`; Dask defaults to `eopf-sentinel-2/notebook.ipynb`.
+Changing `IMAGE` or `NAMESPACE` alone is insufficient to migrate a deployment: update corresponding chart/Skaffold configuration too. How-to requests 16384 MiB; Dask requests 8 CPUs and 16384 MiB. Patterns runs sixteen wrapped CWL cases without notebook-selection variables; Dask defaults to `eopf-sentinel-2/notebook.ipynb`.
 
 ## Specialized tasks
 
@@ -44,6 +44,7 @@ Changing `IMAGE` or `NAMESPACE` alone is insufficient to migrate a deployment: u
 | Mastering | `labs:kubernetes APPLICATION_PACKAGE_VERSION=<release>` | Chapter 5 with selected published package/images |
 | Mastering | `labs:kubernetes-images` | Optional local developer image loading; separate from published artifact acceptance |
 | How-to | `workflows` | Real Calrissian cases from the training source |
+| Patterns | `wrap`, `labs` | Standalone eoap-cwlwrap composition and sixteen real-data Calrissian cases |
 | Inference | `fixture`, `test:code`, `labs:run` | Local STAC fixture, focused source regression, selected lab execution |
 | Dask | `worker:build`, `worker:load`, `test:dask` | Matching worker image, local loading, real two-worker computation and disposal |
 | Contract-first | `training:task TRAINING_TASK=<source-task>` | Runs a source task in the locked course environment |

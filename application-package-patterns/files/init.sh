@@ -6,13 +6,13 @@ fi
 set -euo pipefail
 cd /workspace
 
-training_ref=${APPLICATION_PACKAGE_PATTERNS_TRAINING_REF:-feature/pde-typed-cwl}
+training_ref=${APPLICATION_PACKAGE_PATTERNS_TRAINING_REF:-2.0.0}
 if [ ! -d application-package-patterns/.git ]; then
     git clone --branch "$training_ref" 'https://github.com/eoap/application-package-patterns.git'
 elif [ -n "$(git -C application-package-patterns status --porcelain)" ]; then
     echo "Preserving local application-package-patterns checkout and edits"
 else
-    git -C application-package-patterns fetch origin "$training_ref"
+    git -C application-package-patterns fetch --tags origin "$training_ref"
     git -C application-package-patterns checkout "$training_ref"
     git -C application-package-patterns merge --ff-only FETCH_HEAD
 fi

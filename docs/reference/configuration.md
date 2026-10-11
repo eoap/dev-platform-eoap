@@ -26,7 +26,7 @@ The shared coder image default is still the legacy `ghcr.io/eoap/dev-platform-eo
 | How-to | `2.0.0` | `HOWTO_TRAINING_REF` |
 | CWL EOAP | `feature/pde-typed-cwl` | `CWL_EOAP_TRAINING_REF` |
 | Inference | `feature/pde-typed-cwl` | `INFERENCE_EOAP_TRAINING_REF` |
-| Patterns | `feature/pde-typed-cwl` | `APPLICATION_PACKAGE_PATTERNS_TRAINING_REF` |
+| Patterns | `2.0.0` | `APPLICATION_PACKAGE_PATTERNS_TRAINING_REF` |
 | Dask | `feature/pde-typed-cwl` | `DASK_TRAINING_REF` |
 | Contract-first | `main` | `EOAP_CONTRACT_FIRST_TRAINING_REF` |
 
@@ -61,7 +61,7 @@ The chart uses a privileged editor by default for its training container workflo
 | STAC | `stac_env` | `notebooks` |
 | CWL | `cwl_env` | `notebooks` |
 | Inference | `inference_env` | `practice-labs` |
-| Patterns | `patterns_env` | `docs` |
+| Patterns | `patterns_env` for interactive work | Markdown lessons; acceptance executes sixteen wrapped CWL cases |
 | Dask | `dask_env` | Repository root; select application notebooks |
 | Contract-first | `contract_env` for interactive work | Acceptance is source tasks |
 | How-to | `cwl_how_to_env` for interactive work | Acceptance is workflows |

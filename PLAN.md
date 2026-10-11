@@ -619,37 +619,42 @@ its remote STAC item endpoint returns HTTP 500 on repeated attempts. Worker
 artifact publication and architecture scope remain to be verified. Training
 commit: `2a336b8` on `feature/pde-typed-cwl`.
 
-### Application Package Patterns: 2.0.0 release preparation
+### Application Package Patterns: stable 2.0.0 released and accepted
 
-The published `feature/pde-typed-cwl` branch integrates upstream Markdown lessons
-with CWL v1.2 and embedded typed contracts. The hash-locked Python 3.12
-environment uses eoap-cwlwrap 0.32.0 and cwl-loader 0.27.0. Seventeen source and
-staging documents validate, all twelve generated wrappers validate, 27 existing
-runner tests pass, and typed PlantUML/SVG diagrams render locally. No packing
-command is used; approved external OGC/GeoJSON imports remain intact.
+[Patterns 2.0.0](https://github.com/eoap/application-package-patterns/releases/tag/2.0.0)
+is tagged at `0774ea9`, whose tree matches accepted feature commit `c02c778`.
+The module initializes from that GitHub tag with a hash-locked Python 3.12
+environment, eoap-cwlwrap 0.32.0 and cwl-loader 0.27.0. Lessons are Markdown
+pages backed by twelve typed CWL v1.2 workflows, with embedded module types
+and locally rendered PlantUML/SVG diagrams. Approved OGC/GeoJSON imports are
+preserved; no packing command is used.
 
-Mastering 2.0.0 stage-in's 60-second transfer timeout blocked real Landsat reuse.
-Mastering PR #18 and published candidate `2.0.1-rc.44.1` add configurable timeout
-and asset selection, plus independent stage-in/out CWL artifacts on GHCR. The
-patterns lock records both OCI CWL and container digests. The typed adapter
-selects green/red/nir08 bands; DEM staging uses the container's native stac-asset
-library and signing support. Both staging paths operate on real EO data.
+[Mastering 2.0.1](https://github.com/eoap/mastering-app-package/releases/tag/2.0.1)
+adds configurable transfer timeout, asset selection and independent stage-in/out
+CWL on GHCR. Patterns locks both CWL and container digests. Native staging
+adapters select required Landsat bands and use stac-asset for signed DEM
+transfers. Stage-out gives each result a distinct S3 prefix and disables upload
+caching. Serialized wrappers remove checkout paths, generated anonymous array
+scopes and identical duplicate S3 input declarations.
 
-Clean source `4a1de5c` passed sixteen-case Minikube acceptance:
-twelve patterns and four optional-port cases. [Matching CI](https://github.com/eoap/application-package-patterns/actions/runs/38153992055)
-passed all sixteen cases, 27 runner tests and strict documentation. Checks cover readable S3 STAC
-links/assets, georeferenced rasters intersecting the requested area, and the
-finite scalar normalized-index mean for pattern 6. Editor/S3 smoke and retained-workspace/fresh-environment/disposable-S3
-lifecycle checks pass. Stage-out disables upload caching and assigns distinct
-S3 prefixes to scattered results. Evidence is saved at
-`/workspace/lab-results/patterns-4a1de5c.zip`; lifecycle cleared the uploaded S3
-objects after validation. The former modified workspace is preserved separately. The module initializes
-from GitHub and published GHCR dependencies without sibling host checkouts.
+All sixteen real EO cases passed from a fresh intended-release checkout and
+locked environment on Minikube: twelve patterns plus four optional-port cases.
+Checks cover readable S3 STAC links/assets, georeferenced rasters intersecting
+the requested area, distinct output catalogs and the scalar normalized-index
+mean. Evidence: `/workspace/lab-results/patterns-c02c778-stable.zip` and
+`/calrissian/patterns-stable/20261011T165020Z`. Editor/S3 smoke and earlier
+retained-workspace/fresh-environment/disposable-S3 lifecycle checks passed.
+Modified workspaces remain preserved separately.
 
-Patterns PR #15 prepares 2.0.0. Stable promotion requires promotion of the upstream mastering staging candidate
-and updating the lock to that stable publication.
-Publication CI validates the source and refuses replacement of existing CWL
-tags before publishing original and wrapped release artifacts.
+[Release CI](https://github.com/eoap/application-package-patterns/actions/runs/38157522966)
+passed all sixteen cases, 27 runner tests, seventeen source/template contracts,
+twelve wrapper validations, 26 actual transpiler-mate OCI metadata checks and
+strict documentation. It published fourteen original and twelve wrapped GHCR
+packages, verifying each immutable pull-back, annotations, bytes and CWL
+entrypoint before creating the stable release. Release archive checksums and
+anonymous access to all 26 packages were verified separately. Deployment needs
+no sibling host checkout. ARM64 and other cluster configurations remain outside
+the recorded acceptance scope.
 
 ### Contract-first: new deployment implemented and validated on AMD64
 

@@ -27,7 +27,7 @@ The runner executes in each source notebook's directory. It sorts the selected p
 - **How-to:** use `task workflows KUBE_CONTEXT=<context>`; this course's acceptance runs ten Calrissian workflow cases instead of a notebook suite.
 - **Inference:** `task labs` runs code tests and all six labs in dependency order with a deterministic local staging fixture and the real ONNX model. Use `task labs:run LAB='<selection>' KUBE_CONTEXT=<context>` for a subset. Selecting a fixture does not test authenticated Copernicus downloading.
 - **Contract-first:** `task labs KUBE_CONTEXT=<context>` runs the source `reference:test` gate. `task cwl:docs` runs `artifacts:derive`; there is no notebook listing task.
-- **Patterns:** the default is `LAB='pattern-*.ipynb'`; use the full twelve-notebook sequence for acceptance.
+- **Patterns:** `task labs KUBE_CONTEXT=<context>` runs twelve real-data wrapped CWL patterns and four optional-port cases using published mastering staging artifacts. `task wrap` composes the documents. Lessons are Markdown; there is no notebook listing task.
 - **Dask:** build/load matching workers first. Then use `task labs LAB='cloudless-mosaic/notebook.ipynb' MAX_ITEMS=2 KUBE_CONTEXT=<context>`. The default selects EOPF; its remote endpoint was failing during recorded acceptance. The bounded control-path test is `task test:dask`.
 - **Mastering:** select published chapter 5 artifacts with `task labs:kubernetes APPLICATION_PACKAGE_VERSION=<release> KUBE_CONTEXT=<context>`. The full `task labs` also prepares the published-artifact path. The current Taskfile default is `2.0.0`; explicitly select the candidate you intend to validate and record it.
 - **Quickwin:** its tasks currently select context using `MINIKUBE_PROFILE`, rather than `KUBE_CONTEXT`. Check the Taskfile before using a common command.
@@ -45,7 +45,7 @@ A failed task remains failed. Do not use output filtering that hides errors or r
 
 ## Export artifacts
 
-Notebook artifacts normally live under `/workspace/lab-results/<UTC-run-id>`. Generated contract Markdown normally lives under `/workspace/lab-results/cwl-docs`. How-to workflow artifacts are under `/calrissian/how-to/<UTC-run-id>`; Dask acceptance artifacts are under `/calrissian/dask-acceptance/<UTC-run-id>`. Contract-first derives artifacts in its source project's configured paths; inspect the task output.
+Notebook artifacts normally live under `/workspace/lab-results/<UTC-run-id>`. Generated contract Markdown normally lives under `/workspace/lab-results/cwl-docs`. How-to workflow artifacts are under `/calrissian/how-to/<UTC-run-id>`; Patterns artifacts are under `/calrissian/patterns/<UTC-run-id>`; the recorded stable-release acceptance used `/calrissian/patterns-stable/20261011T165020Z`. Dask acceptance artifacts are under `/calrissian/dask-acceptance/<UTC-run-id>`. Contract-first derives artifacts in its source project's configured paths; inspect the task output.
 
 ```bash
 kubectl --context <context> -n <namespace> get pods -l app=code-server
