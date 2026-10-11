@@ -758,3 +758,17 @@ output passed, followed by S3/STAC bounds and asset checks, NDWI and water
 rendering, and distinct time-selected PNGs through TiTiler-EOPF. This completes
 the mastering stable publication and Zarr stage-out image reuse gate. The
 Zarr training-source overlay dependency remains a separate pending item.
+
+### Zarr release-aware lab preparation
+
+The feature checkout now accepts `APPLICATION_PACKAGE_VERSION` throughout its
+practice labs. A shared preparation script downloads matching producer, S3 wrapper,
+consumer and collection-mode input assets into a versioned runtime directory.
+It checks CWL v1.2, release metadata, public entrypoints and immutable GHCR images
+before replacing prepared files. Current notebooks no longer download 0.5.0 or
+pull a mutable latest consumer. Seven rejection/acceptance regressions passed;
+all nine notebook structures and Bash cell syntax validate, and MkDocs builds.
+The matching notebooks have not yet passed execution against newly published
+artifacts. Candidate CI remains the publication gate; previous candidate runs
+failed container builds/scans. Do not mark the module release ready from source
+checks alone. Platform deployment no longer overlays a sibling checkout.

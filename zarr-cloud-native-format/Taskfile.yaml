@@ -14,7 +14,7 @@ tasks:
     cmds:
     - task: repos
     - skaffold run --kube-context {{.KUBE_CONTEXT | shellQuote}} --status-check=true
-    - task: training:sync
+    - task: training:configure
   dev:
     desc: Deploy with editor (8000), API (8010) and viewer (8090) forwarding
     cmds:
@@ -74,19 +74,9 @@ tasks:
     - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}}
       exec -i deployment/code-server-deployment -c code-server -- env EXPECT_DISTINCT_TIMES=1 COLLECTION_ID=viewer-smoke-fixture
       /workspace/.venv/bin/python - < scripts/test-viewer.py
-  training:sync:
-    desc: Copy the local feature-branch viewer and publisher into the editor workspace
+  training:configure:
+    desc: Configure the GitHub training checkout with cluster publication settings
     cmds:
-    - 'tar -C ../../zarr-cloud-native-format -cf - examples/titiler-eopf-client.html
-      examples/titiler-eopf-config.js scripts/publish-titiler-store.py scripts/wrap-producer.py
-      scripts/index-s3-catalog.py scripts/publish-s3.py cwl-cli/stage-out.cwl cwl-workflow/app-water-bodies.cwl
-      cwl-workflow/app-water-bodies-s3.cwl cwl-tests/jobs/producer-job-item.yml command-line-tools/stac-zarr/stac_zarr
-      practice-labs/2-Producer-CWL-Workflow/1-Producer.ipynb docs/cwl-workflows/producer.ipynb
-      | kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}}
-      exec -i deployment/code-server-deployment -c code-server -- tar -C /workspace/zarr-cloud-native-format
-      -xf -
-
-      '
     - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}}
       get configmap zarr-publication-settings -o jsonpath='{.data.settings\.json}'
       | kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}}

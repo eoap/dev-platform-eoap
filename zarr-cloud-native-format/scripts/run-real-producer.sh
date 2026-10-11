@@ -2,29 +2,27 @@
 set -euo pipefail
 context=${1:-eoap-mastering-app-package-docker}
 namespace=${2:-zarr-cloud-native-format}
-module=$(cd "$(dirname "$0")/../../.." && pwd)/zarr-cloud-native-format
+version=${3:-${ZARR_RELEASE_VERSION:-2.0.0}}
 run="/calrissian/us-lake-$(date -u +%Y%m%dT%H%M%SZ)"
-tag="us-lake-$(date -u +%Y%m%dT%H%M%SZ)"
-task --dir "$module" containers:build:producer
-tar -C "$module" -cf - cwl-workflow/app-water-bodies.cwl cwl-tests/jobs/producer-job-item.yml |
-  kubectl --context "$context" -n "$namespace" exec -i deployment/code-server-deployment -c code-server -- tar -C /workspace/zarr-cloud-native-format -xf -
-for image in crop norm-diff otsu stac-collection stac-zarr stac-eopf-product; do
-  docker tag "$image:latest" "$image:$tag"
-  minikube -p "$context" image load "$image:$tag"
-done
-kubectl --context "$context" -n "$namespace" exec -i deployment/code-server-deployment -c code-server -- /workspace/.venv/bin/python - "$run" "$tag" <<'PY'
+kubectl --context "$context" -n "$namespace" exec -i deployment/code-server-deployment -c code-server -- /workspace/.venv/bin/python - "$run" "$version" <<'PYCODE'
 from pathlib import Path
+from urllib.request import urlopen
 import sys
+import yaml
 run = Path(sys.argv[1])
+version = sys.argv[2]
 run.mkdir(parents=True)
-root = Path('/workspace/zarr-cloud-native-format')
-text = (root / 'cwl-workflow/app-water-bodies.cwl').read_text()
-text = text.replace('ramMax: 512', 'ramMin: 2048\n        ramMax: 2048')
-for name in ('crop', 'norm-diff', 'otsu', 'stac-collection', 'stac-zarr', 'stac-eopf-product'):
-    text = text.replace(f'dockerPull: {name}:latest', f'dockerPull: {name}:{sys.argv[2]}')
+base = 'https://github.com/eoap/zarr-cloud-native-format/releases/download/' + version
+with urlopen(base + '/app-water-bodies.' + version + '.cwl', timeout=120) as response:
+    text = response.read().decode()
+document = yaml.safe_load(text)
+assert document['s:softwareVersion'] == version
+assert ':latest' not in text and ':local' not in text
 (run / 'producer.cwl').write_text(text)
-(run / 'job.yml').write_text((root / 'cwl-tests/jobs/producer-job-item.yml').read_text())
-PY
+url = 'https://raw.githubusercontent.com/eoap/zarr-cloud-native-format/' + version + '/cwl-tests/jobs/producer-job-item.yml'
+with urlopen(url, timeout=120) as response:
+    (run / 'job.yml').write_bytes(response.read())
+PYCODE
 kubectl --context "$context" -n "$namespace" exec deployment/code-server-deployment -c code-server -- bash -c '
   set -euo pipefail
   run=$1
