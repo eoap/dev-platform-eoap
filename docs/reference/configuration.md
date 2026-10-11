@@ -23,7 +23,7 @@ The shared coder image default is still the legacy `ghcr.io/eoap/dev-platform-eo
 | --- | --- | --- |
 | Mastering | `feature/metadata` | Hard-coded in the current init script |
 | STAC | `feature/typed-cwl-inputs` | `STAC_TRAINING_REF` |
-| How-to | `feature/pde-typed-cwl` | `HOWTO_TRAINING_REF` |
+| How-to | `2.0.0` | `HOWTO_TRAINING_REF` |
 | CWL EOAP | `feature/pde-typed-cwl` | `CWL_EOAP_TRAINING_REF` |
 | Inference | `feature/pde-typed-cwl` | `INFERENCE_EOAP_TRAINING_REF` |
 | Patterns | `feature/pde-typed-cwl` | `APPLICATION_PACKAGE_PATTERNS_TRAINING_REF` |

@@ -563,22 +563,15 @@ redeployment recreated the bucket and a compatible Python environment. Training 
 recreation. The wrapping notebook passed again with the corrected environment. Mastering's editor was
 scaled down during STAC validation; its workspace PVC remains retained.
 
-### How-to: implemented and validated on AMD64, 11 October 2026
+### How-to: stable 2.0.0 released with custom types, 11 October 2026
 
-The deployment now uses PDE, upstream container Calrissian, uv, a retained
-workspace and its own disposable authenticated SeaweedFS. All nine standalone
-CWL v1.2 documents include URI/JSON records and band/CRS enums, described ports
-and repository/version/license/author metadata. The equivalent Markdown
-generator validates each document from an isolated copy.
+The deployment uses PDE, container-provided isolated Calrissian, a hash-locked Python environment installed with uv, retained workspace/output PVCs and disposable authenticated SeaweedFS. Initialization selects the published `2.0.0` training tag; no sibling host checkout is required.
 
-All ten real Calrissian workflow cases passed. Reprojection uses the CWL enum
-value `EPSG4326` and translates it to rasterio's `EPSG:4326`. Raster steps need
-2 GiB and color processing 4 GiB; the test-suite resource budget is 8 GB.
-Editor HTTP and S3 roundtrip passed. Restart acceptance preserved a workspace
-sentinel and the previous environment, created a fresh environment, discarded
-the previous S3 object and initialized `results`. Training commit `369cd7d`
-on `feature/pde-typed-cwl` records the source migration. Evidence paths are in
-[how-to/README.md](how-to/README.md).
+All ten standalone CWL v1.2 documents include embedded custom types, described ports and repository/version/license/author metadata. The custom-types lesson now defines URI and BBox records with CRS/band enums and processes three real Sentinel-2 acquisitions around Lake Almanor. The equivalent Markdown generator validates each isolated document with HTTP fetching disabled.
+
+All eleven Calrissian cases passed from clean training commit `714ae39`; evidence is `/calrissian/how-to/20261011T144008Z`. Scientific checks confirmed three STAC items, binary masks and geographic bounds matching the requested AOI. CI run `38148089234` passed the same cases and strict documentation. PR #5 promoted the unchanged accepted tree to main commit `31879ba`. [Stable 2.0.0](https://github.com/eoap/how-to/releases/tag/2.0.0) was published after acceptance in CI run `38149876345`. Release assets and checksums were verified; `ghcr.io/eoap/how-to/rio:2.0.0` preserves the validated runtime digest `sha256:f4b2273ca2383bbf63c14966ad1ee25b35ccd72f73e33339951fdbe894732dbf` without rebuilding it.
+
+Minikube now has a 64 GiB Docker RAM cap and a saved allocation of 16 host CPUs. Other training modules were uninstalled for dedicated testing; all 20 workspace/output PVCs remain bound. Earlier editor/S3 and retained-workspace/disposable-S3 lifecycle checks passed. Evidence is recorded in [how-to/README.md](how-to/README.md).
 
 ### CWL EOAP: implemented and validated on AMD64, 11 October 2026
 

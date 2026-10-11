@@ -6,7 +6,7 @@ fi
 set -euo pipefail
 cd /workspace
 
-training_ref=${HOWTO_TRAINING_REF:-feature/pde-typed-cwl}
+training_ref=${HOWTO_TRAINING_REF:-2.0.0}
 if [ ! -d how-to/.git ]; then
     git clone --branch "$training_ref" 'https://github.com/eoap/how-to.git'
 elif [ -n "$(git -C how-to status --porcelain)" ]; then
@@ -16,8 +16,8 @@ else
     git -C how-to checkout "$training_ref"
     git -C how-to merge --ff-only FETCH_HEAD
 fi
-if [ ! -f how-to/scripts/cwl-docs.py ]; then
-    echo "How-to typed-CWL training source is required; select $training_ref or copy the feature branch into the workspace" >&2
+if [ ! -f how-to/scripts/cwl-docs.py ] || [ ! -f how-to/requirements-notebooks.txt ]; then
+    echo "How-to typed-CWL source and notebook lock are required; update the preserved checkout to a compatible published ref" >&2
     exit 1
 fi
 
@@ -30,7 +30,7 @@ uv venv --allow-existing --seed --python /opt/conda/bin/python /workspace/.venv
 source /workspace/.venv/bin/activate
 ln -sfn /opt/calrissian-venv/bin/calrissian /workspace/.venv/bin/calrissian
 # Calrissian remains in the container-provided isolated environment.
-uv pip install --python /workspace/.venv/bin/python PyYAML rasterio requests pystac ipykernel check-jsonschema yq cwltool
+uv pip sync --python /workspace/.venv/bin/python --require-hashes /workspace/how-to/requirements-notebooks.txt
 /workspace/.venv/bin/python how-to/scripts/cwl-docs.py --output /tmp/howto-cwl-docs
 uv pip check --python /workspace/.venv/bin/python
 /workspace/.venv/bin/python -m ipykernel install --user --name cwl_how_to_env --display-name "Python (CWL How-To)"
