@@ -71,10 +71,16 @@ packages alongside the deployment configuration when migration requires it.
 - Provide metadata that validates against transpiler-mate expectations for
   `cwl2markdown`, or an equivalent documentation generator. Validate both the
   metadata and generated documentation as part of module acceptance.
-- EOAP CWL documents must be standalone. Include any types they define in the
-  distributed CWL document itself; publishing a separate schema file alone
-  does not satisfy this requirement. Validate the final distributed document,
-  including composed application packages where applicable.
+- EOAP CWL documents must include module-defined custom types in the distributed
+  document. Shared published types must retain their remote `$import`; do not
+  copy or redefine URI, Date, or other shared types locally. In particular,
+  import `https://raw.githubusercontent.com/eoap/schemas/main/string_format.yaml`
+  and reference its `#URI` type, whose field is `value`, not `href`. Validate
+  final distributed documents with these published schema dependencies.
+  Remote published `geojson.yaml`, `string_format.yaml`, and OGC imports are
+  allowed. Local module-owned imports such as `$import: eoap-types.yaml` are
+  prohibited in distributed CWL: embed those definitions and update their type
+  references inline. Do not inline the published remote schemas.
 - For STAC, retain the approved shared schema import
   `$import: https://raw.githubusercontent.com/eoap/schemas/main/ogc.yaml`.
   Embed module-defined types without replacing this shared OGC schema.
@@ -84,6 +90,203 @@ packages alongside the deployment configuration when migration requires it.
 
 These requirements apply to remaining module work and to follow-up changes
 needed to bring already migrated modules into compliance.
+
+## Python packaging and quality contract
+
+Module `pyproject.toml` files must follow the Hatch model supplied for
+`eoap-machine-learning-process`. Apply this to remaining migrations and follow-up
+work on previously migrated modules, on feature branches. The Machine Learning
+configuration is the concrete reference; adapt project metadata, dependency
+lists, entry points, package paths, distribution contents, and check targets to
+each module rather than copying its scientific dependencies into every module.
+
+### Build and project metadata
+
+- Use `[build-system]` with `requires = ["hatchling>=1.27,<2"]` and
+  `build-backend = "hatchling.build"`.
+- Declare the project name, version, description, README, Python compatibility,
+  license, runtime dependencies, CLI entry points, and Documentation/Source/Issues
+  URLs in standard `[project]` tables. Keep versions aligned with release
+  metadata and URLs pointed at the module's EOAP GitHub repository.
+- Use `requires-python = ">=3.12,<3.13"` for this model and Python 3.12 for lock
+  generation, environments, containers, and CI validation.
+- Declare dependency bounds and necessary exact scientific pins in
+  the `[project]` dependencies array. Retain required direct references, including
+  `pystac[validation] @ git+https://github.com/Terradue/pystac.git@t2_extensions`
+  where the module needs that fork; set
+  `[tool.hatch.metadata] allow-direct-references = true` when using them.
+- Declare explicit wheel package directories and sdist include paths. Include
+  the module's source, documentation, scripts, tests, locks, vendor resources,
+  README, license, Dockerfile, Taskfile, and `pyproject.toml` as applicable.
+  Verify built distributions contain the resources their installed commands use.
+
+### Locked Hatch environments
+
+The hash-locked environment supplies both quality tools and application
+dependencies. Use the following environment structure, replacing the editable
+package paths and quality-check targets with the module's actual paths:
+
+```toml
+[tool.hatch.envs.dev]
+skip-install = true
+installer = "uv"
+post-install-commands = [
+  "uv pip install --require-hashes -r requirements/development.txt",
+  "uv pip install --no-deps --no-build-isolation -e training/make-ml-model -e inference/make-inference -e MLM",
+]
+
+[tool.hatch.envs.dev.scripts]
+check = ["format-check", "lint-check", "typecheck", "security"]
+format-check = "ruff format --check training/make-ml-model/src inference/make-inference/src MLM/src MLM/utils.py scripts tests"
+lint-check = "ruff check training/make-ml-model/src inference/make-inference/src MLM/src MLM/utils.py scripts tests"
+typecheck = "mypy scripts/check-contracts.py scripts/create-fixture.py training/make-ml-model/src/tile_based_training/export.py MLM/src/mlm/describe.py scripts/stage-fixture.py"
+security = "bandit -r training/make-ml-model/src inference/make-inference/src MLM/src MLM/utils.py scripts -ll"
+
+[tool.hatch.envs.test]
+template = "dev"
+
+[tool.hatch.envs.test.scripts]
+test = "pytest -q {args}"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--import-mode=importlib"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "UP", "B", "C4", "SIM", "C90"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.mypy]
+ignore_missing_imports = true
+strict = true
+```
+
+Keep development locks consistent with declared runtime dependencies and include
+build backends needed by `--no-build-isolation`. Editable installs must not
+resolve or replace the locked dependencies. Regenerate and validate locks when
+project requirements change. Runtime and notebook environments must remain
+consistent with the same declared application requirements.
+
+For TensorFlow modules, set `[tool.hatch.envs.dev.env-vars]` to
+`TF_NUM_INTRAOP_THREADS = "1"`, `TF_NUM_INTEROP_THREADS = "1"`, and
+`CUDA_VISIBLE_DEVICES = "-1"` for deterministic CPU validation. Other modules
+should declare only the environment variables they need.
+
+### Acceptance gates
+
+Run `hatch run dev:check` and `hatch run test:test` locally and in CI. Final
+verification must use non-mutating formatting and linting checks, strict typing,
+security checks, and the existing regression suite. Do not weaken these gates or
+suppress findings to obtain a passing release. Packaging and quality checks
+complement CWL validation and real notebook/scientific acceptance; all applicable
+checks must pass on the intended release commit before promotion.
+
+## Processing container build contract
+
+Module processing Dockerfiles must follow the supplied two-stage Rocky Linux
+model. Apply it on feature branches alongside the Hatch packaging migration.
+This governs application/processor images; editor, storage, and other third-party
+service images retain their own deployment contracts.
+
+- Use `rockylinux/rockylinux:10.1-minimal` for both `builder` and `runtime`.
+- Install build tools and headers with `microdnf` in the builder, install the
+  Hatch 1.14.0 binary, and build the module wheel with `hatch build -t wheel`.
+  The reference builder also installs Mike Farah's `yq` v4.44.3; retain it when
+  the module build needs YAML processing.
+- Install only the runtime OS dependencies in the final stage. Keep compilers,
+  build headers, Hatch, and the source checkout in the builder stage.
+- Create user/group `neo` with UID/GID `2000:2000`, home `/home/neo`, and a
+  non-login shell. Switch to this user before creating the virtual environment
+  and installing the application. Use `/app` as the working directory.
+- Copy required scientific auxiliary data with `--chown=2000:2000`. The supplied
+  DEM example uses EGM96/EGM2008 files and NASADEM/Copernicus DEM indexes under
+  `/aux-dir`; include those paths only in modules that actually require them.
+- Set `VIRTUAL_ENV=/app/venv` and prepend its `bin` directory to `PATH`. Install
+  the built wheel in this environment, run `pip check`, remove pip from the
+  final environment, and smoke-test the installed CLI with `--help`.
+  Replace `amster-dem` with the module's declared entry point(s).
+
+The following is the baseline layout, with auxiliary-data copies inserted before
+virtual environment creation when required:
+
+```dockerfile
+FROM rockylinux/rockylinux:10.1-minimal AS builder
+
+RUN microdnf -y update && \
+    microdnf -y install curl tar git python3 python3-pip python3-setuptools gcc gcc-c++ make sqlite-devel zlib-devel glibc-devel libstdc++-devel && \
+    microdnf clean all
+
+RUN curl -L https://github.com/pypa/hatch/releases/download/hatch-v1.14.0/hatch-x86_64-unknown-linux-gnu.tar.gz \
+      -o /tmp/hatch.tar.gz && \
+    tar -xzf /tmp/hatch.tar.gz -C /tmp && \
+    install -m 0755 /tmp/hatch /usr/local/bin/hatch && \
+    rm -rf /tmp/hatch* /tmp/hatch.tar.gz
+
+ARG YQ_VERSION=v4.44.3
+RUN curl -L "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" \
+      -o /usr/local/bin/yq && \
+    chmod +x /usr/local/bin/yq && \
+    /usr/local/bin/yq --version
+
+WORKDIR /src
+COPY . /src
+RUN hatch build -t wheel
+
+FROM rockylinux/rockylinux:10.1-minimal AS runtime
+
+RUN microdnf -y update && \
+    microdnf -y install python3 python3-pip git jq libstdc++ sqlite-libs zlib && \
+    microdnf clean all
+
+ENV HOME=/home/neo
+RUN /usr/sbin/groupadd -g 2000 neo && \
+    /usr/sbin/useradd -u 2000 -g 2000 -m -d ${HOME} -s /sbin/nologin neo && \
+    mkdir -p /app && \
+    chown -R 2000:2000 /app ${HOME}
+
+USER neo
+WORKDIR /app
+
+# Add module-specific COPY --chown=2000:2000 auxiliary-data instructions here.
+
+ENV VIRTUAL_ENV=/app/venv
+ENV PATH="${VIRTUAL_ENV}/bin:${PATH}:/usr/bin"
+RUN python3 -m venv /app/venv && \
+    /app/venv/bin/pip install --no-cache-dir --upgrade pip
+
+COPY --from=builder /src/dist/*.whl /app/dist/
+RUN /app/venv/bin/pip install --no-cache-dir /app/dist/*.whl && \
+    /app/venv/bin/pip check && \
+    /app/venv/bin/python -m pip uninstall --yes pip && \
+    amster-dem --help
+```
+
+### Container implementation and acceptance
+
+The baseline's Hatch and yq downloads are AMD64-specific. Select matching
+artifacts for every supported architecture and validate each published platform;
+do not claim ARM64 support from an AMD64 build. Verify the installed Rocky Python
+matches the module's Python 3.12 contract and its native/scientific dependencies.
+
+Preserve the dependency-lock requirements when implementing this layout. A plain
+wheel installation resolves dependency ranges, so release builds must install
+hash-locked runtime dependencies and install the project wheel with `--no-deps`
+before `pip check` and pip removal. Keep the two-stage wheel installation model.
+Pin release base images by digest and verify downloaded build-tool artifacts as
+part of reproducible publication.
+
+Acceptance must build from a clean intended-release checkout, verify packaged
+resources and auxiliary-data paths, run all installed CLI smoke tests, and execute
+the real processing/CWL notebooks with the published image digest. Check CWL and
+Kubernetes execution as UID/GID 2000, including output-directory/PVC permissions
+and writable temporary paths. Record accepted source, image digests, architecture,
+and scientific outputs before promotion.
 
 ## Verified findings
 
@@ -943,6 +1146,45 @@ initialization now defaults to this tag and syncs the hash-locked environment.
 Prior copied-workspace acceptance is superseded by the clean release evidence.
 Other architectures remain unvalidated.
 
+
+### Machine learning: maturity implementation and AMD64 development acceptance
+
+The training repository now has declared/hash-locked Python 3.12 dependencies,
+regression/developer checks, standalone typed CWL 1.2 contracts, generated
+contract documentation, explicit MLflow model selection and export with
+Keras/ONNX equivalence, and safe edge-tile/nodata inference. Nine executable
+lessons cover application, container and CWL processing. Candidate/stable
+publication checks include image vulnerability scans, immutable image references,
+checksummed standalone CWL, OCI pull/annotation validation and draft-release
+assembly. Stable promotion requires clean accepted candidate source and copies
+accepted processor manifests without changing their digests. No packing command
+was used, and no release or registry artifact has been published yet.
+
+The platform module uses the explicit AMD64 PDE pilot, isolated Calrissian,
+dedicated authenticated SeaweedFS chart 4.48.0 and retained workspace/output PVCs.
+LocalStack and the mismatched endpoint are removed. Initialization preserves
+edited source and editor settings, installs the locked environment and waits
+boundedly for S3 before initializing results. MLflow 3.17.0 uses its pinned
+AMD64 official image and retains proxied artifact storage without enabling S3.
+
+All nine lessons passed together with synthetic data and again with 100 real
+EuroSAT chips on 2026-10-11 in context eoap-mastering-app-package-docker,
+namespace tile-based-training. The public archive matched the publisher's MD5.
+Checks covered MLflow artifact retrieval, Keras/ONNX numerical equivalence,
+source timestamps, raster grids, class/nodata values and S3 output reads.
+Editor/S3 smoke and retained-workspace/fresh-environment/disposable-S3 lifecycle
+checks passed. Executed evidence remains at /workspace/lab-results/ml-final-nine
+and /workspace/lab-results/ml-real-nine. Lifecycle intentionally discarded S3
+objects; local models, notebooks and raster outputs remain. Both processor
+images have zero fixable HIGH/CRITICAL scan findings without exceptions.
+
+This acceptance used an uncommitted feature/maturity-parity source overlay,
+based on f82fe8b6f6924a0e42503e408b3961630c315f16. Publish the feature source
+before fresh clones, then repeat acceptance against the published candidate's
+exact artifacts before stable promotion. One-epoch execution is not an accuracy
+benchmark. ARM64 and shared PDE image/digest selection remain unresolved.
+See [machine-learning-process/README.md](machine-learning-process/README.md).
+
 ### Inference 2.0.0: authenticated real-data candidate accepted
 
 Published feature `feature/pde-typed-cwl` is frozen at `39cab012f0e6cbc20e8391e81694ad41319b2295`.
@@ -975,3 +1217,30 @@ paths and immutable references are in
 feature and PR CI. Stable 2.0.0 promotion/publication remains pending. Acceptance
 covers CDSE S3 and AMD64 Minikube; OAuth token downloading, ARM64 and other
 clusters have not been accepted.
+
+### Shared schema correction (11 October 2026)
+
+Restore published `string_format.yaml` URI/Date imports in Machine Learning,
+Inference, Dask, Quickwin and How-to source CWL. Machine Learning URI jobs and
+bindings use the schema's `value` field. Keep module-specific custom definitions
+embedded and preserve existing OGC imports. All 20 affected source contracts
+validate; Machine Learning quality gates and 19 tests and Inference's seven
+regressions and Dask’s six regression tests pass. Earlier release assets and notebook acceptance snapshots are
+unchanged and do not constitute acceptance of these corrections. Rerun notebook
+acceptance against the corrected candidate commits before promotion.
+
+### Packaging/container model migration audit (11 October 2026)
+
+Scope: e-learning modules and their processing images; shared tooling repositories
+are excluded at the user's direction. `scripts/audit-module-models.py` records
+static differences, source commits, and branches. The baseline report is
+`docs/reference/audits/module-models-baseline.json`. Auxiliary/service Dockerfiles
+require classification before applying the processing model. A repository with no
+packaging or Dockerfiles is not automatically release-ready.
+
+Machine Learning is the first migration: commit `d739bd6` aligns all four
+pyprojects and all three Dockerfiles. Its formatting, lint, strict typing, security
+gates and 19 regressions pass. Inference's Rocky runtime build and UID/GID 2000
+check pass. Combined/training builds and real-data Minikube acceptance are in
+progress; this is not yet accepted release evidence. Other modules remain queued
+for changes and acceptance, including the previously identified CWL corrections.
