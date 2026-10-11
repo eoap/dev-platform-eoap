@@ -1,0 +1,29 @@
+@startuml module-acceptance
+!include theme.iuml
+title Acceptance of a named module snapshot
+start
+:Record training + deployment source,\nimages, target cluster and dataset;
+:Verify configuration, source availability\nand module-specific quality gates;
+:Deploy and check initialization;
+:Run editor HTTP and S3 smoke checks;
+:Validate distributed typed CWL\nand generated documentation;
+:Execute the complete learning sequence\nplus specialized runtime checks;
+if (Required checks pass?) then (yes)
+  :Inspect output semantics,\nreadability and scientific assertions;
+else (no)
+  if (Fixable module defect?) then (yes)
+    :Fix on a feature branch;\nsynchronize the deployed snapshot;
+    :Rerun affected gates;\nrecord only their actual results;
+  else (external blocker)
+    :Record blocked / skipped checks\nand preserve failure evidence;
+    stop
+  endif
+  :Resume acceptance only after\nrequired gates and output checks pass;
+endif
+:Finish workloads and export\nwanted S3 artifacts;
+:Run lifecycle acceptance;\nverify retained files + fresh environment;
+:Verify fresh reproduction\nwhen setup or distribution changed;
+:Record evidence and limitations;\ncommit reviewed changes;
+:Publish source / images separately\nwhen release is authorized;
+stop
+@enduml

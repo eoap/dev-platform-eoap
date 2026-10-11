@@ -1,0 +1,30 @@
+@startuml c4-components
+!pragma layout smetana
+!include theme.iuml
+title C4 Level 3: learning workspace components
+rectangle "Host acceptance CLI\n[External container: Task + kubectl]\nInvokes checks against the deployed source" as Host #EEEEEE
+rectangle "Learning workspace\n[Container boundary: PDE editor runtime]" {
+  rectangle "Browser editor service\n[Component: code-server]\nServes course files and terminal access" as Editor
+  rectangle "Notebook acceptance runner\n[Component: run-practice-labs.py]\nSelects notebooks, executes and saves evidence" as Runner
+  rectangle "Module notebook kernel\n[Component: registered Jupyter kernel]\nExecutes Python or Bash exercise cells" as Kernel
+  rectangle "CWL contract documentation tool\n[Component: module-specific CLI]\nValidates contracts and generates documentation" as Docs
+  rectangle "Workflow execution CLI\n[Component: isolated Calrissian / cwltool]\nValidates and dispatches application execution" as CWL
+  rectangle "Container execution tooling\n[Component: Podman CLI/runtime]\nBuilds and runs notebook application containers" as Podman
+}
+database "Workspace files\n[External data store]\nDeployed course + environments + artifacts" as Files #FFF2D5
+rectangle "Kubernetes execution API\n[External platform]\nTask pod scheduling and RBAC" as API #EEEEEE
+Host --> Runner : streams runner; supplies selection and kernel
+Host --> Docs : invokes module's cwl:docs path
+Editor --> Files : opens course and user files
+Runner --> Files : reads sources; writes executed copies
+Runner --> Kernel : NotebookClient starts / drives kernel
+Kernel --> CWL : cells invoke workflow commands
+Kernel --> Podman : cells invoke build / run commands
+CWL --> API : Calrissian creates and monitors tasks
+Docs --> Files : reads distributed CWL; writes docs
+legend bottom
+  Components are actual runtime responsibilities within one container.
+  Kernel cells vary by module; they can also run Python directly or contact Dask.
+  Contract-first and how-to use source task/workflow gates rather than this notebook path.
+endlegend
+@enduml

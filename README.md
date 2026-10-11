@@ -1,5 +1,7 @@
 # Development platform for Earth Observation Application Package training modules
 
+Start with the [learning and module development documentation](docs/README.md) for guided tutorials, operational how-to guides, configuration reference, and architecture explanations.
+
 ## PDE module deployments
 
 The migrated modules provide Taskfiles for an existing Kubernetes context;

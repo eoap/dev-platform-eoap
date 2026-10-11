@@ -1,0 +1,36 @@
+@startuml source-to-deployment
+!include theme.iuml
+title Test the source that actually exists in the deployed workspace
+actor "Module developer" as Dev
+participant "Host training checkout" as Training
+participant "Host platform checkout" as Platform
+participant "Remote training repository" as Origin
+participant "Kubernetes init container" as Init
+database "Deployed training checkout\nWorkspace PVC" as Deployed
+participant "Acceptance tasks" as Tests
+Dev -> Training : Preserve WIP; edit on a feature branch
+Dev -> Platform : Update setup / deployment when required
+alt Published compatible ref; deployed checkout clean
+  Platform -> Init : Deploy selected configuration
+  Init -> Origin : Fetch published source from origin
+  note over Origin,Init
+    Init fetches the remote repository,
+    not the host checkout's local files.
+  end note
+  Init -> Deployed : Clone or fast-forward selected ref
+else Local changes or deployed WIP
+  Dev -> Deployed : Inspect and back up existing changes
+  Training -> Deployed : Deliberately synchronize intended files\nor seed an unavailable local branch
+  Init -> Deployed : Preserve dirty checkout as script permits
+end
+Dev -> Deployed : Record actual HEAD and dirty diff
+Dev -> Tests : Run applicable module acceptance
+Tests -> Deployed : Execute source, kernels and contracts
+Tests --> Dev : Logs, executed notebooks, outputs, limitations
+Dev -> Training : Commit reviewed training changes
+Dev -> Platform : Commit reviewed deployment changes
+note over Training,Platform
+  Local commits and seeded files are not publication.
+  Fresh learners need available source refs and images.
+end note
+@enduml

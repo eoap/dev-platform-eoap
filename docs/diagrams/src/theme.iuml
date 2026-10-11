@@ -1,0 +1,29 @@
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam roundcorner 10
+skinparam ArrowColor #0F4C5C
+skinparam ArrowThickness 2
+skinparam BorderColor #0F4C5C
+skinparam defaultTextAlignment center
+skinparam sequence {
+  ParticipantBackgroundColor #E3F2F3
+  ParticipantBorderColor #0F4C5C
+  LifeLineBorderColor #65858B
+  GroupBackgroundColor #F2F7F8
+}
+skinparam activity {
+  BackgroundColor #E3F2F3
+  BorderColor #0F4C5C
+  DiamondBackgroundColor #FFF2D5
+  DiamondBorderColor #956716
+}
+skinparam rectangle {
+  BackgroundColor #E3F2F3
+  BorderColor #0F4C5C
+}
+skinparam database {
+  BackgroundColor #FFF2D5
+  BorderColor #956716
+}

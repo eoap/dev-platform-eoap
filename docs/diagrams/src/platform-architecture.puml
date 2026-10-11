@@ -1,0 +1,35 @@
+@startuml platform-architecture
+!pragma layout smetana
+!include theme.iuml
+title EOAP learning environment and execution paths
+rectangle "Host workstation" {
+  rectangle "Task + Skaffold\nDeploy and validate" as Host
+  rectangle "Browser\nLocal port-forward" as Browser
+}
+rectangle "Kubernetes: module namespace" {
+  rectangle "Editor pod" {
+    rectangle "Init container\nSource, dependencies, kernels\nS3 readiness and bucket setup" as Init
+    rectangle "PDE editor\ncode-server + notebook kernels" as Editor
+    rectangle "Podman application containers\nNotebook container exercises" as Podman
+  }
+  database "Workspace PVC\nCourse checkout, environments\nExecuted notebooks and user files" as Workspace
+  rectangle "Calrissian task pods\nApplication images + RBAC" as Calri
+  database "Shared Calrissian PVC\nTask files, outputs and logs" as Shared
+  rectangle "Optional Dask Gateway\nScheduler + worker pods" as Dask
+  database "Dedicated SeaweedFS S3\nresults bucket\nDisposable pod storage" as S3
+}
+Host --> Init : Helm releases
+Browser --> Editor : HTTP
+Init --> Workspace : prepares
+Editor --> Workspace : reads / writes
+Editor --> Podman : runs
+Editor --> Calri : submits CWL
+Editor --> Dask : notebook client
+Calri --> Shared : task files
+Calri --> S3 : stage in / out
+legend bottom
+  Selected execution and data paths.
+  Init also initializes S3; editor mounts /calrissian when enabled.
+  Host source checkouts require deliberate synchronization.
+endlegend
+@enduml
