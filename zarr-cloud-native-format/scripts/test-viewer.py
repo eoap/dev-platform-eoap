@@ -21,6 +21,10 @@ assert b"titiler-eopf-config.js" in get(base + "/")
 assert b'"/api"' in get(base + "/titiler-eopf-config.js")
 metadata = json.loads(get(f"{base}/stac/collections/{collection}"))
 item_metadata = json.loads(get(f"{base}/stac/collections/{collection}/items/{item}"))
+if os.environ.get("EXPECT_US_LAKE") == "1":
+    west, south, east, north = item_metadata["bbox"]
+    assert -122 < west < east < -120 and 39 < south < north < 41, item_metadata["bbox"]
+    print("Verified Northern California output bounds:", item_metadata["bbox"])
 assert item_metadata["assets"][asset]["href"].startswith("s3://"), item_metadata
 assert item_metadata["assets"][asset]["href"].endswith(".zarr"), item_metadata
 keys = json.loads(get(route + "/dataset/keys"))

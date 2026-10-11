@@ -24,8 +24,8 @@ geometry = {
 }
 catalog = pystac.Catalog("fixture", "Local inputs for the actual module writer")
 collection = pystac.Collection(
-    "water-bodies",
-    "Viewer validation",
+    "viewer-smoke-fixture",
+    "Synthetic viewer validation fixture near Venice; not EO processing output",
     pystac.Extent(
         pystac.SpatialExtent([bounds]),
         pystac.TemporalExtent(

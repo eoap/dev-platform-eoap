@@ -5,6 +5,10 @@ vars:
   RESULTS: /workspace/zarr-cloud-native-format/cwl-tests/results.json
   DATA_ROOT: ''
 tasks:
+  test:producer:real:
+    desc: Process real Sentinel-2 imagery over the US lake, publish to S3 and verify rendering
+    cmds:
+    - bash scripts/run-real-producer.sh {{.KUBE_CONTEXT | shellQuote}} {{.NAMESPACE | shellQuote}}
   deploy:
     desc: Deploy SeaweedFS, STAC GeoParquet API, TiTiler 0.12.2 and editor
     cmds:
@@ -68,14 +72,15 @@ tasks:
       vars:
         DATA_ROOT: /workspace/zarr-cloud-native-format/titiler-runs/smoke/output
     - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}}
-      exec -i deployment/code-server-deployment -c code-server -- env EXPECT_DISTINCT_TIMES=1
+      exec -i deployment/code-server-deployment -c code-server -- env EXPECT_DISTINCT_TIMES=1 COLLECTION_ID=viewer-smoke-fixture
       /workspace/.venv/bin/python - < scripts/test-viewer.py
   training:sync:
     desc: Copy the local feature-branch viewer and publisher into the editor workspace
     cmds:
     - 'tar -C ../../zarr-cloud-native-format -cf - examples/titiler-eopf-client.html
       examples/titiler-eopf-config.js scripts/publish-titiler-store.py scripts/wrap-producer.py
-      scripts/index-s3-catalog.py scripts/publish-s3.py cwl-cli/stage-out.cwl command-line-tools/stac-zarr/stac_zarr
+      scripts/index-s3-catalog.py scripts/publish-s3.py cwl-cli/stage-out.cwl cwl-workflow/app-water-bodies.cwl
+      cwl-workflow/app-water-bodies-s3.cwl cwl-tests/jobs/producer-job-item.yml command-line-tools/stac-zarr/stac_zarr
       practice-labs/2-Producer-CWL-Workflow/1-Producer.ipynb docs/cwl-workflows/producer.ipynb
       | kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}}
       exec -i deployment/code-server-deployment -c code-server -- tar -C /workspace/zarr-cloud-native-format

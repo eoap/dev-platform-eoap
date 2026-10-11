@@ -54,7 +54,15 @@ The defaults are collection/item `water-bodies` and asset `measurements`. Collec
 task test:viewer:fixture
 ```
 
-This switches the active water-bodies collection to a small fixture. It generates two raster dates, runs the actual module writer and GeoZarr validation, executes wrapped stage-out in a real Kubernetes pod, builds the index, and checks STAC lookup, S3 asset URLs, same-origin TileJSON, nonempty tiles, both measurements and distinct time slices. It does not execute the full remote EO-product workflow. Publish your learning outputs afterwards to return to them.
+This publishes a separate `viewer-smoke-fixture` collection containing synthetic data near Venice. It leaves `water-bodies` unchanged. It tests the writer, stage-out, index and tile services; it does not validate EO processing.
+
+To validate real EO processing, run:
+
+```sh
+task test:producer:real
+```
+
+This builds and loads the processing containers into Minikube, discovers real Sentinel-2 L2A scenes over the Northern California lake area for June 2021, executes the complete producer with Calrissian, publishes its output to S3, and verifies both California bounds and rendered tiles. Logs and results remain in a timestamped `/calrissian/us-lake-*` directory. The image loading step targets this repository's Minikube environment; the CWL processing workflow can run on other Kubernetes clusters when its images are available in a registry.
 
 The module's producer lab now includes a wrapping step. Its `cwl:wrap:producer` task generates a standalone CWL v1.2 graph with the final catalog's stage-out; the platform builds the required updated image locally. No packing command is used. See the [training publication guide](https://github.com/eoap/zarr-cloud-native-format/blob/feature/zarr-conventions/docs/how-to/titiler-eopf-kubernetes.md).
 

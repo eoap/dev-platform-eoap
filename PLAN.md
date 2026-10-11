@@ -702,5 +702,16 @@ indexes are uploaded with the S3 catalog and mirrored on the workspace PVC for
 API queries. TiTiler resolves STAC assets through the API and reads arrays directly
 from SeaweedFS. Actual wrapped stage-out pods, S3 publication, GeoParquet lookup,
 NDWI/water-body tiles and distinct time slices passed on the local AMD64 context.
-The full remote-data producer workflow remains separate acceptance. Disposable
-SeaweedFS replacement requires bucket recreation and republication of outputs.
+The complete real-data producer subsequently passed with four Microsoft Planetary
+Computer Sentinel-2 L2A acquisitions over the Northern California lake area
+(June 3, 8, 13 and 18, 2021). Calrissian produced both GeoZarr and EOPF outputs.
+Real full-resolution processing required increasing the tools' 512 MiB memory
+limits to 2 GiB. The GeoZarr result was staged to S3 and activated as `water-bodies`;
+its bounds `[-121.399054, 39.823361, -120.739953, 40.482799]`, nonempty NDWI/water
+tiles and distinct time slices passed through the client proxy. Run artifacts are
+retained at `/calrissian/real-us-lake`; `task test:producer:real` repeats processing
+and publication with timestamped run directories. Synthetic service checks now
+use the separate `viewer-smoke-fixture` collection and cannot replace this EO
+output. Producer notebook execution and other clusters/architectures remain
+separate checks. Disposable SeaweedFS replacement requires bucket recreation and
+republication of outputs.
