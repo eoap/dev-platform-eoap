@@ -63,6 +63,11 @@ packages alongside the deployment configuration when migration requires it.
   where applicable.
 - Use typed CWL inputs and outputs, including appropriate records, enums, and
   schemas; update notebook examples and staging adapters to match those types.
+- Keep shared input conventions consistent across modules. CRS enum/job values
+  must follow Mastering: quoted EPSG codes such as `"4326"`, not invented values
+  such as `EPSG4326`. Map the selected code to `EPSG:<code>` at the CLI boundary
+  when the processing application requires that format; update CWL schemas,
+  defaults, input jobs and notebook examples together.
 - Provide metadata that validates against transpiler-mate expectations for
   `cwl2markdown`, or an equivalent documentation generator. Validate both the
   metadata and generated documentation as part of module acceptance.
