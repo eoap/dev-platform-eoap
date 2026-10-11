@@ -6,7 +6,7 @@ fi
 set -euo pipefail
 cd /workspace
 
-training_ref=${STAC_TRAINING_REF:-feature/typed-cwl-inputs}
+training_ref=${STAC_TRAINING_REF:-0.0.1}
 if [ ! -d stac-eoap/.git ]; then
     git clone --branch "$training_ref" 'https://github.com/eoap/stac-eoap.git'
 elif [ -n "$(git -C stac-eoap status --porcelain)" ]; then
@@ -16,8 +16,8 @@ else
     git -C stac-eoap checkout "$training_ref"
     git -C stac-eoap merge --ff-only FETCH_HEAD
 fi
-if [ ! -f stac-eoap/scripts/cwl-docs.py ]; then
-    echo "STAC typed-CWL training source is required; select $training_ref or copy the feature branch into the workspace" >&2
+if [ ! -f stac-eoap/scripts/cwl-docs.py ] || [ ! -f stac-eoap/requirements-notebooks.txt ]; then
+    echo "STAC typed-CWL source and notebook dependency lock are required; update the preserved checkout to a compatible published ref" >&2
     exit 1
 fi
 
@@ -29,7 +29,7 @@ echo '{"workbench.colorTheme": "Visual Studio Dark"}' > /workspace/User/settings
 uv venv --allow-existing --seed --python /opt/conda/bin/python /workspace/.venv
 source /workspace/.venv/bin/activate
 # Use the current EOEPCA Python wrapping API.
-uv pip install --python /workspace/.venv/bin/python PyYAML anyio nest_asyncio stactools rasterio requests stac-asset click-logging tabulate tqdm pystac-client ipykernel loguru scikit-image rio_stac boto3==1.35.23 cwltool graphviz pandas asyncclick cwl-loader==0.27.0 eoap-cwlwrap==0.32.0
+uv pip sync --python /workspace/.venv/bin/python --require-hashes /workspace/stac-eoap/requirements-notebooks.txt
 /workspace/.venv/bin/python stac-eoap/scripts/cwl-docs.py --output /tmp/stac-cwl-docs
 uv pip check --python /workspace/.venv/bin/python
 /workspace/.venv/bin/python -m ipykernel install --user --name stac_env --display-name "Python (STAC)"

@@ -2,17 +2,15 @@
 
 The module uses `eoepca/pde-code-server:amd64` and its own SeaweedFS Helm
 release (chart 4.48.0). S3 data is disposable; workspace files remain on the
-editor PVC. Initialization selects the `feature/typed-cwl-inputs` training
-branch, preserves an existing dirty checkout, installs an isolated Python
-environment using uv, and initializes the `results` bucket. Notebook and CWL
+editor PVC. Initialization selects published tag `0.0.1`, preserves an existing
+dirty checkout, installs the hash-locked Python 3.12 notebook environment using
+uv, and initializes the `results` bucket. Notebook and CWL
 corrections live in the training repository rather than being rewritten at
 startup.
 
-The training feature branch must be pushed before a fresh deployment can clone
-it. For local validation, copy that branch's changed files into the preserved
-`/workspace/stac-eoap` checkout. Select another published compatible ref with
-`STAC_TRAINING_REF` in the init environment; a typed-CWL source preflight prevents
-running an older checkout with the new wrapping API.
+No sibling source checkout is required. Select another published compatible ref
+with `STAC_TRAINING_REF`; initialization checks for the typed-CWL source and
+notebook dependency lock before installing the environment.
 
 From this directory, deploy to an existing Kubernetes cluster:
 
@@ -47,7 +45,7 @@ passed with PDE and SeaweedFS. The composed typed stage-in/application/stage-out
 workflow also executed successfully with cwltool/Podman and returned
 `{stac_catalog: {value: "s3://results/run-005/catalog.json"}}`.
 
-All six CWL documents validated, as did the packed wrapper. Invalid URI, BBox,
+All six CWL documents validated, as did the composed wrapper. Invalid URI, BBox,
 EPSG, and band inputs were rejected before processing. The stage-out root-link
 fix was checked again through notebooks 03/05, direct typed CWL stage-out, and
 the composed workflow. Catalog/item root links resolved within S3; all three
@@ -59,10 +57,9 @@ Post-fix notebook checks are in `20261010T214255952481Z` and
 `20261010T214516585446Z`. The wrapper summary and log are
 `/workspace/stac-typed-wrapped-result.json` and
 `/workspace/stac-typed-wrapped.log`. Host copies, including output integrity
-checks and the packed workflow, are in `/tmp/stac-typed-artifacts`.
+checks and the composed workflow, are in `/tmp/stac-typed-artifacts`.
 
-Publish the latest training branch commits before a fresh clone can use these
-fixes. The validation uses the available AMD64
+The historical validation used the available AMD64
 Minikube-backed cluster; ARM64 and other-cluster execution remain untested.
 
 SeaweedFS pod recreation discarded the S3 sentinel and previous results.
@@ -90,3 +87,21 @@ OGC imports. Notebooks 01–03 passed in `20261010T215727173440Z`, and the final
 04–05 run passed in `20261010T220833487865Z`. The composed workflow passed;
 its result and log are `/workspace/stac-final-result.json` and
 `/workspace/stac-final-run.log`.
+
+## Release 0.0.1 acceptance
+
+All five notebooks passed from clean GitHub commit `2626c4f` with a fresh
+hash-locked Python 3.12 environment on AMD64 Minikube. The composed workflow
+also passed: S3 catalog/item root links resolved, and its real Landsat-derived
+binary raster was readable in EPSG:32611. Executed notebooks are retained at
+`/workspace/stac-release-acceptance-2626c4f/notebooks/20261011T132852074190Z`.
+
+Main `a3117ae` has the identical accepted tree and passed
+[main acceptance CI](https://github.com/eoap/stac-eoap/actions/runs/38143789691),
+including all five notebooks, composed workflow/S3 checks, standalone CWL and
+Markdown validation, and strict documentation build.
+[Release 0.0.1](https://github.com/eoap/stac-eoap/releases/tag/0.0.1) provides
+application/staging CWL and locked requirements; source archives contain the
+complete course. Staging runtimes retain their existing interfaces and are
+pinned by digest. The clean release acceptance supersedes earlier workspace
+copy validation; no sibling checkout is needed for deployment.

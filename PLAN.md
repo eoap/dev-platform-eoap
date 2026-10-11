@@ -862,3 +862,32 @@ Python requirements. Teaching containers are built locally by the notebooks.
 Platform initialization now defaults to tag `1.0.0`; existing edited workspaces
 are preserved. The previous overlay acceptance is superseded by this clean
 checkout evidence, with AMD64 remaining the tested architecture.
+
+### STAC EOAP 0.0.1: clean acceptance and stable release
+
+The published feature now includes a hash-locked Python 3.12 notebook environment,
+repository-owned acceptance CI, configurable S3/network settings, and immutable
+staging image digests. Existing staging documents inject their own Python
+scripts, so their validated runtime interfaces were retained rather than
+replaced with a different stage-out command. The approved shared OGC import and
+embedded module types remain unchanged; no CWL packing command was used.
+
+Clean acceptance exposed the documentation validator scanning third-party CWL
+fixtures inside its venv; commit `3bd47cd` restricts validation to module source.
+Acceptance also executes the final composed workflow and resolves valid relative
+STAC links against their S3 documents before checking root links and raster data.
+
+All five notebooks and the composed workflow passed from clean commit `2626c4f`
+on AMD64 Minikube using real Landsat inputs. The S3 binary raster was readable
+in EPSG:32611, and catalog/item root links resolved correctly. Executed notebooks
+remain at `/workspace/stac-release-acceptance-2626c4f/notebooks/20261011T132852074190Z`.
+Feature PR #6 and promotion PR #7 were merged. Main `a3117ae` has the identical
+accepted tree and passed [main acceptance CI 38143789691](https://github.com/eoap/stac-eoap/actions/runs/38143789691),
+including standalone CWL/Markdown checks and strict MkDocs build.
+
+Annotated tag [0.0.1](https://github.com/eoap/stac-eoap/releases/tag/0.0.1) is
+published as a stable release, retaining the declared source/CWL version.
+Application/staging CWL and locked requirements are release assets. Platform
+initialization now defaults to this tag and syncs the hash-locked environment.
+Prior copied-workspace acceptance is superseded by the clean release evidence.
+Other architectures remain unvalidated.
