@@ -618,37 +618,43 @@ downloading remains a separate validation path; no credentials were supplied.
 Editor/S3 and workspace/environment/disposable-S3 lifecycle checks passed.
 Training commit `c5408c3` on `feature/pde-typed-cwl` records the source changes.
 
-### Dask Application Package: 2.0.0 release preparation in progress
+### Dask Application Package: accepted 2.0.0 candidate; stable promotion pending
 
-The `dask-gateway` module initializes `eoap/dask-app-package` from the published
-`feature/pde-typed-cwl` branch. Deployment and worker builds use GitHub, without
-sibling host checkouts. The course and both applications target 2.0.0, with
-hash-locked Python 3.12 runtime, notebook/build and isolated validation/metadata
-environments. Dask/Distributed/Gateway are all 2025.4.0. One image contains both
-course applications and matching scheduler/worker commands; it defines UID
-1001 for Calrissian's non-root execution.
+[Candidate CI](https://github.com/eoap/dask-app-package/actions/runs/38165235375)
+passed at `f428aed` and published both `2.0.0-rc.69` GHCR application aliases.
+They contain the same Python 3.12 runtime, both applications and matching Dask
+scheduler/workers, with Dask/Distributed/Gateway 2025.4.0. The digest is
+`sha256:6488e09db8294933ffcb0ab79a811ea807b151b5acf1adfbc3dd65d0c5605d74`.
+Anonymous manifest reads and a full worker pull passed; artifact checksums and
+all three standalone CWL image references were verified.
 
-Standalone CWL v1.2 documents embed URI/Date/BBox/CRS/SpectralBand schemas,
-use quoted EPSG code `"4326"`, and retain the mandatory Dask Gateway requirement.
-Pinned Calrissian contract validation, six regressions, actual transpiler-mate
-metadata-model validation and strict MkDocs passed. Generic cwl2oci parsing
-still does not accept the mandatory Dask extension; no OCI conversion or CWL
-packing is claimed.
+The platform `dask-gateway` module pins that source commit and published worker
+digest. GitHub initialization alone is sufficient; no sibling host checkouts or
+local worker builds are required. Legacy platform Dask image publication is
+retired in favour of the course acceptance pipeline. Hash locks cover runtime,
+notebook/build and isolated Calrissian/metadata environments. The worker defines
+UID 1001 for PDE Calrissian jobs.
 
-Minikube editor/S3 smoke checks and the corrected two-worker Calrissian job
-passed, including the expected sum of squares and cluster disposal. Both real-data notebooks and geographic/scientific output checks passed.
-Both typed scientific CWL jobs and cluster disposal passed. Clean-commit
-acceptance and publication CI remain in progress.
-Acceptance uses two real cloudless acquisitions and an explicit 1024-pixel
-window from the original EOPF Zarr product, with footprint derived from the
-output raster. The EOPF STAC endpoint is now accessible; the earlier HTTP 500
-blocker is no longer the current release gate.
+Six regressions, standalone CWL v1.2 with embedded URI/Date/BBox/CRS/SpectralBand
+types and quoted EPSG code `"4326"`, actual transpiler-mate metadata validation,
+and strict documentation builds passed. Both real EO notebooks, both typed
+scientific CWL jobs and real two-worker computation/disposal passed in clean
+Kind CI and on Minikube. Minikube clean-checkout acceptance used `98a5899`;
+subsequent changes adjust only acceptance/CI resource budgets and docs.
 
-Publication CI accepts both real lessons and both scientific CWL jobs on pinned
-Kubernetes before publishing candidate GHCR aliases with immutable digests.
-Adoption of a verified public image, clean-commit acceptance and review remain
-required before stable promotion. Worker defaults are temporarily local for
-candidate testing. ARM64 and full-tile resource capacity remain unverified.
+Acceptance uses two real cloudless acquisitions at 100 m and an explicit
+1024-pixel window from the original EOPF Zarr product. STAC footprints derive
+from produced rasters; all five GeoTIFF assets passed coordinate and scientific
+range checks. No generated EO pixels replace the real sources. Scientific CWL
+rejects missing root catalogs to counter the pinned Calrissian sidecar's success
+status after a failed main process. Main RAM is declared explicitly; acceptance
+budgets include the duplicated sidecar reservation on a four-CPU CI node.
+
+The Dask requirement remains mandatory. Generic cwl2oci parsing still does not
+support it; actual metadata-model validation does not claim OCI conversion.
+No CWL packing is used. Review [PR #11](https://github.com/eoap/dask-app-package/pull/11),
+promote the accepted feature and explicitly dispatch stable publication before
+claiming 2.0.0 is released. ARM64 and full-tile capacity remain unverified.
 
 ### Application Package Patterns: stable 2.0.0 released and accepted
 

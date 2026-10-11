@@ -5,27 +5,31 @@ Gateway integration, Dask Gateway 2025.4.0, and disposable authenticated
 SeaweedFS. The module targets Kubernetes; `task start` optionally creates a
 Minikube cluster. Configure storage classes for your cluster.
 
-## Prepare and deploy the candidate
+## Deploy the accepted candidate
 
-Initialization checks out the published GitHub branch `feature/pde-typed-cwl`
-inside the editor. No sibling host checkout is required. During release
-preparation, build the matching candidate from that GitHub source and make it
-available to the cluster:
+Initialization checks out immutable GitHub commit `f428aed` from
+`feature/pde-typed-cwl`. The gateway and notebook worker use the public
+`ghcr.io/eoap/dask-app-package/cloudless-mosaic:2.0.0-rc.69` image pinned to its
+accepted digest. No sibling host checkout or local worker build is required.
 
 ```bash
-task worker:build
-task worker:load MINIKUBE_PROFILE=<running-profile>
 task deploy KUBE_CONTEXT=<context>
 ```
 
-For another cluster, publish the worker image to an accessible registry and
-configure the backend and `daskGateway.image` values. The temporary default is
-`eoap-dask-worker:2.0.0-candidate`. Accepted CI builds will publish the shared
-application/worker image under the existing cloudless-mosaic and
-EOPF-sentinel-2 GHCR package names; the deployment will adopt a verified
-published digest before stable promotion. These tasks do not publish images. The platform no longer republishes the
-legacy Dask editor/client/worker images; course image publication belongs to
-`eoap/dask-app-package` acceptance CI.
+[Acceptance CI](https://github.com/eoap/dask-app-package/actions/runs/38165235375)
+passed before publishing the image. The EOPF package alias contains the same
+runtime; artifact checksums and both immutable image references were verified.
+An actual anonymous worker pull passed. Candidate artifacts are available from
+that CI run; stable 2.0.0 has not been promoted or published.
+
+The platform no longer republishes legacy Dask editor/client/worker images;
+course image publication belongs to `eoap/dask-app-package` acceptance CI.
+For custom development, `task worker:build` builds from the pinned GitHub source
+and `task worker:load MINIKUBE_PROFILE=<profile>` loads the local candidate tag.
+Configure both backend and `daskGateway.image` values to use a custom image.
+Override `DASK_TRAINING_REF` in the editor environment when selecting another
+training ref. Initialization preserves dirty workspaces; create a feature branch
+before modifying course source and use conventional commits.
 
 Python 3.12, Dask/Distributed/Gateway 2025.4.0 and the hash-locked course runtime
 match between notebook clients and workers. Both processing commands and Dask
@@ -64,8 +68,15 @@ requirement. CWL packing is never used.
 
 ## Release preparation status
 
-Locked dependencies, six regression tests, standalone CWL validation,
-metadata validation and strict documentation builds passed. Minikube editor/S3
-checks and the rebuilt Calrissian two-worker job passed, including cluster
-teardown. Both real-data notebooks and geographic/scientific asset checks passed. Both typed scientific CWL jobs also passed, including all five raster checks
-and cluster disposal. Clean-commit acceptance and publication CI are in progress; this is not a release-readiness assertion. ARM64 remains untested.
+Candidate `2.0.0-rc.69` is accepted for the bounded AMD64 course cases. Six
+regressions, standalone contracts, actual metadata-model validation, strict
+docs, distributed creation/computation/disposal, both real EO notebooks and
+both typed scientific CWL jobs passed in clean Kubernetes CI. The same real
+notebooks and jobs passed on Minikube from clean commit `98a5899`; later changes
+only adjust acceptance/CI budgets and documentation. All five raster assets
+passed geographic and scientific checks, and gateway clusters were disposed.
+
+Review [PR #11](https://github.com/eoap/dask-app-package/pull/11), promote the
+accepted feature, and explicitly dispatch stable publication before claiming
+2.0.0 is released. ARM64 and full-tile capacity remain unverified. The bounded
+acceptance scope is not a full-acquisition capacity guarantee.

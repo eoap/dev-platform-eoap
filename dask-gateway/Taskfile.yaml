@@ -14,7 +14,7 @@ vars:
   LABS_LIST: 'false'
   MAX_ITEMS: '2'
   WORKER_IMAGE: eoap-dask-worker:2.0.0-candidate
-  TRAINING_REF: feature/pde-typed-cwl
+  TRAINING_REF: f428aed638e571368992bc51535ae4ae888f2210
   EOPF_WINDOW: '1024'
 
 tasks:

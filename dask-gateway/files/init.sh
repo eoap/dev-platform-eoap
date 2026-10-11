@@ -6,15 +6,15 @@ fi
 set -euo pipefail
 cd /workspace
 
-training_ref=${DASK_TRAINING_REF:-feature/pde-typed-cwl}
+training_ref=${DASK_TRAINING_REF:-f428aed638e571368992bc51535ae4ae888f2210}
 if [ ! -d dask-app-package/.git ]; then
-    git clone --branch "$training_ref" 'https://github.com/eoap/dask-app-package.git'
-elif [ -n "$(git -C dask-app-package status --porcelain)" ]; then
+    git clone 'https://github.com/eoap/dask-app-package.git'
+fi
+if [ -n "$(git -C dask-app-package status --porcelain)" ]; then
     echo "Preserving local dask-app-package checkout and edits"
 else
     git -C dask-app-package fetch --tags origin "$training_ref"
-    git -C dask-app-package checkout "$training_ref"
-    git -C dask-app-package merge --ff-only FETCH_HEAD
+    git -C dask-app-package checkout --detach FETCH_HEAD
 fi
 if [ ! -f dask-app-package/scripts/cwl-docs.py ]; then
     echo "Dask typed-CWL training source is required; select $training_ref from GitHub" >&2

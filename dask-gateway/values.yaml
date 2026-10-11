@@ -1,8 +1,8 @@
 gateway:
   backend:
     image:
-      name: eoap-dask-worker
-      tag: 2.0.0-candidate
+      name: ghcr.io/eoap/dask-app-package/cloudless-mosaic
+      tag: 2.0.0-rc.69@sha256:6488e09db8294933ffcb0ab79a811ea807b151b5acf1adfbc3dd65d0c5605d74
     imagePullSecrets: []
   extraConfig:
     dask_gateway_config.py: "from dask_gateway_server.options import Options, String,\
@@ -10,7 +10,7 @@ gateway:
       , default=1, min=1, label=\"Worker CPU limit\"),\n    Float(\"worker_cores\"\
       , default=1, min=0.1, label=\"Worker CPU request\"),\n    String(\"worker_memory\"\
       , default=\"2G\", label=\"Worker memory\"),\n    String(\"image\", default=\"\
-      eoap-dask-worker:2.0.0-candidate\", label=\"Application and worker image\"),\n\
+      ghcr.io/eoap/dask-app-package/cloudless-mosaic:2.0.0-rc.69@sha256:6488e09db8294933ffcb0ab79a811ea807b151b5acf1adfbc3dd65d0c5605d74\", label=\"Application and worker image\"),\n\
       \    handler=lambda options: {\n        \"worker_cores_limit\": options.worker_cores_limit,\n\
       \        \"worker_cores\": options.worker_cores,\n        \"worker_memory\"\
       : options.worker_memory,\n        \"image\": options.image,\n    },\n)\n"

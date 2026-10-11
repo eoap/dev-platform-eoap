@@ -27,7 +27,7 @@ The shared coder image default is still the legacy `ghcr.io/eoap/dev-platform-eo
 | CWL EOAP | `feature/pde-typed-cwl` | `CWL_EOAP_TRAINING_REF` |
 | Inference | `feature/pde-typed-cwl` | `INFERENCE_EOAP_TRAINING_REF` |
 | Patterns | `2.0.0` | `APPLICATION_PACKAGE_PATTERNS_TRAINING_REF` |
-| Dask | `feature/pde-typed-cwl` | `DASK_TRAINING_REF` |
+| Dask | `f428aed638e571368992bc51535ae4ae888f2210` | `DASK_TRAINING_REF` |
 | Contract-first | `main` | `EOAP_CONTRACT_FIRST_TRAINING_REF` |
 
 These are shell variables read in the init container; they are not automatically forwarded from a host export. Refer to [source selection](../how-to/work-with-training-source.md) before changing them. Quickwin reads `QUICKWIN_TRAINING_REF` (default `feature/typed-cwl-release`), preserves dirty workspaces, and installs the module's hash-locked environment without rewriting notebooks.
@@ -79,8 +79,20 @@ Use the exact endpoint from the module's init script. The namespace/profile nami
 
 ## Dask workers
 
-The gateway chart and matching client protocol are pinned to **2025.4.0**. The PDE notebook worker tag is `eoap-dask-worker:2.0.0-candidate`; its Dockerfile is [Dockerfile.pde-worker](../../dask-gateway/Dockerfile.pde-worker). It installs both course packages on Python 3.12.11 using the training `requirements-runtime.txt` lock. Builds use a GitHub context; no sibling host checkout is needed. Accepted GHCR digests remain a release gate.
+The gateway chart and matching client protocol are pinned to **2025.4.0**.
+Normal deployment uses the public `ghcr.io/eoap/dask-app-package/cloudless-mosaic:2.0.0-rc.69`
+worker pinned to `sha256:6488e09db8294933ffcb0ab79a811ea807b151b5acf1adfbc3dd65d0c5605d74`.
+The EOPF alias has the same tested runtime. GitHub source initialization pins
+`f428aed`; no sibling host checkout or local worker build is required.
 
-Build from `dask-gateway` with `task worker:build TRAINING_REF=feature/pde-typed-cwl`, then load with `task worker:load MINIKUBE_PROFILE=<profile>`. `WORKER_IMAGE` changes the build/load tag; update the backend and coder `daskGateway.image` configuration consistently if selecting another tag. Other clusters need the image available in their node runtime or registry.
+For custom testing, build from `dask-gateway` with `task worker:build`, then
+load with `task worker:load MINIKUBE_PROFILE=<profile>`. `TRAINING_REF` selects
+its remote Git context and `WORKER_IMAGE` changes the local build/load tag;
+configure both the backend and coder `daskGateway.image` consistently to select
+that custom image. Other clusters need registry access or a loaded image.
 
-Notebook defaults use two workers; cloudless task acceptance bounds the search with `MAX_ITEMS=2`. Larger budgets require checking gateway options, worker limits and cluster capacity. Calrissian acceptance selects the same configured candidate image. `task labs:all` checks both real-data notebooks, and `task test:cwl` checks both typed scientific jobs. EOPF acceptance sets `EOPF_WINDOW=1024`; direct jobs omit `window-size` for the full tile.
+Notebook defaults use two workers; cloudless acceptance bounds the search with
+`MAX_ITEMS=2`. `task labs:all` checks both real-data notebooks and `task test:cwl`
+checks both typed scientific jobs. EOPF acceptance sets `EOPF_WINDOW=1024`;
+direct jobs omit `window-size` for the full tile. Larger workloads need capacity
+validation. The matched build reference is [Dockerfile.pde-worker](../../dask-gateway/Dockerfile.pde-worker).

@@ -13,7 +13,7 @@ Recorded execution used an AMD64 Docker-backed Minikube cluster, context `eoap-m
 | [CWL](../../cwl-eoap/README.md) | Three notebooks with real builds/execution, typed contract docs, smoke and lifecycle | Local feature branch availability must be resolved for fresh clones |
 | [Inference](../../inference-eoap/README.md) | Six labs using local 13-band staging fixture and real ONNX model, partial-batch regression, three contracts/docs, smoke and lifecycle | Authenticated Copernicus downloading not exercised by the fixture path |
 | [Patterns](../../application-package-patterns/README.md) | Stable 2.0.0: 16 real-data cases from clean `c02c778` on Minikube and release CI; 27 runner tests, 17 contracts, 12 wrappers, 26 verified public OCI packages, strict docs, smoke and earlier lifecycle | AMD64 accepted; other architectures, storage and network configurations require acceptance |
-| [Dask](../../dask-gateway/README.md) | Two-worker Calrissian computation/disposal, both real-data notebooks and geographic/scientific checks, six regressions, locked contracts/metadata/docs, smoke; earlier lifecycle | Both typed scientific CWL jobs and disposal passed; clean-commit acceptance/CI in progress; candidate worker currently local-only; full-tile and ARM64 capacity unverified |
+| [Dask](../../dask-gateway/README.md) | Clean Kind CI at `f428aed`: six regressions, locked contracts/metadata/docs, both real EO notebooks, both typed scientific CWL cases and two-worker disposal; clean Minikube acceptance; candidate artifacts/digests and anonymous pull verified | `2.0.0-rc.69` accepted; stable promotion pending; full-tile capacity and ARM64 unverified |
 | [Contract-first](../../eoap-contract-first/README.md) | Three contracts, quality gates, 39 tests, supply-chain checks, strict docs build, actual transpiler-mate derivation, smoke and lifecycle | Registry/container publication separate; source unchanged |
 
 ## Scope boundaries
@@ -21,7 +21,7 @@ Recorded execution used an AMD64 Docker-backed Minikube cluster, context `eoap-m
 - AMD64 acceptance is established for the recorded target. ARM64 and other Kubernetes clusters need their own acceptance.
 - The PDE AMD64 tag is the selected local artifact. A repository-wide approved immutable multi-platform manifest is still pending.
 - Most new training changes are committed locally on feature branches. A deployment pointed at an unpublished branch is not reproducible from a fresh remote clone until published or deliberately seeded.
-- Dask's worker image is built/loaded locally. Loading it into one Minikube profile does not make it available to another cluster.
+- Dask deploys the accepted public candidate worker by digest; local worker builds are optional custom-development paths.
 - Remaining modules, shared-default changes, CI/legacy image retirement and complete LocalStack removal are unfinished plan work.
 - Temporary host artifact paths in old records are evidence locations from the original session, not distributed release artifacts or durable hosting guarantees.
 

@@ -9,8 +9,8 @@
 - [x] Pass both real EO notebook lessons and geographic/scientific asset checks.
 - [x] Pass both typed scientific CWL cases and verify cluster disposal.
 - [x] Complete acceptance from clean intended-release commit `98a5899` (later `dcda5c2` changes only CI).
-- [ ] Pass clean Kubernetes CI and publish candidate GHCR images/artifacts.
-- [ ] Verify anonymous GHCR pulls and adopt the accepted published worker digest.
+- [x] Pass clean Kubernetes CI at `f428aed` and publish candidate `2.0.0-rc.69`.
+- [x] Verify anonymous GHCR pulls and adopt the accepted published worker digest.
 - [ ] Review and promote the accepted feature before explicit stable publication.
 
 Acceptance is bounded to two cloudless acquisitions at 100 m and an explicit

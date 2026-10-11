@@ -26,7 +26,7 @@ Defaults shown here come from the checked-in module Taskfiles and init scripts. 
 | `how-to` | [how-to](https://github.com/eoap/how-to) | `eoap-how-to` | Ten cases via `workflows` | [Module README](../../how-to/README.md) |
 | `application-package-patterns` | [application-package-patterns](https://github.com/eoap/application-package-patterns) | `eoap-application-package-patterns` | Twelve CWL patterns plus four optional-port cases via `labs` | [Module README](../../application-package-patterns/README.md) |
 | `inference-eoap` | [inference-eoap](https://github.com/eoap/inference-eoap) | `eoap-inference` | Six labs plus regression tests via `labs` | [Module README](../../inference-eoap/README.md) |
-| `dask-gateway` | [dask-app-package](https://github.com/eoap/dask-app-package) | `eoap-dask-gateway` | `test:dask` and selected notebooks | [Module README](../../dask-gateway/README.md) |
+| `dask-gateway` | [dask-app-package](https://github.com/eoap/dask-app-package) | `eoap-dask-gateway` | `test:dask`, `labs:all` and `test:cwl` | [Module README](../../dask-gateway/README.md) |
 | `eoap-contract-first` | [eoap-contract-first](https://github.com/eoap/eoap-contract-first) | `eoap-contract-first` | Source `reference:test` via `labs` | [Module README](../../eoap-contract-first/README.md) |
 | `quickwin` | [quickwin](https://github.com/eoap/quickwin) | `eoap-quickwin` | Four notebooks via `labs` | [Module README](../../quickwin/README.md); typed CWL v1.2; release-preparation feature |
 
