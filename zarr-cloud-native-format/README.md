@@ -66,7 +66,7 @@ task test:producer:real
 
 This builds and loads the processing containers into Minikube, discovers real Sentinel-2 L2A scenes over the Northern California lake area for June 2021, executes the complete producer with Calrissian, publishes its output to S3, and verifies both California bounds and rendered tiles. Logs and results remain in a timestamped `/calrissian/us-lake-*` directory. The image loading step targets this repository's Minikube environment; the CWL processing workflow can run on other Kubernetes clusters when its images are available in a registry.
 
-The module's producer lab now includes a wrapping step. Its `cwl:wrap:producer` task generates a standalone CWL v1.2 graph with the final catalog's stage-out; the wrapper uses mastering’s published stable stage-out image. No packing command is used. See the [training publication guide](https://github.com/eoap/zarr-cloud-native-format/blob/feature/zarr-conventions/docs/how-to/titiler-eopf-kubernetes.md).
+The module's producer lab now includes a wrapping step. Its `cwl:wrap:producer` task generates a standalone CWL v1.2 graph with the final catalog's stage-out; the wrapper uses mastering’s published stable stage-out image. No packing command is used. See the [training publication guide](https://github.com/eoap/zarr-cloud-native-format/blob/2.0.0/docs/how-to/titiler-eopf-kubernetes.md).
 
 ## Configuration and storage lifecycle
 

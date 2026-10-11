@@ -812,3 +812,28 @@ retained on the editor PVC at
 This closes the rc.80.1 notebook blockers. It does not waive the stable security
 gate: approved exceptions remain candidate-only, and EOPF dependency findings
 must be resolved or separately approved before stable publication.
+
+### Zarr 2.0.0: stable published and accepted
+
+The user explicitly approved all seven existing scan exceptions for stable
+2.0.0 publication. Commit `cfbcad7` applies them to candidates and stable 2.0.0
+only; other stable versions still clear `.trivyignore`. The underlying pinned
+EOPF dependency vulnerabilities remain exceptions, not fixes.
+
+Feature PR #8 and promotion PR #9 were merged. Develop's additional STAC
+temporal-metadata and viewer updates were preserved, including both tests in
+the resolved conflict; 43 STAC-Zarr tests passed locally, and integration checks
+passed. Stable source is main commit `81f74b1`.
+
+[Release 2.0.0](https://github.com/eoap/zarr-cloud-native-format/releases/tag/2.0.0)
+is published, not draft or prerelease.
+[Stable CI 38139625676](https://github.com/eoap/zarr-cloud-native-format/actions/runs/38139625676)
+passed tests, seven image builds/scans/publications, three standalone CWL/OCI
+publications, and GitHub release creation. All **nine practice notebooks passed
+together against the stable artifacts** on Minikube with Calrissian and real
+Sentinel-2 observations on 2026-10-11. Executed notebooks remain on the editor
+PVC at `/workspace/zarr-notebook-acceptance/20261011T124320825498Z`.
+
+Platform initialization now defaults to the stable `2.0.0` source tag, and its
+publication-guide link targets that tag. Published immutable processor images
+and mastering stage-out 2.0.0 can be reused without sibling host checkouts.

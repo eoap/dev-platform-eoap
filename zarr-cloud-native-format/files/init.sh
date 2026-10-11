@@ -2,7 +2,7 @@
 if [ -z "${BASH_VERSION:-}" ]; then exec /bin/bash "$0" "$@"; fi
 set -euo pipefail
 cd /workspace
-training_ref=${ZARR_TRAINING_REF:-feature/zarr-conventions}
+training_ref=${ZARR_TRAINING_REF:-2.0.0}
 if [ ! -d zarr-cloud-native-format/.git ]; then
     git clone --branch "$training_ref" https://github.com/eoap/zarr-cloud-native-format.git
 elif [ -n "$(git -C zarr-cloud-native-format status --porcelain)" ]; then
