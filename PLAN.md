@@ -1238,9 +1238,82 @@ static differences, source commits, and branches. The baseline report is
 require classification before applying the processing model. A repository with no
 packaging or Dockerfiles is not automatically release-ready.
 
-Machine Learning is the first migration: commit `d739bd6` aligns all four
-pyprojects and all three Dockerfiles. Its formatting, lint, strict typing, security
-gates and 19 regressions pass. Inference's Rocky runtime build and UID/GID 2000
-check pass. Combined/training builds and real-data Minikube acceptance are in
-progress; this is not yet accepted release evidence. Other modules remain queued
-for changes and acceptance, including the previously identified CWL corrections.
+Machine Learning's feature branch is published through `e08b72f`; all four
+pyprojects and three processing Dockerfiles match the static model. Formatting,
+lint, strict typing, security and 20 unit tests pass. All nine notebooks passed
+on Minikube from clean commit `61ad859`, using real EuroSAT chips and all three
+Rocky runtime images. Evidence is committed in the training repository and draft
+PR https://github.com/eoap/machine-learning-process/pull/4 prepares review. This
+validates local builds; published candidate artifacts still require acceptance.
+
+Dask's migration is committed through `1c3462f`: three packages and processing
+images, locked development tools, strict quality gates and eight passing unit
+tests. Its development acceptance image is an intentional processing-model
+exception. The Rocky image passes local distributed and encrypted execution,
+but gateway task traffic disconnects on Minikube. The published worker control
+passes with the same client; a TLS 1.2 diagnostic image also passes. A production
+TLS setting change is pending explicit approval; retain TLS 1.3 meanwhile.
+
+Mastering's migration is published on `feature/hatch-rocky-release` at `b5859e8`,
+rebased through the released 2.0.1 baseline. All six package quality gates,
+34 leaf unit tests, 12 root pipeline/release tests and typed workflow validation
+pass. The six initial Rocky images build and smoke-test; they need rebuilding
+against the merged staging changes for final image acceptance. Fresh notebook
+acceptance from clean `b5859e8` on Minikube failed in the first real Sentinel-2
+crop: public S3 range transfers were too slow and timed out. Independent host
+requests reproduced the limitation. Retain this failed result; do not substitute
+synthetic EO pixels or declare notebook acceptance complete.
+
+Zarr's migration is published on `feature/hatch-rocky-release` through `455bf93`,
+with clean processing acceptance at `9520a5a`.
+All eight pyprojects and seven Python processing Dockerfiles follow the model;
+all package quality gates and 80 unit tests pass. All seven Rocky images build,
+and a genuinely fresh Hatch environment passes its checks and tests. All 80 unit tests and seven non-root runtime smoke jobs pass on Minikube.
+The new writer processes retained real Lake Almanor data for four acquisition
+dates; sampled NDWI and binary-mask pixels exactly match the source GeoTIFFs,
+with EPSG:32610 and the correct US footprint. Full notebook and published
+candidate acceptance remain pending. Evidence is committed in the training repo. Keep EOPF's Zarr 2
+processing environment separate from the GeoZarr writer's Zarr 3 environment.
+Publication tools have a separate hash lock because their Click requirement
+conflicts with EOPF's. The upstream Go yq utility and TiTiler service are explicit
+exceptions to the Python-wheel processing model. Wrapping restores shared
+published schema imports after SDK serialization and retains local types inline;
+both regenerated and checked-in wrapped CWL validate without packing.
+
+STAC's migration is published through `75210b7`: its course wheel, hash-locked
+Hatch checks and development environment follow the model. All five notebooks
+pass feature CI; fresh local Hatch checks and standalone contracts pass. There
+is no module-owned processing Dockerfile to migrate.
+
+Quickwin's migration is published through `af452f4`, including five unit tests,
+the locked processing wheel and Rocky runtime. The final processing image from
+`3526c18` passes real Lake Almanor processing on Minikube. Its binary mask has
+valid zero-valued land, no nodata collision, unchanged classification pixels,
+and the correct EPSG:32610 footprint. Retained cropped EO inputs are explicitly
+recorded; remote stage-in and all four new notebooks remain acceptance gates.
+Notebook CI exposed stale duplicate functions; `cc966f5` makes the lesson show
+and execute the tested implementation instead. This is not a release-readiness
+assertion.
+
+How-To's migration is published through `03dba14`: locked Hatch quality checks,
+two release-substitution regression tests and all ten standalone contracts pass.
+Publication CI now consumes the exact runtime archive tested by all eleven
+cases and prepares CWL pinned to its published digest. Clean-commit Minikube
+acceptance with the newly built Rocky runtime is in progress. The platform init
+installs the new course package when its development lock is present, retaining
+compatibility with the existing published notebook environment.
+
+**Required execution detail for the supplied Hatch model:** keep the requested
+`dev.skip-install = true`, but expose the locked installation commands as a
+`bootstrap` script and run it first from `dev:check` and `test:test`. Notebook
+`default` environments may install the project only after a pre-install command
+installs the hash lock. Give `dev` its own template when `default` inherits it,
+so Hatch's implicit default inheritance cannot create a cycle. Validate fresh
+`hatch run` startup, not only directly installed virtualenvs. Pin Hatch's
+compatible virtualenv dependency in each development lock. Set `python = "3.12"`
+explicitly in the development environment: skip-install also skips the usual
+project interpreter constraint check.
+
+Remaining e-learning repositories require migration and Minikube acceptance;
+none gains release readiness from this static audit alone. Preserve concurrent
+module work and published remote CWL schema imports throughout the migration.

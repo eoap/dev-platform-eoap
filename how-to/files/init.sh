@@ -30,7 +30,12 @@ uv venv --allow-existing --seed --python /opt/conda/bin/python /workspace/.venv
 source /workspace/.venv/bin/activate
 ln -sfn /opt/calrissian-venv/bin/calrissian /workspace/.venv/bin/calrissian
 # Calrissian remains in the container-provided isolated environment.
-uv pip sync --python /workspace/.venv/bin/python --require-hashes /workspace/how-to/requirements-notebooks.txt
+if [ -f /workspace/how-to/requirements/development.txt ]; then
+    uv pip sync --python /workspace/.venv/bin/python --require-hashes /workspace/how-to/requirements/development.txt
+    uv pip install --python /workspace/.venv/bin/python --no-deps --no-build-isolation -e /workspace/how-to
+else
+    uv pip sync --python /workspace/.venv/bin/python --require-hashes /workspace/how-to/requirements-notebooks.txt
+fi
 /workspace/.venv/bin/python how-to/scripts/cwl-docs.py --output /tmp/howto-cwl-docs
 uv pip check --python /workspace/.venv/bin/python
 /workspace/.venv/bin/python -m ipykernel install --user --name cwl_how_to_env --display-name "Python (CWL How-To)"

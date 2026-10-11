@@ -1,0 +1,824 @@
+{
+  "scope": "e-learning modules and processing images",
+  "static_audit_only": true,
+  "modules": [
+    {
+      "name": "advanced-tooling",
+      "branch": "main",
+      "commit": "bc3aef3cf43fca5fe961e6c6825fe1ed38294d80",
+      "files": [
+        {
+          "path": "command-line-tools/crop/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [
+            "not a two-stage Rocky Linux 10.1-minimal build",
+            "missing Hatch wheel build",
+            "Hatch 1.14.0 download is not explicit",
+            "runtime does not explicitly switch to neo",
+            "runtime virtual environment differs from /app/venv",
+            "missing dependency consistency check",
+            "pip remains in runtime environment",
+            "missing installed CLI smoke check",
+            "runtime dependency installation is not hash locked",
+            "runtime UID/GID or home differs from model"
+          ],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "command-line-tools/norm_diff/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [
+            "not a two-stage Rocky Linux 10.1-minimal build",
+            "missing Hatch wheel build",
+            "Hatch 1.14.0 download is not explicit",
+            "runtime does not explicitly switch to neo",
+            "runtime virtual environment differs from /app/venv",
+            "missing dependency consistency check",
+            "pip remains in runtime environment",
+            "missing installed CLI smoke check",
+            "runtime dependency installation is not hash locked",
+            "runtime UID/GID or home differs from model"
+          ],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "command-line-tools/otsu/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [
+            "not a two-stage Rocky Linux 10.1-minimal build",
+            "missing Hatch wheel build",
+            "Hatch 1.14.0 download is not explicit",
+            "runtime does not explicitly switch to neo",
+            "runtime virtual environment differs from /app/venv",
+            "missing dependency consistency check",
+            "pip remains in runtime environment",
+            "missing installed CLI smoke check",
+            "runtime dependency installation is not hash locked",
+            "runtime UID/GID or home differs from model"
+          ],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "command-line-tools/stac-geoparquet/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [
+            "not a two-stage Rocky Linux 10.1-minimal build",
+            "missing Hatch wheel build",
+            "Hatch 1.14.0 download is not explicit",
+            "runtime does not explicitly switch to neo",
+            "runtime virtual environment differs from /app/venv",
+            "missing dependency consistency check",
+            "pip remains in runtime environment",
+            "runtime dependency installation is not hash locked",
+            "runtime UID/GID or home differs from model"
+          ],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "command-line-tools/stac/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [
+            "not a two-stage Rocky Linux 10.1-minimal build",
+            "missing Hatch wheel build",
+            "Hatch 1.14.0 download is not explicit",
+            "runtime does not explicitly switch to neo",
+            "runtime virtual environment differs from /app/venv",
+            "missing dependency consistency check",
+            "pip remains in runtime environment",
+            "missing installed CLI smoke check",
+            "runtime dependency installation is not hash locked",
+            "runtime UID/GID or home differs from model"
+          ],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "command-line-tools/stage/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [
+            "not a two-stage Rocky Linux 10.1-minimal build",
+            "missing Hatch wheel build",
+            "Hatch 1.14.0 download is not explicit",
+            "runtime does not explicitly switch to neo",
+            "runtime virtual environment differs from /app/venv",
+            "missing dependency consistency check",
+            "pip remains in runtime environment",
+            "missing installed CLI smoke check",
+            "runtime dependency installation is not hash locked",
+            "runtime UID/GID or home differs from model"
+          ],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        }
+      ],
+      "root_pyproject": false
+    },
+    {
+      "name": "application-package-patterns",
+      "branch": "feature/pde-typed-cwl",
+      "commit": "c02c7786ec558d36237945da747f40e4cb5bd2dc",
+      "files": [
+        {
+          "path": "pyproject.toml",
+          "kind": "pyproject",
+          "issues": [
+            "Hatchling requirement differs from >=1.27,<2",
+            "Python compatibility differs from >=3.12,<3.13",
+            "wheel package directories are not explicit",
+            "sdist include paths are not explicit",
+            "development environment does not use skip-install and uv",
+            "development dependencies are not installed from a hash lock",
+            "missing development command check",
+            "missing development command format-check",
+            "missing development command lint-check",
+            "missing development command typecheck",
+            "missing development command security",
+            "test environment does not inherit dev",
+            "strict mypy is not configured",
+            "Ruff line length or Python target differs from model",
+            "Ruff complexity limit differs from model"
+          ]
+        },
+        {
+          "path": "runner/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [
+            "not a two-stage Rocky Linux 10.1-minimal build",
+            "missing Hatch wheel build",
+            "Hatch 1.14.0 download is not explicit",
+            "runtime virtual environment differs from /app/venv",
+            "missing dependency consistency check",
+            "pip remains in runtime environment",
+            "runtime dependency installation is not hash locked",
+            "runtime UID/GID or home differs from model"
+          ],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "runner/pyproject.toml",
+          "kind": "pyproject",
+          "issues": [
+            "Hatchling requirement differs from >=1.27,<2",
+            "Python compatibility differs from >=3.12,<3.13",
+            "wheel package directories are not explicit",
+            "sdist include paths are not explicit",
+            "development environment does not use skip-install and uv",
+            "development dependencies are not installed from a hash lock",
+            "missing development command check",
+            "missing development command format-check",
+            "missing development command lint-check",
+            "missing development command typecheck",
+            "missing development command security",
+            "test environment does not inherit dev",
+            "strict mypy is not configured",
+            "Ruff line length or Python target differs from model",
+            "Ruff complexity limit differs from model"
+          ]
+        },
+        {
+          "path": "stage-in/pyproject.toml",
+          "kind": "pyproject",
+          "issues": [
+            "Hatchling requirement differs from >=1.27,<2",
+            "Python compatibility differs from >=3.12,<3.13",
+            "wheel package directories are not explicit",
+            "sdist include paths are not explicit",
+            "development environment does not use skip-install and uv",
+            "development dependencies are not installed from a hash lock",
+            "missing development command check",
+            "missing development command format-check",
+            "missing development command lint-check",
+            "missing development command typecheck",
+            "missing development command security",
+            "test environment does not inherit dev",
+            "strict mypy is not configured",
+            "Ruff line length or Python target differs from model",
+            "Ruff complexity limit differs from model"
+          ]
+        }
+      ],
+      "root_pyproject": true
+    },
+    {
+      "name": "cwl-eoap",
+      "branch": "feature/pde-typed-cwl",
+      "commit": "8d1c115ac63aa0589ecb1854c744ad521ae460d6",
+      "files": [
+        {
+          "path": "notebooks/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [
+            "not a two-stage Rocky Linux 10.1-minimal build",
+            "missing Hatch wheel build",
+            "Hatch 1.14.0 download is not explicit",
+            "runtime does not explicitly switch to neo",
+            "runtime virtual environment differs from /app/venv",
+            "missing dependency consistency check",
+            "pip remains in runtime environment",
+            "missing installed CLI smoke check",
+            "runtime dependency installation is not hash locked",
+            "runtime UID/GID or home differs from model"
+          ],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        }
+      ],
+      "root_pyproject": false
+    },
+    {
+      "name": "dask-app-package",
+      "branch": "feature/pde-typed-cwl",
+      "commit": "1c3462fbb7a5f70013239d3a070a6735177141df",
+      "files": [
+        {
+          "path": "Dockerfile",
+          "kind": "dockerfile",
+          "issues": [],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "Dockerfile.acceptance",
+          "kind": "dockerfile",
+          "issues": [
+            "not a two-stage Rocky Linux 10.1-minimal build",
+            "missing Hatch wheel build",
+            "Hatch 1.14.0 download is not explicit",
+            "runtime virtual environment differs from /app/venv",
+            "missing dependency consistency check",
+            "pip remains in runtime environment",
+            "missing installed CLI smoke check"
+          ],
+          "classification": "development acceptance harness",
+          "model_exception": true
+        },
+        {
+          "path": "cloudless-mosaic/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "cloudless-mosaic/pyproject.toml",
+          "kind": "pyproject",
+          "issues": []
+        },
+        {
+          "path": "eopf-sentinel-2/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "eopf-sentinel-2/pyproject.toml",
+          "kind": "pyproject",
+          "issues": []
+        },
+        {
+          "path": "pyproject.toml",
+          "kind": "pyproject",
+          "issues": []
+        }
+      ],
+      "root_pyproject": true
+    },
+    {
+      "name": "eoap-contract-first",
+      "branch": "feature/hatch-rocky-release",
+      "commit": "bec7d4bf1bbc687ad7aa7bf92440fad64581d868",
+      "files": [
+        {
+          "path": "pyproject.toml",
+          "kind": "pyproject",
+          "issues": [
+            "Hatchling requirement differs from >=1.27,<2",
+            "Python compatibility differs from >=3.12,<3.13",
+            "wheel package directories are not explicit",
+            "missing project URL Documentation",
+            "missing project URL Source",
+            "missing project URL Issues",
+            "development environment does not use skip-install and uv",
+            "development dependencies are not installed from a hash lock",
+            "test environment does not inherit dev",
+            "Ruff complexity limit differs from model"
+          ]
+        },
+        {
+          "path": "reference/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [
+            "not a two-stage Rocky Linux 10.1-minimal build",
+            "runtime dependency installation is not hash locked"
+          ],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "reference/containers/crop/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [
+            "not a two-stage Rocky Linux 10.1-minimal build",
+            "runtime dependency installation is not hash locked"
+          ],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "reference/containers/norm-diff/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [
+            "not a two-stage Rocky Linux 10.1-minimal build",
+            "runtime dependency installation is not hash locked"
+          ],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "reference/containers/otsu/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [
+            "not a two-stage Rocky Linux 10.1-minimal build",
+            "runtime dependency installation is not hash locked"
+          ],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "reference/containers/stac/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [
+            "not a two-stage Rocky Linux 10.1-minimal build",
+            "runtime dependency installation is not hash locked"
+          ],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "reference/pyproject.toml",
+          "kind": "pyproject",
+          "issues": [
+            "Hatchling requirement differs from >=1.27,<2",
+            "Python compatibility differs from >=3.12,<3.13",
+            "missing project URL Documentation",
+            "missing project URL Source",
+            "missing project URL Issues",
+            "development environment does not use skip-install and uv",
+            "development dependencies are not installed from a hash lock",
+            "missing development command check",
+            "missing development command format-check",
+            "missing development command lint-check",
+            "missing development command typecheck",
+            "missing development command security",
+            "test environment does not inherit dev",
+            "strict mypy is not configured",
+            "Ruff line length or Python target differs from model",
+            "Ruff complexity limit differs from model"
+          ]
+        }
+      ],
+      "root_pyproject": true
+    },
+    {
+      "name": "event-driven-with-argo",
+      "branch": "main",
+      "commit": "37eed932ea1a4fe574555276d6a86029404b8af8",
+      "files": [],
+      "root_pyproject": false
+    },
+    {
+      "name": "how-to",
+      "branch": "feature/pde-typed-cwl",
+      "commit": "03dba149fe520f43d137d7bfdf7fc8c11fa29949",
+      "files": [
+        {
+          "path": "Dockerfile",
+          "kind": "dockerfile",
+          "issues": [],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "pyproject.toml",
+          "kind": "pyproject",
+          "issues": []
+        }
+      ],
+      "root_pyproject": true
+    },
+    {
+      "name": "inference-eoap",
+      "branch": "feature/pde-typed-cwl",
+      "commit": "39cab012f0e6cbc20e8391e81694ad41319b2295",
+      "files": [
+        {
+          "path": "tile-based-classification/command-line-tools/inference/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [
+            "not a two-stage Rocky Linux 10.1-minimal build",
+            "missing Hatch wheel build",
+            "Hatch 1.14.0 download is not explicit",
+            "runtime does not explicitly switch to neo",
+            "runtime virtual environment differs from /app/venv",
+            "missing dependency consistency check",
+            "pip remains in runtime environment",
+            "missing installed CLI smoke check",
+            "runtime UID/GID or home differs from model"
+          ],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "tile-based-classification/command-line-tools/sen2cog/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [
+            "not a two-stage Rocky Linux 10.1-minimal build",
+            "missing Hatch wheel build",
+            "Hatch 1.14.0 download is not explicit",
+            "runtime does not explicitly switch to neo",
+            "runtime virtual environment differs from /app/venv",
+            "missing dependency consistency check",
+            "pip remains in runtime environment",
+            "missing installed CLI smoke check",
+            "runtime UID/GID or home differs from model"
+          ],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "tile-based-classification/command-line-tools/stage-in/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [
+            "not a two-stage Rocky Linux 10.1-minimal build",
+            "missing Hatch wheel build",
+            "Hatch 1.14.0 download is not explicit",
+            "runtime does not explicitly switch to neo",
+            "runtime virtual environment differs from /app/venv",
+            "missing dependency consistency check",
+            "pip remains in runtime environment",
+            "missing installed CLI smoke check",
+            "runtime UID/GID or home differs from model"
+          ],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        }
+      ],
+      "root_pyproject": false
+    },
+    {
+      "name": "logging-and-redirection",
+      "branch": "main",
+      "commit": "934768957bc731f9bce7920c08655cb75b44308d",
+      "files": [],
+      "root_pyproject": false
+    },
+    {
+      "name": "machine-learning-process",
+      "branch": "feature/maturity-parity",
+      "commit": "e08b72f790e51ec45bdc89b584ba7ac9557d68bf",
+      "files": [
+        {
+          "path": "Dockerfile",
+          "kind": "dockerfile",
+          "issues": [],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "MLM/pyproject.toml",
+          "kind": "pyproject",
+          "issues": []
+        },
+        {
+          "path": "inference/make-inference/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "inference/make-inference/pyproject.toml",
+          "kind": "pyproject",
+          "issues": []
+        },
+        {
+          "path": "pyproject.toml",
+          "kind": "pyproject",
+          "issues": []
+        },
+        {
+          "path": "training/make-ml-model/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "training/make-ml-model/pyproject.toml",
+          "kind": "pyproject",
+          "issues": []
+        }
+      ],
+      "root_pyproject": true
+    },
+    {
+      "name": "mastering-app-package",
+      "branch": "feature/hatch-rocky-release",
+      "commit": "b5859e8832e403b6a6939eaf96039e18323f1910",
+      "files": [
+        {
+          "path": "water-bodies/command-line-tools/crop/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "water-bodies/command-line-tools/crop/pyproject.toml",
+          "kind": "pyproject",
+          "issues": []
+        },
+        {
+          "path": "water-bodies/command-line-tools/norm_diff/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "water-bodies/command-line-tools/norm_diff/pyproject.toml",
+          "kind": "pyproject",
+          "issues": []
+        },
+        {
+          "path": "water-bodies/command-line-tools/otsu/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "water-bodies/command-line-tools/otsu/pyproject.toml",
+          "kind": "pyproject",
+          "issues": []
+        },
+        {
+          "path": "water-bodies/command-line-tools/stac/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "water-bodies/command-line-tools/stac/pyproject.toml",
+          "kind": "pyproject",
+          "issues": []
+        },
+        {
+          "path": "water-bodies/command-line-tools/stage-in/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "water-bodies/command-line-tools/stage-in/pyproject.toml",
+          "kind": "pyproject",
+          "issues": []
+        },
+        {
+          "path": "water-bodies/command-line-tools/stage-out/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "water-bodies/command-line-tools/stage-out/pyproject.toml",
+          "kind": "pyproject",
+          "issues": []
+        }
+      ],
+      "root_pyproject": false
+    },
+    {
+      "name": "ogc-api-processes-with-zoo",
+      "branch": "main",
+      "commit": "ddfaa45b2986bf6f5a0e0d88719322544a06772c",
+      "files": [],
+      "root_pyproject": false
+    },
+    {
+      "name": "open-reproducible-app-package",
+      "branch": "main",
+      "commit": "f91741fb5723c4d0183f6dd0c83ea88dad18a1df",
+      "files": [],
+      "root_pyproject": false
+    },
+    {
+      "name": "quickwin",
+      "branch": "feature/typed-cwl-release",
+      "commit": "af452f41348ff2d574d603c4b95876a56de5a421",
+      "files": [
+        {
+          "path": "water-bodies/command-line-tools/detect-water-body/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "water-bodies/command-line-tools/detect-water-body/pyproject.toml",
+          "kind": "pyproject",
+          "issues": []
+        }
+      ],
+      "root_pyproject": false
+    },
+    {
+      "name": "quickwin-inline-code",
+      "branch": "main",
+      "commit": "4e44d5c6aff5e8f3bbbe8ea78c143a002afa700c",
+      "files": [
+        {
+          "path": "Dockerfile",
+          "kind": "dockerfile",
+          "issues": [
+            "not a two-stage Rocky Linux 10.1-minimal build",
+            "missing Hatch wheel build",
+            "Hatch 1.14.0 download is not explicit",
+            "runtime does not explicitly switch to neo",
+            "runtime virtual environment differs from /app/venv",
+            "missing dependency consistency check",
+            "pip remains in runtime environment",
+            "missing installed CLI smoke check",
+            "runtime dependency installation is not hash locked",
+            "runtime UID/GID or home differs from model"
+          ],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        }
+      ],
+      "root_pyproject": false
+    },
+    {
+      "name": "stac-eoap",
+      "branch": "feature/typed-cwl-inputs",
+      "commit": "75210b7613311dc03eade77a46d3047a159643ad",
+      "files": [
+        {
+          "path": "pyproject.toml",
+          "kind": "pyproject",
+          "issues": []
+        }
+      ],
+      "root_pyproject": true
+    },
+    {
+      "name": "testing-framework",
+      "branch": "main",
+      "commit": "93731834cc715c4b5637e3974a99379f2f19e05b",
+      "files": [],
+      "root_pyproject": false
+    },
+    {
+      "name": "zarr-cloud-native-format",
+      "branch": "feature/hatch-rocky-release",
+      "commit": "455bf9357f291af603a2236eca96592f2136cbf0",
+      "files": [
+        {
+          "path": "command-line-tools/crop/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "command-line-tools/crop/pyproject.toml",
+          "kind": "pyproject",
+          "issues": []
+        },
+        {
+          "path": "command-line-tools/norm_diff/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "command-line-tools/norm_diff/pyproject.toml",
+          "kind": "pyproject",
+          "issues": []
+        },
+        {
+          "path": "command-line-tools/occurrence/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "command-line-tools/occurrence/pyproject.toml",
+          "kind": "pyproject",
+          "issues": []
+        },
+        {
+          "path": "command-line-tools/otsu/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "command-line-tools/otsu/pyproject.toml",
+          "kind": "pyproject",
+          "issues": []
+        },
+        {
+          "path": "command-line-tools/stac-collection/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "command-line-tools/stac-collection/pyproject.toml",
+          "kind": "pyproject",
+          "issues": []
+        },
+        {
+          "path": "command-line-tools/stac-eopf-product/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "command-line-tools/stac-eopf-product/pyproject.toml",
+          "kind": "pyproject",
+          "issues": []
+        },
+        {
+          "path": "command-line-tools/stac-zarr/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [],
+          "classification": "review required: processing or auxiliary service",
+          "model_exception": false
+        },
+        {
+          "path": "command-line-tools/stac-zarr/pyproject.toml",
+          "kind": "pyproject",
+          "issues": []
+        },
+        {
+          "path": "containers/yq/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [
+            "not a two-stage Rocky Linux 10.1-minimal build",
+            "missing Hatch wheel build",
+            "Hatch 1.14.0 download is not explicit",
+            "runtime does not explicitly switch to neo",
+            "runtime virtual environment differs from /app/venv",
+            "missing dependency consistency check",
+            "pip remains in runtime environment",
+            "missing installed CLI smoke check",
+            "runtime dependency installation is not hash locked",
+            "runtime UID/GID or home differs from model"
+          ],
+          "classification": "upstream Go CLI; no module-owned Python package",
+          "model_exception": true
+        },
+        {
+          "path": "docker/titiler-eopf-patched/Dockerfile",
+          "kind": "dockerfile",
+          "issues": [
+            "not a two-stage Rocky Linux 10.1-minimal build",
+            "missing Hatch wheel build",
+            "Hatch 1.14.0 download is not explicit",
+            "runtime does not explicitly switch to neo",
+            "runtime virtual environment differs from /app/venv",
+            "missing dependency consistency check",
+            "pip remains in runtime environment",
+            "missing installed CLI smoke check",
+            "runtime dependency installation is not hash locked",
+            "runtime UID/GID or home differs from model"
+          ],
+          "classification": "upstream TiTiler service; outside processing-image scope",
+          "model_exception": true
+        },
+        {
+          "path": "pyproject.toml",
+          "kind": "pyproject",
+          "issues": []
+        }
+      ],
+      "root_pyproject": true
+    }
+  ]
+}

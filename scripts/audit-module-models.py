@@ -28,6 +28,13 @@ MODULES = (
 )
 
 
+MODEL_EXCEPTIONS = {
+    ("dask-app-package", "Dockerfile.acceptance"): "development acceptance harness",
+    ("zarr-cloud-native-format", "containers/yq/Dockerfile"): "upstream Go CLI; no module-owned Python package",
+    ("zarr-cloud-native-format", "docker/titiler-eopf-patched/Dockerfile"): "upstream TiTiler service; outside processing-image scope",
+}
+
+
 def packaging_issues(path):
     data = tomllib.loads(path.read_text())
     issues = []
@@ -46,6 +53,12 @@ def packaging_issues(path):
     targets = hatch.get("build", {}).get("targets", {})
     if not targets.get("wheel", {}).get("packages"):
         issues.append("wheel package directories are not explicit")
+    for package in targets.get("wheel", {}).get("packages", []):
+        if not (path.parent / package).is_dir():
+            issues.append(f"declared wheel package directory does not exist: {package}")
+    for key in ("Documentation", "Source", "Issues"):
+        if key not in project.get("urls", {}):
+            issues.append(f"missing project URL {key}")
     if not targets.get("sdist", {}).get("include"):
         issues.append("sdist include paths are not explicit")
     envs = hatch.get("envs", {})
@@ -145,7 +158,10 @@ def main():
                         "path": relative,
                         "kind": "dockerfile",
                         "issues": image_issues(path),
-                        "classification": "review required: processing or auxiliary service",
+                        "classification": MODEL_EXCEPTIONS.get(
+                            (name, relative), "review required: processing or auxiliary service"
+                        ),
+                        "model_exception": (name, relative) in MODEL_EXCEPTIONS,
                     }
                 )
         report["modules"].append(
