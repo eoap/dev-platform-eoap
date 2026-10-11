@@ -23,7 +23,9 @@ configure the backend and `daskGateway.image` values. The temporary default is
 `eoap-dask-worker:2.0.0-candidate`. Accepted CI builds will publish the shared
 application/worker image under the existing cloudless-mosaic and
 EOPF-sentinel-2 GHCR package names; the deployment will adopt a verified
-published digest before stable promotion. These tasks do not publish images.
+published digest before stable promotion. These tasks do not publish images. The platform no longer republishes the
+legacy Dask editor/client/worker images; course image publication belongs to
+`eoap/dask-app-package` acceptance CI.
 
 Python 3.12, Dask/Distributed/Gateway 2025.4.0 and the hash-locked course runtime
 match between notebook clients and workers. Both processing commands and Dask
