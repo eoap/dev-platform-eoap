@@ -10,8 +10,12 @@ training_ref=${DASK_TRAINING_REF:-f428aed638e571368992bc51535ae4ae888f2210}
 if [ ! -d dask-app-package/.git ]; then
     git clone 'https://github.com/eoap/dask-app-package.git'
 fi
+training_branch=$(git -C dask-app-package symbolic-ref --quiet --short HEAD || true)
+training_upstream=$(git -C dask-app-package rev-parse --abbrev-ref --symbolic-full-name '@{upstream}' 2>/dev/null || true)
 if [ -n "$(git -C dask-app-package status --porcelain)" ]; then
     echo "Preserving local dask-app-package checkout and edits"
+elif [[ "$training_branch" == feature/* ]] && { [ -z "$training_upstream" ] || [ "$(git -C dask-app-package rev-list --count "${training_upstream}..HEAD")" -gt 0 ]; }; then
+    echo "Preserving local feature branch $training_branch and its commits"
 else
     git -C dask-app-package fetch --tags origin "$training_ref"
     git -C dask-app-package checkout --detach FETCH_HEAD

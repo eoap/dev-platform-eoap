@@ -28,7 +28,7 @@ For custom development, `task worker:build` builds from the pinned GitHub source
 and `task worker:load MINIKUBE_PROFILE=<profile>` loads the local candidate tag.
 Configure both backend and `daskGateway.image` values to use a custom image.
 Override `DASK_TRAINING_REF` in the editor environment when selecting another
-training ref. Initialization preserves dirty workspaces; create a feature branch
+training ref. Initialization preserves dirty workspaces and unpublished feature commits; create a feature branch
 before modifying course source and use conventional commits.
 
 Python 3.12, Dask/Distributed/Gateway 2025.4.0 and the hash-locked course runtime
