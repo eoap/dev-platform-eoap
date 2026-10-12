@@ -2,8 +2,14 @@
 coder:
   coderImage: ghcr.io/eoap/dev-platform-eoap/eoap-coder:0.1.0
   workspace: quickwin
+  # Optional release tag passed to module initialization and notebook execution.
+  applicationPackageVersion: ""
+  # Optional training source branch, tag, or full Git ref, independent of package version.
+  trainingRef: ""
   storageClassName: standard
   workspaceStorage: 20Gi
+  # Set false before deploying/upgrading to delete the PVC on Helm uninstall.
+  retainPvc: true
   securityContext:
     privileged: true
   serviceType: ClusterIP
@@ -19,6 +25,8 @@ calrissian:
   enabled: True
   storage: 20Gi
   storageClassName: standard
+  # Set false before deploying/upgrading to delete the PVC on Helm uninstall.
+  retainPvc: true
   imagePullSecrets:
     - kaniko-secret
 

@@ -41,14 +41,26 @@ spec:
         env:
           - name: HOME
             value: /workspace
+          {{- with .Values.coder.trainingRef }}
+          - name: TRAINING_REF
+            value: {{ . | quote }}
+          {{- end }}
+          {{- with .Values.coder.applicationPackageVersion }}
+          - name: APPLICATION_PACKAGE_VERSION
+            value: {{ . | quote }}
+          {{- end }}
+          - name: HATCH_CONFIG
+            value: /workspace/.config/hatch/config.toml
           - name: HATCH_DATA_DIR
             value: /workspace/.local/share/hatch
           - name: HATCH_CACHE_DIR
             value: /workspace/.cache/hatch
           - name: XDG_CONFIG_HOME
-            value: /workspace/.local
+            value: /workspace/.config
           - name: XDG_DATA_HOME
-            value: /workspace/.local/share/
+            value: /workspace/.local/share
+          - name: XDG_CACHE_HOME
+            value: /workspace/.cache
           - name: XDG_RUNTIME_DIR
             value: /workspace/.local
       containers:
@@ -84,14 +96,28 @@ spec:
               mountPath: /etc/dask
             {{- end }}
           env:
+          - name: HOME
+            value: /workspace
+          {{- with .Values.coder.trainingRef }}
+          - name: TRAINING_REF
+            value: {{ . | quote }}
+          {{- end }}
+          {{- with .Values.coder.applicationPackageVersion }}
+          - name: APPLICATION_PACKAGE_VERSION
+            value: {{ . | quote }}
+          {{- end }}
+          - name: HATCH_CONFIG
+            value: /workspace/.config/hatch/config.toml
           - name: HATCH_DATA_DIR
             value: /workspace/.local/share/hatch
           - name: HATCH_CACHE_DIR
             value: /workspace/.cache/hatch
           - name: XDG_CONFIG_HOME
-            value: /workspace/.local
+            value: /workspace/.config
           - name: XDG_DATA_HOME
-            value: /workspace/.local/share/
+            value: /workspace/.local/share
+          - name: XDG_CACHE_HOME
+            value: /workspace/.cache
           - name: XDG_RUNTIME_DIR
             value: /workspace/.local
           - name: CWLTOOL_OPTIONS
@@ -158,8 +184,10 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: code-server-pvc
+  {{- if .Values.coder.retainPvc }}
   annotations:
     helm.sh/resource-policy: keep
+  {{- end }}
 spec:
   accessModes:
     - ReadWriteOnce
