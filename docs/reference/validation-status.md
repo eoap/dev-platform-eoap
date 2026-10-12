@@ -26,3 +26,43 @@ Recorded execution used an AMD64 Docker-backed Minikube cluster, context `eoap-m
 - Temporary host artifact paths in old records are evidence locations from the original session, not distributed release artifacts or durable hosting guarantees.
 
 When collecting new evidence, use the [acceptance template](../how-to/validate-a-module.md#record-the-result), name skipped/blocked checks, and avoid presenting a partial suite as full-course acceptance.
+
+## Hatch and Rocky migration, 12 October 2026
+
+The [feature-checkout model audit](audits/module-models-progress.json) covers
+18 e-learning modules, with 38 pyprojects and 41 Dockerfiles. All existing model
+files pass the static checks; three Dockerfiles are classified auxiliary/service
+exceptions. Five modules have no owned model files. Static alignment does not
+establish notebook, processing or release acceptance.
+
+These newer feature builds require separate acceptance from the releases above:
+
+| Module | New model acceptance on Minikube | Remaining gates |
+| --- | --- | --- |
+| Machine Learning | 20 tests, nine real EuroSAT notebooks, three runtime images | Published candidate acceptance |
+| Mastering | 34 leaf and 12 root tests, all six final Rocky image smoke checks | Full real notebook run blocked by slow public Sentinel-2 range transfers |
+| Zarr | 80 tests, seven runtime jobs, four-date real Lake Almanor Zarr processing and source-pixel checks | Full notebooks and published candidates |
+| How-To | All eleven real Calrissian cases, including custom types | Next version and published candidates |
+| CWL | Two tests and all three real notebooks | Next version and published candidates |
+| Patterns | 33 tests; all sixteen real wrapped cases using new runner and published Mastering staging | Next version and published candidates |
+| Contract-First | 40 tests, real processing pipeline, full NDWI/Otsu pixel equality and original CRS/grid | Full notebooks and reconciliation with preserved original WIP |
+| Quickwin | Five tests and real Lake Almanor processing; four notebooks pass feature CI | Fresh remote-stage notebook acceptance |
+| Inline Quickwin | Six tests, real wrapped Calrissian processing and full-pixel checks | Full notebook/remote staging and license metadata discrepancy |
+| Inference | Eight tests, three runtime jobs, full-scene real ONNX inference | Authenticated staging and all six notebooks with new runtime |
+| Advanced Tooling | Six runtime jobs, real processing, HTTP staging and pixel/hash checks | Typed legacy workflows and full notebooks; GeoParquet still indexes acquisition items |
+| Dask | Eight tests, local distributed/TLS execution | Gateway execution with new TLS 1.3 worker remains blocked |
+| STAC | All five notebooks pass clean `75210b7` on Minikube and feature CI | Published candidate acceptance |
+
+Contract-First uses an isolated feature worktree so concurrent uncommitted edits
+in its original checkout remain intact. Processing-image migrations preserve
+published remote CWL schema imports and never use `cwltool --pack`. The progress
+report identifies the exact audited checkout and commit for each module. No
+stable release promotion is part of this migration.
+
+The supplemental platform audit also covers the Argo helpers and optional Dask
+processing recipe. Argo stage-out passes six unit tests and real S3 publication
+with matching EO asset hashes, original STAC geometry/time and the requested S3
+prefix. Its license declaration remains pending; full Argo orchestration is not
+accepted. The JSON Schema helper uses locked third-party wheels, Rocky and UID
+2000, with no owned application package. Shared editors/infrastructure/services
+are classified separately from processing images.

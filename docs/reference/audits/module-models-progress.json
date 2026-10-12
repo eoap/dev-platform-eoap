@@ -12,7 +12,7 @@
           "path": "command-line-tools/crop/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
@@ -24,7 +24,7 @@
           "path": "command-line-tools/norm_diff/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
@@ -36,7 +36,7 @@
           "path": "command-line-tools/otsu/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
@@ -48,7 +48,7 @@
           "path": "command-line-tools/stac-geoparquet/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
@@ -60,7 +60,7 @@
           "path": "command-line-tools/stac/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
@@ -72,7 +72,7 @@
           "path": "command-line-tools/stage/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
@@ -88,7 +88,7 @@
       "name": "application-package-patterns",
       "checkout": "/data/work/github-com/eoap/application-package-patterns",
       "branch": "feature/pde-typed-cwl",
-      "commit": "4fe5f3764eaff0908aaa2d89a1537c32a1803e04",
+      "commit": "3dbee5b7de3cef1efc5b31228dc92041459713b6",
       "files": [
         {
           "path": "pyproject.toml",
@@ -99,7 +99,7 @@
           "path": "runner/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
@@ -126,7 +126,7 @@
           "path": "Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
@@ -148,7 +148,7 @@
           "path": "Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
@@ -170,7 +170,7 @@
           "path": "cloudless-mosaic/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
@@ -182,7 +182,7 @@
           "path": "eopf-sentinel-2/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
@@ -203,7 +203,7 @@
       "name": "eoap-contract-first",
       "checkout": "/tmp/eoap-contract-first-model",
       "branch": "feature/hatch-rocky-model-clean",
-      "commit": "f35d56584c585498e808d71ae5b31f2482e4382a",
+      "commit": "57b00eccd7578785b226be08b4119ff8595ba46d",
       "files": [
         {
           "path": "pyproject.toml",
@@ -214,35 +214,35 @@
           "path": "reference/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
           "path": "reference/containers/crop/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
           "path": "reference/containers/norm-diff/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
           "path": "reference/containers/otsu/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
           "path": "reference/containers/stac/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
@@ -273,7 +273,7 @@
           "path": "Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
@@ -300,21 +300,21 @@
           "path": "tile-based-classification/command-line-tools/inference/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
           "path": "tile-based-classification/command-line-tools/sen2cog/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
           "path": "tile-based-classification/command-line-tools/stage-in/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         }
       ],
@@ -340,7 +340,7 @@
           "path": "Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
@@ -352,7 +352,7 @@
           "path": "inference/make-inference/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
@@ -369,7 +369,7 @@
           "path": "training/make-ml-model/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
@@ -385,13 +385,13 @@
       "name": "mastering-app-package",
       "checkout": "/data/work/github-com/eoap/mastering-app-package",
       "branch": "feature/hatch-rocky-release",
-      "commit": "b5859e8832e403b6a6939eaf96039e18323f1910",
+      "commit": "a8ea831918fd81e5fb501c18e42975cf5b5a686d",
       "files": [
         {
           "path": "water-bodies/command-line-tools/crop/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
@@ -403,7 +403,7 @@
           "path": "water-bodies/command-line-tools/norm_diff/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
@@ -415,7 +415,7 @@
           "path": "water-bodies/command-line-tools/otsu/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
@@ -427,7 +427,7 @@
           "path": "water-bodies/command-line-tools/stac/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
@@ -439,7 +439,7 @@
           "path": "water-bodies/command-line-tools/stage-in/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
@@ -451,7 +451,7 @@
           "path": "water-bodies/command-line-tools/stage-out/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
@@ -485,13 +485,13 @@
       "name": "quickwin",
       "checkout": "/data/work/github-com/eoap/quickwin",
       "branch": "feature/typed-cwl-release",
-      "commit": "af2f77b81e228e2a00a30c641631b760e47810fd",
+      "commit": "a8ebfb8178add1b2958ca6d8ac30983eb3deee07",
       "files": [
         {
           "path": "water-bodies/command-line-tools/detect-water-body/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
@@ -513,7 +513,7 @@
           "path": "Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
@@ -529,7 +529,7 @@
       "name": "stac-eoap",
       "checkout": "/data/work/github-com/eoap/stac-eoap",
       "branch": "feature/typed-cwl-inputs",
-      "commit": "75210b7613311dc03eade77a46d3047a159643ad",
+      "commit": "0bbfb319cdfce219d4d952645ee38584c81f0be9",
       "files": [
         {
           "path": "pyproject.toml",
@@ -559,7 +559,7 @@
           "path": "command-line-tools/crop/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
@@ -571,7 +571,7 @@
           "path": "command-line-tools/norm_diff/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
@@ -583,7 +583,7 @@
           "path": "command-line-tools/occurrence/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
@@ -595,7 +595,7 @@
           "path": "command-line-tools/otsu/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
@@ -607,7 +607,7 @@
           "path": "command-line-tools/stac-collection/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
@@ -619,7 +619,7 @@
           "path": "command-line-tools/stac-eopf-product/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
@@ -631,7 +631,7 @@
           "path": "command-line-tools/stac-zarr/Dockerfile",
           "kind": "dockerfile",
           "issues": [],
-          "classification": "review required: processing or auxiliary service",
+          "classification": "module-owned Python processing image",
           "model_exception": false
         },
         {
@@ -684,5 +684,73 @@
       "root_pyproject": true,
       "notebook_image_recipes": []
     }
-  ]
+  ],
+  "platform_owned_models": {
+    "checkout": "/data/work/github-com/eoap/dev-platform-eoap",
+    "files": [
+      {
+        "path": "container/coder/Dockerfile.coder",
+        "kind": "dockerfile",
+        "classification": "shared editor, infrastructure or service image; outside processing scope",
+        "processing_model_applies": false,
+        "issues": []
+      },
+      {
+        "path": "dask-gateway/Dockerfile.client",
+        "kind": "dockerfile",
+        "classification": "shared editor, infrastructure or service image; outside processing scope",
+        "processing_model_applies": false,
+        "issues": []
+      },
+      {
+        "path": "dask-gateway/Dockerfile.coder",
+        "kind": "dockerfile",
+        "classification": "shared editor, infrastructure or service image; outside processing scope",
+        "processing_model_applies": false,
+        "issues": []
+      },
+      {
+        "path": "dask-gateway/Dockerfile.pde-worker",
+        "kind": "dockerfile",
+        "classification": "optional course processing image; mirror of tested Dask source",
+        "processing_model_applies": true,
+        "issues": []
+      },
+      {
+        "path": "dask-gateway/Dockerfile.worker",
+        "kind": "dockerfile",
+        "classification": "shared editor, infrastructure or service image; outside processing scope",
+        "processing_model_applies": false,
+        "issues": []
+      },
+      {
+        "path": "event-driven-with-argo/containers/stage-out/Dockerfile",
+        "kind": "dockerfile",
+        "classification": "platform-owned Python processing image",
+        "processing_model_applies": true,
+        "issues": []
+      },
+      {
+        "path": "event-driven-with-argo/containers/validate-schema/Dockerfile",
+        "kind": "dockerfile",
+        "classification": "third-party JSON Schema wheel runtime; no owned application wheel",
+        "processing_model_applies": false,
+        "issues": []
+      },
+      {
+        "path": "zarr-cloud-native-format/docker/stac-api/Dockerfile",
+        "kind": "dockerfile",
+        "classification": "shared editor, infrastructure or service image; outside processing scope",
+        "processing_model_applies": false,
+        "issues": []
+      },
+      {
+        "path": "event-driven-with-argo/containers/stage-out/pyproject.toml",
+        "kind": "pyproject",
+        "issues": [
+          "missing project license"
+        ]
+      }
+    ]
+  }
 }

@@ -1,0 +1,17 @@
+{
+  "cluster": "eoap-mastering-app-package-docker",
+  "processing_source_commit": "pending conventional commit; final image built from working feature source",
+  "stage_out_unit_tests_passed": 6,
+  "stage_out_host_quality_passed": true,
+  "stage_out_real_job": "argo-stage-out-real-prefix-fix",
+  "real_job_namespace": "zarr-cloud-native-format",
+  "real_asset_hashes_match": true,
+  "real_assets": 2,
+  "original_geometry_bbox_datetime_preserved": true,
+  "requested_s3_prefix_preserved": true,
+  "runtime_uid": 2000,
+  "runtime_pip_removed": true,
+  "full_argo_acceptance_passed": false,
+  "license_declaration_pending": true,
+  "published_candidate_acceptance_passed": false
+}

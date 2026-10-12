@@ -29,7 +29,14 @@ echo '{"workbench.colorTheme": "Visual Studio Dark"}' > /workspace/User/settings
 uv venv --allow-existing --seed --python /opt/conda/bin/python /workspace/.venv
 source /workspace/.venv/bin/activate
 # Use the current EOEPCA Python wrapping API.
-uv pip sync --python /workspace/.venv/bin/python --require-hashes /workspace/stac-eoap/requirements-notebooks.txt
+if [ -f /workspace/stac-eoap/requirements/development.txt ]; then
+    cd /workspace/stac-eoap
+    uv pip sync --python /workspace/.venv/bin/python --require-hashes requirements/development.txt
+    uv pip install --python /workspace/.venv/bin/python --no-deps --no-build-isolation -e .
+    cd /workspace
+else
+    uv pip sync --python /workspace/.venv/bin/python --require-hashes /workspace/stac-eoap/requirements-notebooks.txt
+fi
 /workspace/.venv/bin/python stac-eoap/scripts/cwl-docs.py --output /tmp/stac-cwl-docs
 uv pip check --python /workspace/.venv/bin/python
 /workspace/.venv/bin/python -m ipykernel install --user --name stac_env --display-name "Python (STAC)"

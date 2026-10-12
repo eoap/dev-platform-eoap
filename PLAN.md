@@ -1257,8 +1257,9 @@ TLS setting change is pending explicit approval; retain TLS 1.3 meanwhile.
 Mastering's migration is published on `feature/hatch-rocky-release` at `b5859e8`,
 rebased through the released 2.0.1 baseline. All six package quality gates,
 34 leaf unit tests, 12 root pipeline/release tests and typed workflow validation
-pass. The six initial Rocky images build and smoke-test; they need rebuilding
-against the merged staging changes for final image acceptance. Fresh notebook
+pass. All six final Rocky images rebuild from clean `b5859e8` and pass non-root,
+Python 3.12, CLI and pip-removal smoke checks on Minikube. All 34 leaf and
+12 root tests pass there; evidence is committed at `a8ea831`. Fresh notebook
 acceptance from clean `b5859e8` on Minikube failed in the first real Sentinel-2
 crop: public S3 range transfers were too slow and timed out. Independent host
 requests reproduced the limitation. Retain this failed result; do not substitute
@@ -1282,10 +1283,13 @@ both regenerated and checked-in wrapped CWL validate without packing.
 
 STAC's migration is published through `75210b7`: its course wheel, hash-locked
 Hatch checks and development environment follow the model. All five notebooks
-pass feature CI; fresh local Hatch checks and standalone contracts pass. There
+pass feature CI and all five pass on Minikube from clean `75210b7`; evidence
+is committed at `0bbfb31`. The container-executing notebooks use the same
+privileged Podman capability configured by the existing coder chart. Fresh
+local Hatch checks and standalone contracts pass. There
 is no module-owned processing Dockerfile to migrate.
 
-Quickwin's migration is published through `af2f77b`, including five unit tests,
+Quickwin's migration is published through `7341f9f`, including five unit tests,
 the locked processing wheel and Rocky runtime. The final processing image from
 `3526c18` passes real Lake Almanor processing on Minikube. Its binary mask has
 valid zero-valued land, no nodata collision, unchanged classification pixels,
@@ -1329,9 +1333,22 @@ Additional processing acceptance:
 | Inference | `54c9a37`: eight tests, three runtime jobs and real full-scene ONNX inference pass | Authenticated staging and all six notebooks with new images |
 | Inline Quickwin | `f5505aa`: six tests and real wrapped Calrissian workflow pass; exact NDWI/mask checks | License metadata discrepancy, full notebook and remote staging |
 | Advanced Tooling | `0763fd5`: seven tests, six runtime jobs, real processing and HTTP staging pass | Typed legacy workflows, full notebooks; GeoParquet still indexes acquisition items |
-| Patterns | `4fe5f37`: all 33 tests and quality gates pass from clean Minikube checkout | All sixteen real wrapped cases with new runtime are running |
+| Patterns | `4fe5f37`: all 33 tests and quality gates pass clean Minikube; `7937943`: all sixteen real wrapped cases pass, evidence `3dbee5b` | Published candidate acceptance and next version selection |
 | Contract-First | `f35d565`: all 40 tests and quality gates pass clean Minikube checkout; real pipeline and full-pixel NDWI/Otsu verification pass | All notebooks and reconciliation with original WIP |
 
 Published candidate acceptance and unresolved execution gates are required before
 promotion. No new stable release is authorized by this migration task; Preserve concurrent
 module work and published remote CWL schema imports throughout the migration.
+
+Supplemental platform audit: the Argo stage-out helper now uses a locked Hatch
+wheel and a non-root Rocky runtime; six unit tests and strict quality gates pass.
+Real Minikube S3 publication preserves both original EO raster hashes and STAC
+geometry/bbox/time, and keeps absolute asset inputs inside the requested output
+prefix. Its new metadata retains setup.cfg's 0.3.4 version. License declaration is
+pending the user's choice; no license has been invented. Full Argo orchestration
+acceptance is still required before release. The JSON Schema helper is a locked
+third-party wheel runtime rather than an owned application wheel. The optional
+Dask processing recipe mirrors the tested course Dockerfile; shared editors,
+legacy infrastructure images and the STAC API service are outside this
+processing-image migration. These classifications are recorded separately under
+`platform_owned_models` in the progress audit.

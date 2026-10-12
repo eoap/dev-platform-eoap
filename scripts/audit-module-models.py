@@ -182,7 +182,7 @@ def main():
                         "kind": "dockerfile",
                         "issues": image_issues(path),
                         "classification": MODEL_EXCEPTIONS.get(
-                            (name, relative), "review required: processing or auxiliary service"
+                            (name, relative), "module-owned Python processing image"
                         ),
                         "model_exception": (name, relative) in MODEL_EXCEPTIONS,
                     }
@@ -202,6 +202,24 @@ def main():
                 "notebook_image_recipes": notebook_image_recipes,
             }
         )
+    platform = Path(__file__).resolve().parents[1]
+    platform_files = []
+    classifications = {
+        "event-driven-with-argo/containers/stage-out/Dockerfile": "platform-owned Python processing image",
+        "event-driven-with-argo/containers/validate-schema/Dockerfile": "third-party JSON Schema wheel runtime; no owned application wheel",
+        "dask-gateway/Dockerfile.pde-worker": "optional course processing image; mirror of tested Dask source",
+    }
+    for path in sorted(platform.rglob("Dockerfile*")):
+        relative = path.relative_to(platform).as_posix()
+        if any(part.startswith(".") or part in {"vendor", "site"} for part in path.relative_to(platform).parts):
+            continue
+        classification = classifications.get(relative, "shared editor, infrastructure or service image; outside processing scope")
+        processing = relative in {"event-driven-with-argo/containers/stage-out/Dockerfile", "dask-gateway/Dockerfile.pde-worker"}
+        platform_files.append({"path": relative, "kind": "dockerfile", "classification": classification, "processing_model_applies": processing, "issues": image_issues(path) if processing else []})
+    for path in sorted((platform / "event-driven-with-argo/containers").rglob("pyproject.toml")):
+        platform_files.append({"path": path.relative_to(platform).as_posix(), "kind": "pyproject", "issues": packaging_issues(path)})
+    report["platform_owned_models"] = {"checkout": str(platform), "files": platform_files}
+
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2) + "\n")
     for module in report["modules"]:

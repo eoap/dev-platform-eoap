@@ -1,0 +1,12 @@
+-r runtime.in
+hatch==1.18.1
+hatchling>=1.27,<2
+virtualenv==21.0.0
+uv
+ruff
+mypy
+bandit
+pytest
+boto3-stubs[s3]==1.40.18
+
+editables>=0.5,<1

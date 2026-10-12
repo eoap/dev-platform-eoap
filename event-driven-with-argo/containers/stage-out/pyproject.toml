@@ -1,0 +1,70 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "eoap-argo-stage-out"
+description = "Publish Argo workflow STAC catalogs and assets to configured S3 storage"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = ["boto3==1.40.18", "pystac==1.15.2", "click==8.5.0", "loguru==0.7.3"]
+version = "0.3.4"
+
+[project.urls]
+Source = "https://github.com/eoap/dev-platform-eoap"
+Issues = "https://github.com/eoap/dev-platform-eoap/issues"
+Documentation = "https://github.com/eoap/dev-platform-eoap/tree/main/event-driven-with-argo"
+
+[project.scripts]
+stage-out = "app.main:main"
+
+[tool.hatch.envs.test]
+template = "dev"
+
+[tool.hatch.envs.test.scripts]
+test = ["bootstrap", "pytest -q {args}"]
+
+[tool.hatch.envs.default]
+template = "dev"
+skip-install = false
+pre-install-commands = ["uv pip install --require-hashes -r requirements/development.txt"]
+post-install-commands = ["uv pip install --no-deps --no-build-isolation -e ."]
+
+[tool.hatch.envs.dev]
+skip-install = true
+installer = "uv"
+post-install-commands = ["uv pip install --require-hashes -r requirements/development.txt", "uv pip install --no-deps --no-build-isolation -e ."]
+template = "dev"
+python = "3.12"
+
+[tool.hatch.envs.dev.scripts]
+bootstrap = ["uv pip install --require-hashes -r requirements/development.txt", "uv pip install --no-deps --no-build-isolation -e ."]
+check = ["bootstrap", "format-check", "lint-check", "typecheck", "security"]
+format-check = "ruff format --check app tests"
+lint-check = "ruff check app tests"
+typecheck = "mypy app"
+security = "bandit -r app -ll"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.hatch.build.targets.sdist]
+include = ["/app", "/tests", "/requirements", "/README.md", "/pyproject.toml", "/Dockerfile"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--import-mode=importlib"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "UP", "B", "C4", "SIM", "C90"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.mypy]
+ignore_missing_imports = true
+strict = true
