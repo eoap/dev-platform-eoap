@@ -20,6 +20,8 @@ deploy:
           coder.resources.limits.memory: '6442450944'
           coder.resources.requests.cpu: '1'
           coder.resources.requests.memory: '4294967296'
+          coder.retainPvc: false
+          calrissian.retainPvc: false
           calrissian.enabled: true
           calrissian.imagePullSecrets: []
         setFiles: {
@@ -42,3 +44,18 @@ portForward:
     address: localhost
     port: 8080
     localPort: 8000
+
+profiles:
+  - name: ref
+    patches:
+      - op: add
+        path: /deploy/helm/releases/0/setValueTemplates
+        value:
+          coder.trainingRef: '{{.MASTERING_TRAINING_REF}}'
+          coder.applicationPackageVersion: '{{.MASTERING_PACKAGE_VERSION}}'
+  - name: release
+    patches:
+      - op: add
+        path: /deploy/helm/releases/0/setValueTemplates
+        value:
+          coder.applicationPackageVersion: '{{.MASTERING_RELEASE_TAG}}'

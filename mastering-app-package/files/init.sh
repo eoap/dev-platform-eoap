@@ -8,16 +8,39 @@ set -euo pipefail
 
 cd /workspace
 
-if [ ! -d mastering-app-package/.git ]; then
+release_tag=${APPLICATION_PACKAGE_VERSION:-}
+training_ref=${TRAINING_REF:-}
+if [ -n "$training_ref" ]; then
+    git check-ref-format --allow-onelevel "$training_ref"
+    if [ ! -d mastering-app-package/.git ]; then
+        git clone --no-checkout 'https://github.com/eoap/mastering-app-package.git' mastering-app-package
+        git -C mastering-app-package fetch origin "$training_ref"
+        git -C mastering-app-package checkout --detach FETCH_HEAD
+    elif [ -n "$(git -C mastering-app-package status --porcelain)" ]; then
+        echo "Preserving local training checkout and edits; skipping checkout of $training_ref"
+    else
+        git -C mastering-app-package fetch origin "$training_ref"
+        git -C mastering-app-package checkout --detach FETCH_HEAD
+    fi
+elif [ -n "$release_tag" ]; then
+    git check-ref-format "refs/tags/$release_tag"
+    if [ ! -d mastering-app-package/.git ]; then
+        git clone --single-branch --branch "$release_tag" 'https://github.com/eoap/mastering-app-package.git'
+        git -C mastering-app-package checkout --detach "refs/tags/$release_tag"
+    elif [ -n "$(git -C mastering-app-package status --porcelain)" ]; then
+        echo "Preserving local training checkout and edits; skipping release checkout $release_tag"
+    else
+        git -C mastering-app-package fetch origin "refs/tags/$release_tag"
+        git -C mastering-app-package checkout --detach FETCH_HEAD
+    fi
+elif [ ! -d mastering-app-package/.git ]; then
     git clone --branch feature/metadata 'https://github.com/eoap/mastering-app-package.git'
+elif [ -n "$(git -C mastering-app-package status --porcelain)" ]; then
+    echo "Preserving local training checkout and edits; skipping automatic checkout and fast-forward"
 else
     git -C mastering-app-package fetch origin feature/metadata
-    if [ -z "$(git -C mastering-app-package status --porcelain)" ]; then
-        git -C mastering-app-package checkout feature/metadata
-        git -C mastering-app-package merge --ff-only FETCH_HEAD
-    else
-        echo "Preserving local training checkout and edits; skipping automatic checkout and fast-forward"
-    fi
+    git -C mastering-app-package checkout feature/metadata
+    git -C mastering-app-package merge --ff-only FETCH_HEAD
 fi
 
 code-server --install-extension ms-python.python --install-extension redhat.vscode-yaml --install-extension sbg-rabix.benten-cwl --install-extension ms-toolsai.jupyter
@@ -75,18 +98,18 @@ uv pip install --python /workspace/.venv/bin/python rasterio==1.5.2 click==8.5.0
 uv pip check --python /workspace/.venv/bin/python
 /workspace/.venv/bin/python -m ipykernel install --user --name mastering_env --display-name "Python (Mastering Application Package)"
 
-# Newer training checkouts use a package-specific Hatch Bash kernel for each lab.
-if [ -f /workspace/mastering-app-package/scripts/register-hatch-kernel.py ]; then
-    # Isolate Hatch from the image's incompatible virtualenv installation.
-    uv tool install --force --with "virtualenv<21" hatch==1.16.2
-    export PATH="/workspace/.local/bin:$PATH"
-    for tool in crop norm_diff otsu stac; do
-        (
-            cd "/workspace/mastering-app-package/water-bodies/command-line-tools/$tool"
-            hatch run default:python /workspace/mastering-app-package/scripts/register-hatch-kernel.py "$tool"
-        )
-    done
-fi
+# # Newer training checkouts use a package-specific Hatch Bash kernel for each lab.
+# if [ -f /workspace/mastering-app-package/scripts/register-hatch-kernel.py ]; then
+#     # Isolate Hatch from the image's incompatible virtualenv installation.
+#     uv tool install --force --with "virtualenv<21" hatch==1.16.2
+#     export PATH="/workspace/.local/bin:$PATH"
+#     for tool in crop norm_diff otsu stac; do
+#         (
+#             cd "/workspace/mastering-app-package/water-bodies/command-line-tools/$tool"
+#             hatch run default:python /workspace/mastering-app-package/scripts/register-hatch-kernel.py "$tool"
+#         )
+#     done
+# fi
 
 # Use PDE's kubectl rather than downloading architecture-specific binaries.
 mkdir -p /workspace/.aws

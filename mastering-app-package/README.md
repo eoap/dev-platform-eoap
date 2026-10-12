@@ -22,11 +22,38 @@ task up    # Start a dedicated cluster, load the image, deploy, and smoke-test
 task test  # Repeat readiness, editor HTTP, and S3 object round-trip checks
 task labs  # Run notebooks in order; chapter 5 uses the selected published release
 task dev   # Watch an existing cluster deployment and forward access to localhost:8000
+task dev:tag TAG=2.0.0  # Watch using the matching released training source and package version
 task stop  # Stop the dedicated cluster
 ```
 
+`task dev:tag` defaults to `APPLICATION_PACKAGE_VERSION` (`2.0.0`). Set `TAG`
+to another published release, or use `task dev:tag TAG=2.0.0 KUBE_CONTEXT=my-cluster`.
+The release profile passes the tag to both the init container and editor. Clean
+training checkouts switch to that tag in detached HEAD mode; edited checkouts
+are preserved and startup reports that the requested tag was not checked out.
+The task assumes the cluster already exists, like `task dev`.
+
+To select a training branch independently of the published application package:
+
+```bash
+task dev:ref REF=feature/fixes-for-2-0-1 APPLICATION_PACKAGE_VERSION=2.0.1
+```
+
+`REF` accepts a branch, tag, or full ref such as `refs/heads/feature/fixes-for-2-0-1`
+or `refs/tags/2.0.1`. Use a full ref if branch and tag names overlap.
+Initialization fetches the ref and checks it out in detached HEAD mode; dirty
+checkouts retain their files and current ref. `APPLICATION_PACKAGE_VERSION`
+selects the published package artifacts independently. `task dev:tag` continues
+to select matching training and package releases.
+
 The default profile is `eoap-mastering-app-package`, with 4 CPUs and 8192 MiB
 memory, and the Docker driver and container runtime for Skaffold compatibility.
+`task start` explicitly configures bridge CNI networking and waits for node
+readiness before loading the image. Override `CNI` when using another network
+plugin. If an existing profile reports `cni config uninitialized`, inspect its
+`/etc/cni/net.d` configuration: restarting Minikube may leave missing CNI files
+unrepaired. The resulting `not-ready` taint also blocks the storage provisioner,
+so workspace PVCs can remain pending until networking is repaired.
 Override these with Task variables, for example
 `task up MINIKUBE_PROFILE=training CPUS=6 MEMORY=12288`. Tasks select that profile
 explicitly. `task up` does not keep an editor port-forward running; use `task dev`
@@ -71,8 +98,9 @@ checkout can be selected explicitly without resetting local edits:
 kubectl --context my-cluster -n eoap-mastering-app-package exec deployment/code-server-deployment -c code-server -- bash -euc 'cd /workspace/mastering-app-package; test -z "$(git status --porcelain)"; git fetch origin tag 2.0.0; git checkout --detach 2.0.0'
 ```
 
-Initialization selects `feature/metadata` on the next editor restart when the
-checkout is clean; dirty checkouts preserve their current ref and edits.
+Initialization with `task dev:tag TAG=2.0.0` keeps the released source selected
+on editor restarts. Plain `task dev` selects `feature/metadata` when the checkout
+is clean; dirty checkouts preserve their current ref and edits.
 Use the matching released source for candidate validation until that branch
 contains the release-aware notebooks. Save local edits before switching refs.
 The release-ready check prevents the chapter 5 task from silently using an old

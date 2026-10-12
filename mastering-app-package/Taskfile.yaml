@@ -4,10 +4,13 @@ vars:
   MINIKUBE_PROFILE: eoap-mastering-app-package
   KUBE_CONTEXT: '{{.MINIKUBE_PROFILE}}'
   APPLICATION_PACKAGE_VERSION: '2.0.0'
+  TAG: '{{.APPLICATION_PACKAGE_VERSION}}'
+  REF: ''
   DRIVER: docker
   CPUS: '4'
   MEMORY: 8192
   CONTAINER_RUNTIME: docker
+  CNI: bridge
   NAMESPACE: eoap-mastering-app-package
   IMAGE: eoepca/pde-code-server:amd64
   LAB: '*'
@@ -30,7 +33,7 @@ tasks:
       - sh: docker image inspect {{.IMAGE | shellQuote}} >/dev/null
         msg: Build or load eoepca/pde-code-server:amd64 into Docker first.
     cmds:
-      - minikube start -p {{.MINIKUBE_PROFILE | shellQuote}} --driver={{.DRIVER | shellQuote}} --cpus={{.CPUS}} --memory={{.MEMORY}} --container-runtime={{.CONTAINER_RUNTIME | shellQuote}}
+      - minikube start -p {{.MINIKUBE_PROFILE | shellQuote}} --driver={{.DRIVER | shellQuote}} --cpus={{.CPUS}} --memory={{.MEMORY}} --container-runtime={{.CONTAINER_RUNTIME | shellQuote}} --cni={{.CNI | shellQuote}} --wait=apiserver,system_pods,node_ready
       - minikube -p {{.MINIKUBE_PROFILE | shellQuote}} image load {{.IMAGE | shellQuote}}
 
   repos:
@@ -156,6 +159,28 @@ tasks:
     cmds:
       - task: repos
       - skaffold dev --kube-context {{.KUBE_CONTEXT | shellQuote}} --detect-minikube=false
+
+  dev:tag:
+    desc: Watch deployment using a mastering release tag (TAG defaults to APPLICATION_PACKAGE_VERSION)
+    preconditions:
+      - sh: command -v skaffold
+        msg: Install Skaffold first.
+      - sh: git check-ref-format {{printf "refs/tags/%s" .TAG | shellQuote}}
+        msg: TAG must be a valid, nonempty Git release tag.
+    cmds:
+      - task: repos
+      - env MASTERING_RELEASE_TAG={{.TAG | shellQuote}} skaffold dev --profile release --kube-context {{.KUBE_CONTEXT | shellQuote}} --detect-minikube=false
+
+  dev:ref:
+    desc: Watch deployment using a training branch/tag/ref and an independent application package version
+    preconditions:
+      - sh: command -v skaffold
+        msg: Install Skaffold first.
+      - sh: git check-ref-format --allow-onelevel {{.REF | shellQuote}}
+        msg: REF must be a valid, nonempty Git branch, tag, or full ref.
+    cmds:
+      - task: repos
+      - env MASTERING_TRAINING_REF={{.REF | shellQuote}} MASTERING_PACKAGE_VERSION={{.APPLICATION_PACKAGE_VERSION | shellQuote}} skaffold dev --profile ref --kube-context {{.KUBE_CONTEXT | shellQuote}} --detect-minikube=false
 
   stop:
     desc: Stop the module's Minikube cluster
