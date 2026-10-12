@@ -8,6 +8,11 @@ set -euo pipefail
 
 cd /workspace
 
+mkdir -p /workspace/.config/hatch
+if [ ! -e /workspace/.config/hatch/config.toml ]; then
+    touch /workspace/.config/hatch/config.toml
+fi
+
 release_tag=${APPLICATION_PACKAGE_VERSION:-}
 training_ref=${TRAINING_REF:-}
 if [ -n "$training_ref" ]; then
