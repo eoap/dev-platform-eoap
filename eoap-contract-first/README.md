@@ -35,3 +35,9 @@ registry integration are separate optional source tasks. Publication is gated
 by the source repository and is not part of deployment acceptance.
 The task wrapper clears the inherited `CWLTOOL_OPTIONS=--podman` so the
 reference's explicit `--no-container` tests can execute.
+
+## Notebook practice labs
+
+The `eoepca/pde-code-server:amd64` image already supplies the Bash kernel. Workspace init installs the locked course notebook packages and registers only the supplementary Python (eoap-contract-first) kernel; it keeps the image's Bash kernelspec. Students open `practice-labs/README.md`, select Bash in a numbered module notebook, and run commands with Shift+Enter. They do not need a terminal. Each Bash lab activates the course `.venv` for its commands. Students do not install kernels or run setup; the optional setup notebook is for separate local installations.
+
+The training ref must contain the practice labs and the notebook extra. Set `EOAP_CONTRACT_FIRST_TRAINING_REF` to the branch containing the labs until it is merged. Init preserves edited checkouts, so update those deliberately. The source task `notebooks:check` executes all local Bash labs; Docker builds, fresh registry scans, Calrissian runs and ZOO deployment require the services described in their marked notebook sections.

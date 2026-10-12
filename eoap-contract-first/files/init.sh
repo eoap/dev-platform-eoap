@@ -22,8 +22,9 @@ mkdir -p /workspace/User/
 echo '{"workbench.colorTheme": "Visual Studio Dark"}' > /workspace/User/settings.json
 
 cd /workspace/eoap-contract-first
-uv sync --locked --extra tooling --extra dev
-uv pip install --python .venv/bin/python ipykernel hatch
+uv sync --locked --extra tooling --extra dev --extra notebook
+uv pip install --python .venv/bin/python hatch
+# The image supplies Bash; register only the supplementary course Python kernel.
 .venv/bin/python -m ipykernel install --user --name contract_env --display-name "Python (eoap-contract-first)"
 cd /workspace
 
