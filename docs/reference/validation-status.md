@@ -45,7 +45,7 @@ These newer feature builds require separate acceptance from the releases above:
 | How-To | All eleven real Calrissian cases, including custom types | Next version and published candidates |
 | CWL | Two tests and all three real notebooks | Next version and published candidates |
 | Patterns | 33 tests; all sixteen real wrapped cases using new runner and published Mastering staging | Next version and published candidates |
-| Contract-First | 40 tests, real processing pipeline, full NDWI/Otsu pixel equality and original CRS/grid | Full notebooks and reconciliation with preserved original WIP |
+| Contract-First | Current WIP: 56 tests and 14 practice notebooks; prior real processing/full-pixel evidence retained | Published candidates and external deployment execution; original WIP preserved |
 | Quickwin | Five tests and real Lake Almanor processing; four notebooks pass feature CI | Fresh remote-stage notebook acceptance |
 | Inline Quickwin | Six tests, real wrapped Calrissian processing and full-pixel checks | Full notebook/remote staging; CC BY-SA metadata corrected |
 | Inference | Eight tests, three runtime jobs, full-scene real ONNX inference | Authenticated staging and all six notebooks with new runtime |

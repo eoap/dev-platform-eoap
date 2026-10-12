@@ -1329,7 +1329,9 @@ the original checkout's concurrent WIP remains untouched. The user subsequently
 approved including that current WIP: branch `feature/hatch-rocky-current-wip`
 at `30e98d5` integrates it in the isolated checkout. All 56 tests pass on
 Minikube, all 14 practice notebooks pass locally, and the uv lock now matches
-the merged Python 3.12 metadata. Minikube notebook acceptance is in progress.
+the merged Python 3.12 metadata. All 14 notebooks also pass on Minikube; evidence is committed at `d20ddf9`.
+The course script uses educational fixtures and disables external runtime/registry/
+deployment switches; published candidate acceptance remains required.
 
 Additional processing acceptance:
 
@@ -1340,7 +1342,7 @@ Additional processing acceptance:
 | Inline Quickwin | `f5505aa`: six tests and real wrapped Calrissian workflow pass; exact NDWI/mask checks | Full notebook and remote staging; CC BY-SA metadata approved and corrected at `3549398` |
 | Advanced Tooling | `0763fd5`: seven tests, six runtime jobs, real processing and HTTP staging pass | Typed legacy workflows, full notebooks; GeoParquet still indexes acquisition items |
 | Patterns | `4fe5f37`: all 33 tests and quality gates pass clean Minikube; `7937943`: all sixteen real wrapped cases pass, evidence `3dbee5b` | Published candidate acceptance and next version selection |
-| Contract-First | `f35d565`: all 40 tests and quality gates pass clean Minikube checkout; real pipeline and full-pixel NDWI/Otsu verification pass | All notebooks and reconciliation with original WIP |
+| Contract-First | `30e98d5`: current WIP integrated; all 56 tests and 14 notebooks pass Minikube, with prior real processing evidence at `f35d565` | Published candidates and full deployment execution |
 
 Published candidate acceptance and unresolved execution gates are required before
 promotion. No new stable release is authorized by this migration task; Preserve concurrent

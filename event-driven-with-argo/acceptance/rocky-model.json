@@ -12,11 +12,14 @@
   "runtime_uid": 2000,
   "runtime_pip_removed": true,
   "full_argo_acceptance_passed": false,
-  "license_declaration_pending": true,
+  "license_declaration_pending": false,
   "published_candidate_acceptance_passed": false,
   "unit_test_commit": "862d33d",
   "stage_out_minikube_unit_tests_passed": 6,
   "stage_out_minikube_quality_passed": true,
   "jsonschema_minikube_valid_and_invalid_checks_passed": true,
-  "jsonschema_smoke_job": "argo-jsonschema-model-smoke"
+  "jsonschema_smoke_job": "argo-jsonschema-model-smoke",
+  "approved_license": "Apache-2.0",
+  "installed_wheel_license_verified": true,
+  "license_metadata_commit": "595cc1f"
 }

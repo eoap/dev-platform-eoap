@@ -142,7 +142,7 @@
       "name": "dask-app-package",
       "checkout": "/data/work/github-com/eoap/dask-app-package",
       "branch": "feature/pde-typed-cwl",
-      "commit": "1c3462fbb7a5f70013239d3a070a6735177141df",
+      "commit": "de7f6d791374dde31a87cebed619267d1b4424e7",
       "files": [
         {
           "path": "Dockerfile",
@@ -202,8 +202,8 @@
     {
       "name": "eoap-contract-first",
       "checkout": "/tmp/eoap-contract-first-model",
-      "branch": "feature/hatch-rocky-model-clean",
-      "commit": "57b00eccd7578785b226be08b4119ff8595ba46d",
+      "branch": "feature/hatch-rocky-current-wip",
+      "commit": "d20ddf9dec15f2f7df5781eee6b01ca737603d3a",
       "files": [
         {
           "path": "pyproject.toml",
@@ -507,7 +507,7 @@
       "name": "quickwin-inline-code",
       "checkout": "/data/work/github-com/eoap/quickwin-inline-code",
       "branch": "feature/hatch-rocky-release",
-      "commit": "9a3cf3330736baf2ea9536e7766a8e815d27d1f2",
+      "commit": "3549398c75f78350b6af2279770270a6d9a1da4c",
       "files": [
         {
           "path": "Dockerfile",
@@ -747,9 +747,7 @@
       {
         "path": "event-driven-with-argo/containers/stage-out/pyproject.toml",
         "kind": "pyproject",
-        "issues": [
-          "missing project license"
-        ]
+        "issues": []
       }
     ]
   }
