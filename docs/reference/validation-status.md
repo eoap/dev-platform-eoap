@@ -47,10 +47,10 @@ These newer feature builds require separate acceptance from the releases above:
 | Patterns | 33 tests; all sixteen real wrapped cases using new runner and published Mastering staging | Next version and published candidates |
 | Contract-First | 40 tests, real processing pipeline, full NDWI/Otsu pixel equality and original CRS/grid | Full notebooks and reconciliation with preserved original WIP |
 | Quickwin | Five tests and real Lake Almanor processing; four notebooks pass feature CI | Fresh remote-stage notebook acceptance |
-| Inline Quickwin | Six tests, real wrapped Calrissian processing and full-pixel checks | Full notebook/remote staging and license metadata discrepancy |
+| Inline Quickwin | Six tests, real wrapped Calrissian processing and full-pixel checks | Full notebook/remote staging; CC BY-SA metadata corrected |
 | Inference | Eight tests, three runtime jobs, full-scene real ONNX inference | Authenticated staging and all six notebooks with new runtime |
 | Advanced Tooling | Six runtime jobs, real processing, HTTP staging and pixel/hash checks | Typed legacy workflows and full notebooks; GeoParquet still indexes acquisition items |
-| Dask | Eight tests, local distributed/TLS execution | Gateway execution with new TLS 1.3 worker remains blocked |
+| Dask | Eight tests, local distributed/TLS execution | Gateway execution remains blocked after approved configurable TLS 1.2 retest |
 | STAC | All five notebooks pass clean `75210b7` on Minikube and feature CI | Published candidate acceptance |
 
 Contract-First uses an isolated feature worktree so concurrent uncommitted edits
@@ -62,7 +62,7 @@ stable release promotion is part of this migration.
 The supplemental platform audit also covers the Argo helpers and optional Dask
 processing recipe. Argo stage-out passes six unit tests and real S3 publication
 with matching EO asset hashes, original STAC geometry/time and the requested S3
-prefix. Its license declaration remains pending; full Argo orchestration is not
+prefix. Apache-2.0 is approved and verified in the installed wheel; full Argo orchestration is not
 accepted. The JSON Schema helper uses locked third-party wheels, Rocky and UID
 2000, with no owned application package. Shared editors/infrastructure/services
 are classified separately from processing images.

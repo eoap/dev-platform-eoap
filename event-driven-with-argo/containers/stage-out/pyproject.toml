@@ -4,6 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "eoap-argo-stage-out"
+license = "Apache-2.0"
 description = "Publish Argo workflow STAC catalogs and assets to configured S3 storage"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
@@ -49,7 +50,7 @@ security = "bandit -r app -ll"
 packages = ["app"]
 
 [tool.hatch.build.targets.sdist]
-include = ["/app", "/tests", "/requirements", "/README.md", "/pyproject.toml", "/Dockerfile"]
+include = ["/app", "/tests", "/requirements", "/README.md", "/pyproject.toml", "/Dockerfile", "/LICENSE"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

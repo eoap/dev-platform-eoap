@@ -1,4 +1,4 @@
-# Optional remote-context recipe; mirrored from dask-app-package feature 1c3462f.
+# Optional remote-context recipe; mirrored from dask-app-package feature fc5d96f.
 # Build against that feature commit or a later matching published source.
 FROM docker.io/rockylinux/rockylinux:10.1-minimal@sha256:cfa2812ec7151c2be393cfe46e50cf59426373d12f03f4ffbdd56becb8195a65 AS builder
 RUN microdnf -y update && \
@@ -26,6 +26,8 @@ RUN /usr/sbin/groupadd -g 2000 neo && \
     mkdir -p /app /work && chown -R 2000:2000 /app /work ${HOME}
 USER neo
 WORKDIR /app
+# Configurable gateway-compatible TLS ceiling; override to 1.3 when supported.
+ENV DASK_DISTRIBUTED__COMM__TLS__MAX_VERSION=1.2
 ENV VIRTUAL_ENV=/app/venv
 ENV PATH="${VIRTUAL_ENV}/bin:${PATH}:/usr/bin" \
     TF_NUM_INTRAOP_THREADS=1 TF_NUM_INTEROP_THREADS=1 CUDA_VISIBLE_DEVICES=-1

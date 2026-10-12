@@ -4,3 +4,5 @@ __pycache__/
 .env.*
 !.env.example
 .venv-model-validation/
+
+.venv-contract-wip-model/

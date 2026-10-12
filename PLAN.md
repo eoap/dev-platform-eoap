@@ -1251,8 +1251,10 @@ images, locked development tools, strict quality gates and eight passing unit
 tests. Its development acceptance image is an intentional processing-model
 exception. The Rocky image passes local distributed and encrypted execution,
 but gateway task traffic disconnects on Minikube. The published worker control
-passes with the same client; a TLS 1.2 diagnostic image also passes. A production
-TLS setting change is pending explicit approval; retain TLS 1.3 meanwhile.
+passes with the same client; a TLS 1.2 diagnostic image also passes. The user approved a configurable TLS 1.2 ceiling on 12 October. All three
+images rebuilt at `fc5d96f` and verified the 1.2 default and 1.3 override. Fresh
+one- and two-worker gateway retries still lose task connections, including a
+repeat of the previous diagnostic image; gateway acceptance remains blocked.
 
 Mastering's migration is published on `feature/hatch-rocky-release` at `b5859e8`,
 rebased through the released 2.0.1 baseline. All six package quality gates,
@@ -1323,7 +1325,11 @@ The feature-checkout audit covers 18 e-learning modules: 38 pyprojects and
 79 files pass the static model checks. Five modules have no owned model files;
 this does not establish their release readiness. The Contract-First migration is
 isolated in `/tmp/eoap-contract-first-model` on `feature/hatch-rocky-model-clean`;
-the original checkout's concurrent WIP remains untouched.
+the original checkout's concurrent WIP remains untouched. The user subsequently
+approved including that current WIP: branch `feature/hatch-rocky-current-wip`
+at `30e98d5` integrates it in the isolated checkout. All 56 tests pass on
+Minikube, all 14 practice notebooks pass locally, and the uv lock now matches
+the merged Python 3.12 metadata. Minikube notebook acceptance is in progress.
 
 Additional processing acceptance:
 
@@ -1331,7 +1337,7 @@ Additional processing acceptance:
 | --- | --- | --- |
 | CWL | `2bc6491`: two tests and all three real notebooks pass Minikube; evidence `24b092a` | Version selection and published candidate acceptance |
 | Inference | `54c9a37`: eight tests, three runtime jobs and real full-scene ONNX inference pass | Authenticated staging and all six notebooks with new images |
-| Inline Quickwin | `f5505aa`: six tests and real wrapped Calrissian workflow pass; exact NDWI/mask checks | License metadata discrepancy, full notebook and remote staging |
+| Inline Quickwin | `f5505aa`: six tests and real wrapped Calrissian workflow pass; exact NDWI/mask checks | Full notebook and remote staging; CC BY-SA metadata approved and corrected at `3549398` |
 | Advanced Tooling | `0763fd5`: seven tests, six runtime jobs, real processing and HTTP staging pass | Typed legacy workflows, full notebooks; GeoParquet still indexes acquisition items |
 | Patterns | `4fe5f37`: all 33 tests and quality gates pass clean Minikube; `7937943`: all sixteen real wrapped cases pass, evidence `3dbee5b` | Published candidate acceptance and next version selection |
 | Contract-First | `f35d565`: all 40 tests and quality gates pass clean Minikube checkout; real pipeline and full-pixel NDWI/Otsu verification pass | All notebooks and reconciliation with original WIP |
@@ -1344,8 +1350,8 @@ Supplemental platform audit: the Argo stage-out helper now uses a locked Hatch
 wheel and a non-root Rocky runtime; six unit tests and strict quality gates pass.
 Real Minikube S3 publication preserves both original EO raster hashes and STAC
 geometry/bbox/time, and keeps absolute asset inputs inside the requested output
-prefix. Its new metadata retains setup.cfg's 0.3.4 version. License declaration is
-pending the user's choice; no license has been invented. Full Argo orchestration
+prefix. Its new metadata retains setup.cfg's 0.3.4 version. The user approved Apache-2.0 for the helper; its installed wheel metadata
+was verified after rebuilding. Full Argo orchestration
 acceptance is still required before release. The JSON Schema helper is a locked
 third-party wheel runtime rather than an owned application wheel. The optional
 Dask processing recipe mirrors the tested course Dockerfile; shared editors,

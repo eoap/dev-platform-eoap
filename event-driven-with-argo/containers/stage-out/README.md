@@ -20,6 +20,5 @@ preserved. Temporary catalogs use a unique temporary directory.
 
 The old setup.py/setup.cfg files are superseded by pyproject.toml. Version 0.3.4
 retains the previous setup.cfg metadata; no release has been published by this
-migration. License selection is pending because this checkout contains no
-license declaration. Resolve it and validate the full Argo workflow before
-release promotion.
+migration. The helper declares Apache-2.0, as approved for this migration. Validate the full
+Argo workflow before release promotion.
