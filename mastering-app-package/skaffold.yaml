@@ -20,10 +20,14 @@ deploy:
           coder.resources.limits.memory: '6442450944'
           coder.resources.requests.cpu: '1'
           coder.resources.requests.memory: '4294967296'
+          coder.podEnvVars:
+          - name: APPLICATION_PACKAGE_VERSION
+            value: "2.0.1"
           coder.retainPvc: false
           calrissian.retainPvc: false
           calrissian.enabled: true
           calrissian.imagePullSecrets: []
+
         setFiles: {
           initScript: ./files/init.sh,
           bashrcScript: ./files/bash-rc,
@@ -51,11 +55,12 @@ profiles:
       - op: add
         path: /deploy/helm/releases/0/setValueTemplates
         value:
-          coder.trainingRef: '{{.MASTERING_TRAINING_REF}}'
-          coder.applicationPackageVersion: '{{.MASTERING_PACKAGE_VERSION}}'
+          'coder.podEnvVars[0].value': '{{.MASTERING_PACKAGE_VERSION}}'
+          'coder.podEnvVars[1].name': TRAINING_REF
+          'coder.podEnvVars[1].value': '{{.MASTERING_TRAINING_REF}}'
   - name: release
     patches:
       - op: add
         path: /deploy/helm/releases/0/setValueTemplates
         value:
-          coder.applicationPackageVersion: '{{.MASTERING_RELEASE_TAG}}'
+          'coder.podEnvVars[0].value': '{{.MASTERING_RELEASE_TAG}}'

@@ -41,14 +41,6 @@ spec:
         env:
           - name: HOME
             value: /workspace
-          {{- with .Values.coder.trainingRef }}
-          - name: TRAINING_REF
-            value: {{ . | quote }}
-          {{- end }}
-          {{- with .Values.coder.applicationPackageVersion }}
-          - name: APPLICATION_PACKAGE_VERSION
-            value: {{ . | quote }}
-          {{- end }}
           - name: HATCH_CONFIG
             value: /workspace/.config/hatch/config.toml
           - name: HATCH_DATA_DIR
@@ -63,6 +55,10 @@ spec:
             value: /workspace/.cache
           - name: XDG_RUNTIME_DIR
             value: /workspace/.local
+          {{- range .Values.coder.podEnvVars }}
+          - name: {{ .name | quote }}
+            value: {{ .value | toString | quote }}
+          {{- end }}
       containers:
         - name: code-server
           image: {{ .Values.coder.coderImage }}
@@ -98,14 +94,6 @@ spec:
           env:
           - name: HOME
             value: /workspace
-          {{- with .Values.coder.trainingRef }}
-          - name: TRAINING_REF
-            value: {{ . | quote }}
-          {{- end }}
-          {{- with .Values.coder.applicationPackageVersion }}
-          - name: APPLICATION_PACKAGE_VERSION
-            value: {{ . | quote }}
-          {{- end }}
           - name: HATCH_CONFIG
             value: /workspace/.config/hatch/config.toml
           - name: HATCH_DATA_DIR
@@ -141,6 +129,10 @@ spec:
             value: "{{ .Values.daskGateway.image }}"
           {{- end }}
           {{ if .Values.kaniko.enabled }}
+          {{- end }}
+          {{- range .Values.coder.podEnvVars }}
+          - name: {{ .name | quote }}
+            value: {{ .value | toString | quote }}
           {{- end }}
           resources:
             limits:

@@ -2,10 +2,9 @@
 coder:
   coderImage: ghcr.io/eoap/dev-platform-eoap/eoap-coder:0.1.0
   workspace: quickwin
-  # Optional release tag passed to module initialization and notebook execution.
-  applicationPackageVersion: ""
-  # Optional training source branch, tag, or full Git ref, independent of package version.
-  trainingRef: ""
+  # Additional environment variables shared by the init container and editor.
+  # Example: [{name: MY_MODULE_SETTING, value: "example"}]
+  podEnvVars: []
   storageClassName: standard
   workspaceStorage: 20Gi
   # Set false before deploying/upgrading to delete the PVC on Helm uninstall.
