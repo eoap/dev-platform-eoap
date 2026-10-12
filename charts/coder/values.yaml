@@ -7,6 +7,13 @@ coder:
   securityContext:
     privileged: true
   serviceType: ClusterIP
+  resources:
+    limits:
+      cpu: '2'
+      memory: '6442450944'
+    requests:
+      cpu: '1'
+      memory: '4294967296'
 
 calrissian:
   enabled: True
@@ -14,14 +21,6 @@ calrissian:
   storageClassName: standard
   imagePullSecrets:
     - kaniko-secret
-
-coderResources:
-  limits:
-    cpu: '2'
-    memory: '6442450944'
-  requests:
-    cpu: '1'
-    memory: '4294967296'
 
 skaffold:
   enabled: False

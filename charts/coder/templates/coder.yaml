@@ -118,11 +118,11 @@ spec:
           {{- end }}
           resources:
             limits:
-              cpu: {{ .Values.coderResources.limits.cpu }}
-              memory: {{ .Values.coderResources.limits.memory }}
+              cpu: {{ .Values.coder.resources.limits.cpu }}
+              memory: {{ .Values.coder.resources.limits.memory }}
             requests:
-              cpu: {{ .Values.coderResources.requests.cpu }}
-              memory: {{ .Values.coderResources.requests.memory }}
+              cpu: {{ .Values.coder.resources.requests.cpu }}
+              memory: {{ .Values.coder.resources.requests.memory }}
       volumes:
         - name: workspace-volume
           persistentVolumeClaim:

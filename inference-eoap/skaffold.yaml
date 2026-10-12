@@ -15,10 +15,10 @@ deploy:
         coder.workspace: inference-eoap
         coder.storageClassName: standard
         coder.workspaceStorage: 10Gi
-        coderResources.limits.cpu: '8'
-        coderResources.limits.memory: '24Gi'
-        coderResources.requests.cpu: '2'
-        coderResources.requests.memory: '8Gi'
+        coder.resources.limits.cpu: '8'
+        coder.resources.limits.memory: '24Gi'
+        coder.resources.requests.cpu: '2'
+        coder.resources.requests.memory: '8Gi'
         calrissian.enabled: true
         calrissian.storageClassName: standard
         skaffold.enabled: true

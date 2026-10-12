@@ -23,10 +23,10 @@ deploy:
           coder.storageClassName: standard
           coder.workspace: machine-learning-process
           coder.workspaceStorage: 40Gi
-          coderResources.limits.cpu: '3'
-          coderResources.limits.memory: '10737418240'
-          coderResources.requests.cpu: '1'
-          coderResources.requests.memory: '4294967296'
+          coder.resources.limits.cpu: '3'
+          coder.resources.limits.memory: '10737418240'
+          coder.resources.requests.cpu: '1'
+          coder.resources.requests.memory: '4294967296'
           calrissian.enabled: true
           #calrissian.storage: 30Gi
           coder.securityContext.privileged: true
