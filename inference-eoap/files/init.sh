@@ -34,7 +34,12 @@ uv venv --allow-existing --seed --python /opt/conda/bin/python /workspace/.venv
 source /workspace/.venv/bin/activate
 ln -sfn /opt/calrissian-venv/bin/calrissian /workspace/.venv/bin/calrissian
 # Calrissian remains in the container-provided isolated environment.
-uv pip sync --python /workspace/.venv/bin/python --require-hashes /workspace/inference-eoap/requirements-notebooks.txt
+if [ -f /workspace/inference-eoap/requirements/development.txt ]; then
+    uv pip sync --python /workspace/.venv/bin/python --require-hashes /workspace/inference-eoap/requirements/development.txt
+    uv pip install --python /workspace/.venv/bin/python --no-deps --no-build-isolation -e /workspace/inference-eoap
+else
+    uv pip sync --python /workspace/.venv/bin/python --require-hashes /workspace/inference-eoap/requirements-notebooks.txt
+fi
 /workspace/.venv/bin/python inference-eoap/scripts/cwl-docs.py --output /tmp/inference-cwl-docs
 /workspace/.venv/bin/python -m bash_kernel.install
 uv pip check --python /workspace/.venv/bin/python

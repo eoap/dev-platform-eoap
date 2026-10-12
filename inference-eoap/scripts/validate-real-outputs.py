@@ -15,7 +15,10 @@ bands = [a for a in item.assets.values() if 'data' in (a.roles or [])]
 assert len(bands) == 13, 'Expected all thirteen real L1C bands'
 assert not item.id.startswith('local-'), 'Synthetic input cannot pass real acceptance'
 red = item.assets['red'].get_absolute_href()
-session = ort.InferenceSession(str(root / 'tile-based-classification/command-line-tools/inference/model/sentinel2_classification_trained_model_e50_9190.onnx'))
+model_name = 'sentinel2_classification_trained_model_e50_9190.onnx'
+packaged_model = root / 'src/eoap_inference/model' / model_name
+legacy_model = root / 'tile-based-classification/command-line-tools/inference/model' / model_name
+session = ort.InferenceSession(str(packaged_model if packaged_model.is_file() else legacy_model))
 with rasterio.open(red) as reference:
     width, height = reference.width, reference.height
     x, y = ((width - 1) // 64) * 64, ((height - 1) // 64) * 64

@@ -28,7 +28,12 @@ echo '{"workbench.colorTheme": "Visual Studio Dark"}' > /workspace/User/settings
 
 uv venv --allow-existing --python 3.12 /workspace/.venv
 source /workspace/.venv/bin/activate
-uv pip sync --python /workspace/.venv/bin/python --require-hashes /workspace/cwl-eoap/requirements-notebooks.txt
+if [ -f /workspace/cwl-eoap/requirements/development.txt ]; then
+    uv pip sync --python /workspace/.venv/bin/python --require-hashes /workspace/cwl-eoap/requirements/development.txt
+    uv pip install --python /workspace/.venv/bin/python --no-deps --no-build-isolation -e /workspace/cwl-eoap
+else
+    uv pip sync --python /workspace/.venv/bin/python --require-hashes /workspace/cwl-eoap/requirements-notebooks.txt
+fi
 # Calrissian remains in the container-provided isolated environment.
 ln -sfn /opt/calrissian-venv/bin/calrissian /workspace/.venv/bin/calrissian
 /workspace/.venv/bin/python cwl-eoap/scripts/cwl-docs.py --output /tmp/howto-cwl-docs

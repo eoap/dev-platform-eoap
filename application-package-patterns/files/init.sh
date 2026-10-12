@@ -30,7 +30,14 @@ uv venv --allow-existing --seed --python /opt/conda/bin/python /workspace/.venv
 source /workspace/.venv/bin/activate
 ln -sfn /opt/calrissian-venv/bin/calrissian /workspace/.venv/bin/calrissian
 # Calrissian remains in the container-provided isolated environment.
-uv pip sync --python /workspace/.venv/bin/python --require-hashes /workspace/application-package-patterns/requirements-notebooks.txt
+if [ -f /workspace/application-package-patterns/requirements/development.txt ]; then
+    cd /workspace/application-package-patterns
+    uv pip sync --python /workspace/.venv/bin/python --require-hashes requirements/development.txt
+    uv pip install --python /workspace/.venv/bin/python --no-deps --no-build-isolation -e . -e runner
+    cd /workspace
+else
+    uv pip sync --python /workspace/.venv/bin/python --require-hashes /workspace/application-package-patterns/requirements-notebooks.txt
+fi
 /workspace/.venv/bin/python application-package-patterns/scripts/cwl-docs.py --output /tmp/patterns-cwl-docs
 uv pip check --python /workspace/.venv/bin/python
 /workspace/.venv/bin/python -m ipykernel install --user --name patterns_env --display-name "Python (application-package-patterns)"

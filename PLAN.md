@@ -1229,7 +1229,7 @@ regressions and Dask’s six regression tests pass. Earlier release assets and n
 unchanged and do not constitute acceptance of these corrections. Rerun notebook
 acceptance against the corrected candidate commits before promotion.
 
-### Packaging/container model migration audit (11 October 2026)
+### Packaging/container model migration audit (12 October 2026)
 
 Scope: e-learning modules and their processing images; shared tooling repositories
 are excluded at the user's direction. `scripts/audit-module-models.py` records
@@ -1285,12 +1285,12 @@ Hatch checks and development environment follow the model. All five notebooks
 pass feature CI; fresh local Hatch checks and standalone contracts pass. There
 is no module-owned processing Dockerfile to migrate.
 
-Quickwin's migration is published through `af452f4`, including five unit tests,
+Quickwin's migration is published through `af2f77b`, including five unit tests,
 the locked processing wheel and Rocky runtime. The final processing image from
 `3526c18` passes real Lake Almanor processing on Minikube. Its binary mask has
 valid zero-valued land, no nodata collision, unchanged classification pixels,
 and the correct EPSG:32610 footprint. Retained cropped EO inputs are explicitly
-recorded; remote stage-in and all four new notebooks remain acceptance gates.
+recorded; all four notebooks pass feature CI. Fresh remote staging acceptance remains a gate.
 Notebook CI exposed stale duplicate functions; `cc966f5` makes the lesson show
 and execute the tested implementation instead. This is not a release-readiness
 assertion.
@@ -1299,7 +1299,7 @@ How-To's migration is published through `03dba14`: locked Hatch quality checks,
 two release-substitution regression tests and all ten standalone contracts pass.
 Publication CI now consumes the exact runtime archive tested by all eleven
 cases and prepares CWL pinned to its published digest. Clean-commit Minikube
-acceptance with the newly built Rocky runtime is in progress. The platform init
+acceptance with the newly built Rocky runtime passed all eleven cases from `03dba14`; evidence is committed at `6ca68bc`. The platform init
 installs the new course package when its development lock is present, retaining
 compatibility with the existing published notebook environment.
 
@@ -1314,6 +1314,24 @@ compatible virtualenv dependency in each development lock. Set `python = "3.12"`
 explicitly in the development environment: skip-install also skips the usual
 project interpreter constraint check.
 
-Remaining e-learning repositories require migration and Minikube acceptance;
-none gains release readiness from this static audit alone. Preserve concurrent
+The feature-checkout audit covers 18 e-learning modules: 38 pyprojects and
+41 Dockerfiles, including three classified auxiliary/service exceptions. All
+79 files pass the static model checks. Five modules have no owned model files;
+this does not establish their release readiness. The Contract-First migration is
+isolated in `/tmp/eoap-contract-first-model` on `feature/hatch-rocky-model-clean`;
+the original checkout's concurrent WIP remains untouched.
+
+Additional processing acceptance:
+
+| Module | Clean feature evidence | Remaining release gates |
+| --- | --- | --- |
+| CWL | `2bc6491`: two tests and all three real notebooks pass Minikube; evidence `24b092a` | Version selection and published candidate acceptance |
+| Inference | `54c9a37`: eight tests, three runtime jobs and real full-scene ONNX inference pass | Authenticated staging and all six notebooks with new images |
+| Inline Quickwin | `f5505aa`: six tests and real wrapped Calrissian workflow pass; exact NDWI/mask checks | License metadata discrepancy, full notebook and remote staging |
+| Advanced Tooling | `0763fd5`: seven tests, six runtime jobs, real processing and HTTP staging pass | Typed legacy workflows, full notebooks; GeoParquet still indexes acquisition items |
+| Patterns | `4fe5f37`: all 33 tests and quality gates pass from clean Minikube checkout | All sixteen real wrapped cases with new runtime are running |
+| Contract-First | `f35d565`: all 40 tests and quality gates pass clean Minikube checkout; real pipeline and full-pixel NDWI/Otsu verification pass | All notebooks and reconciliation with original WIP |
+
+Published candidate acceptance and unresolved execution gates are required before
+promotion. No new stable release is authorized by this migration task; Preserve concurrent
 module work and published remote CWL schema imports throughout the migration.

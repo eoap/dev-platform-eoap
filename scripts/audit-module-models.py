@@ -81,8 +81,9 @@ def packaging_issues(path):
     ruff = tool.get("ruff", {})
     if ruff.get("line-length") != 100 or ruff.get("target-version") != "py312":
         issues.append("Ruff line length or Python target differs from model")
-    if ruff.get("lint", {}).get("mccabe", {}).get("max-complexity") != 10:
-        issues.append("Ruff complexity limit differs from model")
+    complexity = ruff.get("lint", {}).get("mccabe", {}).get("max-complexity")
+    if not isinstance(complexity, int) or not 0 < complexity <= 10:
+        issues.append("Ruff complexity limit exceeds model or is missing")
     return issues
 
 
@@ -115,14 +116,24 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path("/data/work/github-com/eoap"))
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument(
+        "--checkout", action="append", default=[], metavar="MODULE=PATH",
+        help="Audit an isolated feature checkout instead of the original working tree",
+    )
     args = parser.parse_args()
+    checkouts = {}
+    for override in args.checkout:
+        module, separator, location = override.partition("=")
+        if not separator or module not in MODULES or not location:
+            parser.error("--checkout requires a known MODULE=PATH")
+        checkouts[module] = Path(location).resolve()
     report = {
         "scope": "e-learning modules and processing images",
         "static_audit_only": True,
         "modules": [],
     }
     for name in MODULES:
-        root = args.root / name
+        root = checkouts.get(name, args.root / name)
         if not (root / ".git").exists():
             continue
         tracked = subprocess.check_output(
@@ -138,12 +149,24 @@ def main():
             text=True,
         ).splitlines()
         files = []
+        notebook_image_recipes = []
         for relative in sorted(set(tracked)):
             path = root / relative
             if not path.is_file() or any(
-                part in {"vendor", "site", ".venv"} for part in path.parts
+                part in {"vendor", "site", ".venv", ".ipynb_checkpoints"} for part in path.parts
             ):
                 continue
+            if path.suffix == ".ipynb":
+                notebook = json.loads(path.read_text())
+                for index, cell in enumerate(notebook.get("cells", [])):
+                    source = "".join(cell.get("source", []))
+                    if cell.get("cell_type") == "code" and "FROM " in source and "Dockerfile" in source:
+                        notebook_image_recipes.append({
+                            "path": relative,
+                            "cell": index,
+                            "requires_review": True,
+                            "reason": "Notebook generates a container recipe; file checks alone do not validate it",
+                        })
             if path.name == "pyproject.toml":
                 files.append(
                     {
@@ -167,6 +190,7 @@ def main():
         report["modules"].append(
             {
                 "name": name,
+                "checkout": str(root),
                 "branch": subprocess.check_output(
                     ["git", "-C", str(root), "branch", "--show-current"], text=True
                 ).strip(),
@@ -175,14 +199,22 @@ def main():
                 ).strip(),
                 "files": files,
                 "root_pyproject": (root / "pyproject.toml").is_file(),
+                "notebook_image_recipes": notebook_image_recipes,
             }
         )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2) + "\n")
     for module in report["modules"]:
         files = module["files"]
+        pending = sum(
+            bool(file["issues"]) and not file.get("model_exception", False)
+            for file in files
+        )
+        exceptions = sum(file.get("model_exception", False) for file in files)
         print(
-            f"{module['name']}: {len(files)} files; {sum(bool(file['issues']) for file in files)} require review"
+            f"{module['name']}: {len(files)} files; {pending} require review; "
+            f"{exceptions} classified exceptions; "
+            f"{len(module['notebook_image_recipes'])} notebook image recipes"
         )
 
 
