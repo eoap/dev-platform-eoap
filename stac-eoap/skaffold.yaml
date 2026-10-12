@@ -13,6 +13,9 @@ deploy:
         createNamespace: true
         setValues:
           coder.coderImage: eoepca/pde-code-server:amd64
+          coder.podEnvVars:
+            - name: STAC_TRAINING_REF
+              value: "0.0.1"
           coder.workspace: stac-eoap
           coder.storageClassName: standard
           coder.workspaceStorage: 10Gi

@@ -12,6 +12,9 @@ deploy:
       createNamespace: true
       setValues:
         coder.coderImage: eoepca/pde-code-server:amd64
+        coder.podEnvVars:
+          - name: APPLICATION_PACKAGE_PATTERNS_TRAINING_REF
+            value: "2.0.0"
         coder.workspace: application-package-patterns
         coder.storageClassName: standard
         coder.workspaceStorage: 10Gi

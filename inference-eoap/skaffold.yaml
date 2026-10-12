@@ -12,6 +12,9 @@ deploy:
       createNamespace: true
       setValues:
         coder.coderImage: eoepca/pde-code-server:amd64
+        coder.podEnvVars:
+          - name: INFERENCE_EOAP_TRAINING_REF
+            value: "39cab012f0e6cbc20e8391e81694ad41319b2295"
         coder.workspace: inference-eoap
         coder.storageClassName: standard
         coder.workspaceStorage: 10Gi

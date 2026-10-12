@@ -30,6 +30,9 @@ deploy:
         kaniko.enabled: false
         skaffold.enabled: true
         coder.coderImage: eoepca/pde-code-server:amd64
+        coder.podEnvVars:
+          - name: MACHINE_LEARNING_TRAINING_REF
+            value: "feature/maturity-parity"
         calrissian.storageClassName: standard
       setFiles:
         initScript: ./files/init.sh

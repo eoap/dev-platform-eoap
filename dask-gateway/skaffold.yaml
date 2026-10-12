@@ -33,6 +33,9 @@ deploy:
         daskGateway.daskGatewayUrl: http://traefik-dask-gateway.eoap-dask-gateway.svc.cluster.local:80
         kaniko.enabled: false
         coder.coderImage: eoepca/pde-code-server:amd64
+        coder.podEnvVars:
+          - name: DASK_TRAINING_REF
+            value: "f428aed638e571368992bc51535ae4ae888f2210"
         daskGateway.image: ghcr.io/eoap/dask-app-package/cloudless-mosaic:2.0.0-rc.69@sha256:6488e09db8294933ffcb0ab79a811ea807b151b5acf1adfbc3dd65d0c5605d74
       setFiles:
         initScript: ./files/init.sh

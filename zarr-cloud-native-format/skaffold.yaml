@@ -25,6 +25,9 @@ deploy:
         coder.resources.requests.cpu: '1'
         coder.resources.requests.memory: '4294967296'
         coder.coderImage: eoepca/pde-code-server:amd64
+        coder.podEnvVars:
+          - name: ZARR_TRAINING_REF
+            value: "2.0.0"
       setFiles:
         initScript: ./files/init.sh
         bashrcScript: ./files/bash-rc

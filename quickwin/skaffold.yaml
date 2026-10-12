@@ -13,6 +13,9 @@ deploy:
         createNamespace: true
         setValues:
           coder.coderImage: eoepca/pde-code-server:amd64
+          coder.podEnvVars:
+            - name: QUICKWIN_TRAINING_REF
+              value: "feature/typed-cwl-release"
           coder.workspace: quickwin
           coder.storageClassName: standard
           coder.workspaceStorage: 10Gi
