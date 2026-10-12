@@ -1,0 +1,43 @@
+api:
+  image: ghcr.io/eopf-explorer/titiler-eopf:0.12.2@sha256:c052c3c4792f7bf4afe210fe461d872628aca2d5c2db49867d22db041913a8f5
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: '2'
+      memory: 4Gi
+client:
+  image: nginxinc/nginx-unprivileged:1.28-alpine
+  resources:
+    requests:
+      cpu: 50m
+      memory: 32Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+workspaceClaim: code-server-pvc
+workflowClaim: calrissian-claim
+trainingPath: /workspace/zarr-cloud-native-format
+storePath: /workspace/zarr-cloud-native-format/titiler-data
+collectionId: water-bodies
+itemId: water-bodies
+clientHtml: ''
+stac:
+  image: eoap-zarr-stac-api:local
+  indexPath: /workspace/zarr-cloud-native-format/titiler-index
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: '2'
+      memory: 2Gi
+s3:
+  endpoint: http://zarr-s3-seaweedfs-all-in-one:8333
+  bucket: results
+  region: us-east-1
+  accessKey: test
+  secretKey: test
+stageOutImage: ghcr.io/eoap/mastering-app-package/stage-out:2.0.0@sha256:2974b42df1722ebf4d220c041e4345a94553b1bb81188b545fd58c70e93f490a
+assetId: measurements

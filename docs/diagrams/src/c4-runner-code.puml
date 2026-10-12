@@ -1,0 +1,52 @@
+@startuml c4-runner-code
+!pragma layout smetana
+!include theme.iuml
+skinparam classAttributeIconSize 0
+title C4 Level 4: notebook runner code dependencies
+class "run-practice-labs.py" as Runner <<module>> {
+  main()
+}
+class "argparse.ArgumentParser" as Parser <<stdlib>> {
+  add_argument()
+  parse_args()
+  error()
+}
+class "pathlib.Path" as Path <<stdlib>> {
+  glob()
+  rglob()
+  mkdir()
+}
+class "nbformat" as Format <<library module>> {
+  read(source, as_version=4)
+  write(notebook, target)
+}
+class "nbclient.NotebookClient" as Client <<library class>> {
+  execute()
+}
+class "nbformat.NotebookNode" as Node <<library data object>> {
+  metadata
+  cells
+}
+Runner --> Parser : parses and validates selection options
+Runner --> Path : discovers sources and creates result paths
+Runner --> Format : reads sources; saves copies in finally
+Runner --> Client : constructs with timeout, kernel and working directory
+Format --> Node : read() returns notebook
+Client --> Node : executes and updates cell outputs
+note bottom of Runner
+  main() returns 0 for list mode or complete success.
+  main() returns 1 after an execution error.
+  The __main__ guard calls sys.exit(main()).
+  There are no separate discovery/execution service classes.
+end note
+note bottom of Client
+  allow_errors=False
+  Working directory = source.parent
+  Non-Python kernel metadata is preserved.
+end note
+legend bottom
+  Focus: the notebook acceptance runner component from Level 3.
+  Library interfaces are shown only where used by this repository's code.
+  This is a code dependency view, not a claim to model nbclient internals.
+endlegend
+@enduml

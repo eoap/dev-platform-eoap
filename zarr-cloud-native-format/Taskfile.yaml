@@ -1,0 +1,92 @@
+version: '3'
+vars:
+  KUBE_CONTEXT: eoap-mastering-app-package-docker
+  NAMESPACE: zarr-cloud-native-format
+  RESULTS: /workspace/zarr-cloud-native-format/cwl-tests/results.json
+  DATA_ROOT: ''
+tasks:
+  test:producer:real:
+    desc: Process real Sentinel-2 imagery over the US lake, publish to S3 and verify rendering
+    cmds:
+    - bash scripts/run-real-producer.sh {{.KUBE_CONTEXT | shellQuote}} {{.NAMESPACE | shellQuote}}
+  deploy:
+    desc: Deploy SeaweedFS, STAC GeoParquet API, TiTiler 0.12.2 and editor
+    cmds:
+    - task: repos
+    - skaffold run --kube-context {{.KUBE_CONTEXT | shellQuote}} --status-check=true
+    - task: training:configure
+  dev:
+    desc: Deploy with editor (8000), API (8010) and viewer (8090) forwarding
+    cmds:
+    - skaffold dev --kube-context {{.KUBE_CONTEXT | shellQuote}} --port-forward
+  viewer:
+    desc: Forward the browser client to http://localhost:8090
+    cmds:
+    - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}}
+      port-forward service/titiler-eopf-client 8090:8080
+  viewer:publish:
+    desc: Stage completed outputs to S3 through a wrapped workflow and refresh the
+      STAC index
+    cmds:
+    - scripts/publish-s3.sh {{.KUBE_CONTEXT | shellQuote}} {{.NAMESPACE | shellQuote}}
+      {{if .DATA_ROOT}}--data-root {{.DATA_ROOT | shellQuote}}{{else}}--results {{.RESULTS
+      | shellQuote}}{{end}}
+  test:
+    desc: Check editor, server and browser client readiness
+    cmds:
+    - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}}
+      rollout status deployment/zarr-s3-seaweedfs-all-in-one --timeout=300s
+    - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}}
+      rollout status deployment/zarr-stac-api --timeout=300s
+    - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}}
+      rollout status deployment/code-server-deployment --timeout=1200s
+    - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}}
+      rollout status deployment/titiler-eopf --timeout=300s
+    - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}}
+      rollout status deployment/titiler-eopf-client --timeout=300s
+    - 'kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}}
+      exec deployment/code-server-deployment -c code-server -- python -c ''import
+      urllib.request; urls=["http://localhost:8080/healthz","http://titiler-eopf:8080/_mgmt/health","http://titiler-eopf-client:8080/","http://titiler-eopf-client:8080/api/_mgmt/health"];
+      [urllib.request.urlopen(u,timeout=20).read() for u in urls]; print("Editor,
+      API, client and proxy checks passed")''
+
+      '
+  test:viewer:
+    desc: Verify a published store renders through the browser proxy
+    cmds:
+    - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}}
+      exec -i deployment/code-server-deployment -c code-server -- /workspace/.venv/bin/python
+      - < scripts/test-viewer.py
+  delete:
+    desc: Remove the Skaffold releases
+    cmds:
+    - skaffold delete --kube-context {{.KUBE_CONTEXT | shellQuote}}
+  test:viewer:fixture:
+    desc: Generate local two-date inputs with the module writer and test the published
+      tiles
+    cmds:
+    - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}}
+      exec -i deployment/code-server-deployment -c code-server -- /workspace/.venv/bin/python
+      - < scripts/create-viewer-fixture.py
+    - task: viewer:publish
+      vars:
+        DATA_ROOT: /workspace/zarr-cloud-native-format/titiler-runs/smoke/output
+    - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}}
+      exec -i deployment/code-server-deployment -c code-server -- env EXPECT_DISTINCT_TIMES=1 COLLECTION_ID=viewer-smoke-fixture
+      /workspace/.venv/bin/python - < scripts/test-viewer.py
+  training:configure:
+    desc: Configure the GitHub training checkout with cluster publication settings
+    cmds:
+    - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}}
+      get configmap zarr-publication-settings -o jsonpath='{.data.settings\.json}'
+      | kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}}
+      exec -i deployment/code-server-deployment -c code-server -- bash -c 'cat > /workspace/zarr-cloud-native-format/.publication-settings.json'
+  repos:
+    desc: Register the SeaweedFS chart repository
+    cmds:
+    - helm repo add seaweedfs https://seaweedfs.github.io/seaweedfs/helm
+    - helm repo update seaweedfs
+  test:client:
+    desc: Check browser client syntax, root variables and TiTiler asset routes
+    cmds:
+    - node scripts/test-client.js

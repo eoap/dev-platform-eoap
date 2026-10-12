@@ -1,5 +1,10 @@
-alias ll="ls -l"
+alias ll='ls -l'
+source /workspace/.venv/bin/activate
+export TITILER_EOPF_URL=http://titiler-eopf:8080
 
-alias aws="aws --endpoint-url=http://eoap-cwl-localstack:4566"
-
-source /workspace/.venv/bin/activate   
+export AWS_ENDPOINT_URL=http://zarr-s3-seaweedfs-all-in-one:8333
+export aws_endpoint_url="$AWS_ENDPOINT_URL"
+export aws_access_key_id="${AWS_ACCESS_KEY_ID:-test}"
+export aws_secret_access_key="${AWS_SECRET_ACCESS_KEY:-test}"
+export aws_region_name="${AWS_DEFAULT_REGION:-us-east-1}"
+alias aws='aws --endpoint-url "$AWS_ENDPOINT_URL"'

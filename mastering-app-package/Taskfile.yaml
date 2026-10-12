@@ -1,0 +1,188 @@
+version: '3'
+
+vars:
+  MINIKUBE_PROFILE: eoap-mastering-app-package
+  KUBE_CONTEXT: '{{.MINIKUBE_PROFILE}}'
+  APPLICATION_PACKAGE_VERSION: '2.0.0'
+  TAG: '{{.APPLICATION_PACKAGE_VERSION}}'
+  REF: ''
+  DRIVER: docker
+  CPUS: '4'
+  MEMORY: 8192
+  CONTAINER_RUNTIME: docker
+  CNI: bridge
+  NAMESPACE: eoap-mastering-app-package
+  IMAGE: eoepca/pde-code-server:amd64
+  LAB: '*'
+  CELL_TIMEOUT: '1800'
+  LABS_LIST: 'false'
+
+tasks:
+  default:
+    desc: Start the cluster, deploy the module, and run smoke checks
+    cmds:
+      - task: up
+
+  start:
+    desc: Start the module's Minikube cluster and load the local PDE image
+    preconditions:
+      - sh: command -v minikube
+        msg: Install Minikube first.
+      - sh: command -v docker
+        msg: Docker and the locally built PDE image are required.
+      - sh: docker image inspect {{.IMAGE | shellQuote}} >/dev/null
+        msg: Build or load eoepca/pde-code-server:amd64 into Docker first.
+    cmds:
+      - minikube start -p {{.MINIKUBE_PROFILE | shellQuote}} --driver={{.DRIVER | shellQuote}} --cpus={{.CPUS}} --memory={{.MEMORY}} --container-runtime={{.CONTAINER_RUNTIME | shellQuote}} --cni={{.CNI | shellQuote}} --wait=apiserver,system_pods,node_ready
+      - minikube -p {{.MINIKUBE_PROFILE | shellQuote}} image load {{.IMAGE | shellQuote}}
+
+  repos:
+    desc: Register the SeaweedFS Helm repository
+    preconditions:
+      - sh: command -v helm
+        msg: Install Helm first.
+    cmds:
+      - helm repo add seaweedfs https://seaweedfs.github.io/seaweedfs/helm
+      - helm repo update seaweedfs
+
+  deploy:
+    desc: Deploy to the selected Kubernetes context without continuous watching
+    preconditions:
+      - sh: command -v skaffold
+        msg: Install Skaffold first.
+    cmds:
+      - task: repos
+      - skaffold run --kube-context {{.KUBE_CONTEXT | shellQuote}} --detect-minikube=false --status-check=true
+
+  test:
+    desc: Check deployment readiness, editor HTTP, and S3 upload/download/delete
+    preconditions:
+      - sh: command -v kubectl
+        msg: Install kubectl first.
+    cmds:
+      - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} rollout status deployment/eoap-mastering-app-package-s3-seaweedfs-all-in-one --timeout=300s
+      - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} rollout status deployment/code-server-deployment --timeout=1200s
+      - |
+        kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec deployment/code-server-deployment -c code-server -- python -c 'import urllib.request; r=urllib.request.urlopen("http://127.0.0.1:8080/healthz", timeout=10); assert r.status == 200; print("Editor HTTP check passed")'
+      - |
+        kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec deployment/code-server-deployment -c code-server -- bash -c '
+          set -euo pipefail
+          test_dir=$(mktemp -d)
+          object_key="deployment-check/$(cat /proc/sys/kernel/random/uuid)"
+          endpoint=http://eoap-mastering-app-package-s3-seaweedfs-all-in-one:8333
+          trap '\''aws --endpoint-url "$endpoint" s3api delete-object --bucket results --key "$object_key" >/dev/null; rm -rf "$test_dir"'\'' EXIT
+          aws --endpoint-url "$endpoint" s3api head-bucket --bucket results
+          printf "EOAP deployment check\n" > "$test_dir/input"
+          aws --endpoint-url "$endpoint" s3api put-object --bucket results --key "$object_key" --body "$test_dir/input" >/dev/null
+          aws --endpoint-url "$endpoint" s3api head-object --bucket results --key "$object_key" >/dev/null
+          aws --endpoint-url "$endpoint" s3api get-object --bucket results --key "$object_key" "$test_dir/output" >/dev/null
+          cmp "$test_dir/input" "$test_dir/output"
+          echo "S3 upload/download check passed; removing test object"
+        '
+
+  labs:
+    desc: Execute practice notebooks in order in the deployed editor, saving outputs
+    cmds:
+      - task: '{{if and (eq .LAB "*") (ne .LABS_LIST "true")}}labs:all{{else}}labs:execute{{end}}'
+        vars:
+          LAB: '{{.LAB}}'
+          LABS_LIST: '{{.LABS_LIST}}'
+          CELL_TIMEOUT: '{{.CELL_TIMEOUT}}'
+
+  labs:all:
+    desc: Run all labs in order, using published artifacts for chapter 5
+    cmds:
+      - task: labs:release-ready
+      - task: labs:execute
+        vars:
+          LAB: '*'
+          CELL_TIMEOUT: '{{.CELL_TIMEOUT}}'
+
+  labs:kubernetes:
+    desc: Test both chapter 5 notebooks against the selected published release
+    cmds:
+      - task: labs:release-ready
+      - task: labs:execute
+        vars:
+          LAB: 5-Kubernetes
+          CELL_TIMEOUT: '{{.CELL_TIMEOUT}}'
+
+  labs:release-ready:
+    internal: true
+    cmds:
+      - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} rollout status deployment/code-server-deployment --timeout=1200s
+      - |
+        kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec deployment/code-server-deployment -c code-server -- bash -euc 'test -f /workspace/mastering-app-package/scripts/prepare-kubernetes-lab.sh || { echo "Select a release-aware training checkout before published-artifact validation" >&2; exit 1; }'
+
+  labs:execute:
+    internal: true
+    preconditions:
+      - sh: command -v kubectl
+        msg: Install kubectl first.
+    cmds:
+      - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} rollout status deployment/code-server-deployment --timeout=1200s
+      - |
+        kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec -i deployment/code-server-deployment -c code-server -- env APPLICATION_PACKAGE_VERSION={{.APPLICATION_PACKAGE_VERSION | shellQuote}} /opt/conda/bin/python - --lab {{.LAB | shellQuote}} --timeout {{.CELL_TIMEOUT | shellQuote}} --list {{.LABS_LIST | shellQuote}} < scripts/run-practice-labs.py
+
+  labs:list:
+    desc: List selected practice notebooks in execution order
+    cmds:
+      - task: labs
+        vars:
+          LABS_LIST: 'true'
+
+  labs:kubernetes-images:
+    desc: "Optional local development: load chapter 2 images into a Minikube node"
+    preconditions:
+      - sh: command -v kubectl
+        msg: Install kubectl first.
+      - sh: command -v minikube
+        msg: Install Minikube first.
+    cmds:
+      - |
+        kubectl --context {{.MINIKUBE_PROFILE | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec deployment/code-server-deployment -c code-server -- bash -euc 'for image in crop norm-diff otsu stac; do podman tag "localhost/$image:latest" "localhost/$image:metadata"; done'
+      - |
+        bash -euo pipefail -c 'kubectl --context "$1" -n "$2" exec deployment/code-server-deployment -c code-server -- podman save --multi-image-archive --format docker-archive localhost/crop:metadata localhost/norm-diff:metadata localhost/otsu:metadata localhost/stac:metadata | minikube -p "$1" image load --overwrite -' -- {{.MINIKUBE_PROFILE | shellQuote}} {{.NAMESPACE | shellQuote}}
+
+  up:
+    desc: Start Minikube, deploy, and test in sequence
+    cmds:
+      - task: start
+      - task: deploy
+      - task: test
+
+  dev:
+    desc: Watch deployment on the selected Kubernetes context with editor forwarding
+    preconditions:
+      - sh: command -v skaffold
+        msg: Install Skaffold first.
+    cmds:
+      - task: repos
+      - skaffold dev --kube-context {{.KUBE_CONTEXT | shellQuote}} --detect-minikube=false
+
+  dev:tag:
+    desc: Watch deployment using a mastering release tag (TAG defaults to APPLICATION_PACKAGE_VERSION)
+    preconditions:
+      - sh: command -v skaffold
+        msg: Install Skaffold first.
+      - sh: git check-ref-format {{printf "refs/tags/%s" .TAG | shellQuote}}
+        msg: TAG must be a valid, nonempty Git release tag.
+    cmds:
+      - task: repos
+      - env MASTERING_RELEASE_TAG={{.TAG | shellQuote}} skaffold dev --profile release --kube-context {{.KUBE_CONTEXT | shellQuote}} --detect-minikube=false
+
+  dev:ref:
+    desc: Watch deployment using a training branch/tag/ref and an independent application package version
+    preconditions:
+      - sh: command -v skaffold
+        msg: Install Skaffold first.
+      - sh: git check-ref-format --allow-onelevel {{.REF | shellQuote}}
+        msg: REF must be a valid, nonempty Git branch, tag, or full ref.
+    cmds:
+      - task: repos
+      - env MASTERING_TRAINING_REF={{.REF | shellQuote}} MASTERING_PACKAGE_VERSION={{.APPLICATION_PACKAGE_VERSION | shellQuote}} skaffold dev --profile ref --kube-context {{.KUBE_CONTEXT | shellQuote}} --detect-minikube=false
+
+  stop:
+    desc: Stop the module's Minikube cluster
+    cmds:
+      - minikube stop -p {{.MINIKUBE_PROFILE | shellQuote}}

@@ -1,0 +1,117 @@
+version: '3'
+
+vars:
+  MINIKUBE_PROFILE: eoap-stac
+  KUBE_CONTEXT: '{{.MINIKUBE_PROFILE}}'
+  DRIVER: docker
+  CPUS: '4'
+  MEMORY: 8192
+  CONTAINER_RUNTIME: docker
+  NAMESPACE: eoap-stac
+  IMAGE: eoepca/pde-code-server:amd64
+  LAB: '*'
+  CELL_TIMEOUT: '1800'
+  LABS_LIST: 'false'
+
+tasks:
+  default:
+    desc: Start the cluster, deploy the module, and run smoke checks
+    cmds:
+      - task: up
+
+  start:
+    desc: Start the module's Minikube cluster and load the local PDE image
+    preconditions:
+      - sh: command -v minikube
+        msg: Install Minikube first.
+      - sh: command -v docker
+        msg: Docker and the locally built PDE image are required.
+      - sh: docker image inspect {{.IMAGE | shellQuote}} >/dev/null
+        msg: Build or load eoepca/pde-code-server:amd64 into Docker first.
+    cmds:
+      - minikube start -p {{.MINIKUBE_PROFILE | shellQuote}} --driver={{.DRIVER | shellQuote}} --cpus={{.CPUS}} --memory={{.MEMORY}} --container-runtime={{.CONTAINER_RUNTIME | shellQuote}}
+      - minikube -p {{.MINIKUBE_PROFILE | shellQuote}} image load {{.IMAGE | shellQuote}}
+
+  repos:
+    desc: Register the SeaweedFS Helm repository
+    preconditions:
+      - sh: command -v helm
+        msg: Install Helm first.
+    cmds:
+      - helm repo add seaweedfs https://seaweedfs.github.io/seaweedfs/helm
+      - helm repo update seaweedfs
+
+  deploy:
+    desc: Deploy to the selected Kubernetes context without continuous watching
+    preconditions:
+      - sh: command -v skaffold
+        msg: Install Skaffold first.
+    cmds:
+      - task: repos
+      - skaffold run --kube-context {{.KUBE_CONTEXT | shellQuote}} --detect-minikube=false --status-check=true
+
+  test:
+    desc: Check deployment readiness, editor HTTP, and S3 upload/download/delete
+    preconditions:
+      - sh: command -v kubectl
+        msg: Install kubectl first.
+    cmds:
+      - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} rollout status deployment/eoap-stac-s3-seaweedfs-all-in-one --timeout=300s
+      - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} rollout status deployment/code-server-deployment --timeout=1200s
+      - |
+        kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec deployment/code-server-deployment -c code-server -- python -c 'import urllib.request; r=urllib.request.urlopen("http://127.0.0.1:8080/healthz", timeout=10); assert r.status == 200; print("Editor HTTP check passed")'
+      - |
+        kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec deployment/code-server-deployment -c code-server -- bash -c '
+          set -euo pipefail
+          test_dir=$(mktemp -d)
+          object_key="deployment-check/$(cat /proc/sys/kernel/random/uuid)"
+          endpoint=http://eoap-stac-s3-seaweedfs-all-in-one:8333
+          trap '\''aws --endpoint-url "$endpoint" s3api delete-object --bucket results --key "$object_key" >/dev/null; rm -rf "$test_dir"'\'' EXIT
+          aws --endpoint-url "$endpoint" s3api head-bucket --bucket results
+          printf "EOAP deployment check\n" > "$test_dir/input"
+          aws --endpoint-url "$endpoint" s3api put-object --bucket results --key "$object_key" --body "$test_dir/input" >/dev/null
+          aws --endpoint-url "$endpoint" s3api head-object --bucket results --key "$object_key" >/dev/null
+          aws --endpoint-url "$endpoint" s3api get-object --bucket results --key "$object_key" "$test_dir/output" >/dev/null
+          cmp "$test_dir/input" "$test_dir/output"
+          echo "S3 upload/download check passed; removing test object"
+        '
+
+  cwl:docs:
+    desc: Validate standalone CWL metadata and generate Markdown documentation
+    cmds:
+      - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec deployment/code-server-deployment -c code-server -- /workspace/.venv/bin/python /workspace/stac-eoap/scripts/cwl-docs.py --validate --output /workspace/lab-results/cwl-docs
+
+  labs:
+    desc: Execute STAC notebooks in order in the deployed editor
+    cmds:
+      - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} rollout status deployment/code-server-deployment --timeout=1200s
+      - |
+        kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec -i deployment/code-server-deployment -c code-server -- /opt/conda/bin/python - --workspace /workspace/stac-eoap --python-kernel stac_env --notebooks-dir notebooks --lab {{.LAB | shellQuote}} --timeout {{.CELL_TIMEOUT | shellQuote}} --list {{.LABS_LIST | shellQuote}} < ../mastering-app-package/scripts/run-practice-labs.py
+
+  labs:list:
+    desc: List selected STAC notebooks
+    cmds:
+      - task: labs
+        vars:
+          LABS_LIST: 'true'
+
+  up:
+    desc: Start Minikube, deploy, and test in sequence
+    cmds:
+      - task: start
+      - task: deploy
+      - task: test
+
+  dev:
+    desc: Watch the deployment with editor forwarding on port 8000
+    preconditions:
+      - sh: command -v skaffold
+        msg: Install Skaffold first.
+    cmds:
+      - task: repos
+      - skaffold dev --kube-context {{.KUBE_CONTEXT | shellQuote}} --detect-minikube=false
+
+  stop:
+    desc: Stop the module's Minikube cluster
+    cmds:
+      - minikube stop -p {{.MINIKUBE_PROFILE | shellQuote}}

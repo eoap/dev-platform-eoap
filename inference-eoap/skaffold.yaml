@@ -1,0 +1,46 @@
+apiVersion: skaffold/v4beta9
+kind: Config
+metadata:
+  name: eoap-inference
+deploy:
+  statusCheckDeadlineSeconds: 1200
+  helm:
+    releases:
+    - name: eoap-inference
+      chartPath: ../charts/coder
+      namespace: eoap-inference
+      createNamespace: true
+      setValues:
+        coder.coderImage: eoepca/pde-code-server:amd64
+        coder.podEnvVars:
+          - name: INFERENCE_EOAP_TRAINING_REF
+            value: "39cab012f0e6cbc20e8391e81694ad41319b2295"
+        coder.workspace: inference-eoap
+        coder.storageClassName: standard
+        coder.workspaceStorage: 10Gi
+        coder.resources.limits.cpu: '8'
+        coder.resources.limits.memory: '24Gi'
+        coder.resources.requests.cpu: '2'
+        coder.resources.requests.memory: '8Gi'
+        calrissian.enabled: true
+        calrissian.storageClassName: standard
+        skaffold.enabled: true
+      setFiles:
+        initScript: ./files/init.sh
+        bashrcScript: ./files/bash-rc
+        bashloginScript: ./files/bash-login
+      valuesFiles:
+      - coder-values.yaml
+    - name: eoap-inference-s3
+      remoteChart: seaweedfs/seaweedfs
+      version: 4.48.0
+      namespace: eoap-inference
+      createNamespace: true
+      valuesFiles:
+      - seaweedfs-values.yaml
+portForward:
+- resourceType: service
+  resourceName: code-server-service
+  namespace: eoap-inference
+  port: 8080
+  localPort: 8000

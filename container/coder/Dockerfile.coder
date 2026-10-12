@@ -1,5 +1,9 @@
 FROM docker.io/library/python:3.12.11-bookworm@sha256:bea386df48d7ee07eed0a1f3e6f9d5c0292c228b8d8ed2ea738b7a57b29c4470
 
+# Provided automatically by buildx (values: amd64 | arm64). Declared here so it is
+# available to the RUN steps below; makes this image buildable for both arches.
+ARG TARGETARCH
+
 RUN \
     apt-get update && \
     apt-get install -y \
@@ -11,10 +15,8 @@ RUN \
     file
 
 RUN \
-    echo "**** install node repo ****" && \
-    curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - && \
-    echo 'deb https://deb.nodesource.com/node_14.x bookworm main' \
-        > /etc/apt/sources.list.d/nodesource.list && \
+    echo "**** install node repo (LTS, multi-arch) ****" && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     echo "**** install build dependencies ****" && \
     apt-get update && \
     apt-get install -y \
@@ -34,7 +36,7 @@ RUN \
     graphviz
 
 RUN \
-    echo "**** install code-server ****" && \
+    echo "**** install code-server (${TARGETARCH}) ****" && \
     if [ -z ${CODE_RELEASE+x} ]; then \
         CODE_RELEASE=$(curl -sX GET https://api.github.com/repos/coder/code-server/releases/latest \
         | awk '/tag_name/{print $4;exit}' FS='[""]' | sed 's|^v||'); \
@@ -42,14 +44,9 @@ RUN \
     mkdir -p /app/code-server && \
     curl -o \
         /tmp/code-server.tar.gz -L \
-        "https://github.com/coder/code-server/releases/download/v${CODE_RELEASE}/code-server-${CODE_RELEASE}-linux-amd64.tar.gz" && \
+        "https://github.com/coder/code-server/releases/download/v${CODE_RELEASE}/code-server-${CODE_RELEASE}-linux-${TARGETARCH}.tar.gz" && \
     tar xf /tmp/code-server.tar.gz -C \
         /app/code-server --strip-components=1 && \
-    echo "**** patch 4.0.2 ****" && \
-    if [ "${CODE_RELEASE}" = "4.0.2" ] && [ "$(uname -m)" !=  "x86_64" ]; then \
-        cd /app/code-server && \
-        npm i --production @node-rs/argon2; \
-    fi && \
     echo "**** clean up ****" && \
     apt-get purge --auto-remove -y \
         build-essential && \
@@ -58,8 +55,7 @@ RUN \
         /config/* \
         /tmp/* \
         /var/lib/apt/lists/* \
-        /var/tmp/* \
-        /etc/apt/sources.list.d/nodesource.list
+        /var/tmp/*
 
 ENV USER=jovyan \
     UID=1001 \
@@ -68,9 +64,9 @@ ENV USER=jovyan \
     PATH=/opt/conda/bin:/app/code-server/bin/:$PATH:/app/code-server/
 
 RUN \
-    echo "**** install aws cli ****" && \   
+    echo "**** install aws cli ****" && \
     pip install awscli  && \
-    pip install awscli-plugin-endpoint                                              
+    pip install awscli-plugin-endpoint
 
 RUN \
     echo "**** install jupyter-hub native proxy ****" && \
@@ -81,7 +77,7 @@ RUN \
 
 RUN \
     echo "**** adds user jovyan ****" && \
-    useradd -m -s /bin/bash -N -u $UID $USER 
+    useradd -m -s /bin/bash -N -u $UID $USER
 
 COPY entrypoint.sh /opt/entrypoint.sh
 
@@ -91,41 +87,39 @@ ENTRYPOINT ["/opt/entrypoint.sh"]
 
 EXPOSE 8888
 
-RUN echo "**** install kubectl ****" && \
-    curl -s -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
+RUN echo "**** install kubectl (${TARGETARCH}) ****" && \
+    curl -s -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${TARGETARCH}/kubectl" && \
     chmod +x kubectl && \
     mkdir -p /workspace/.venv/bin && \
     mv ./kubectl /usr/local/bin/kubectl
 
+# hatch ships arch-specific binaries: x86_64 / aarch64
+RUN set -eux; \
+    case "${TARGETARCH}" in arm64) HATCH_ARCH=aarch64 ;; *) HATCH_ARCH=x86_64 ;; esac; \
+    curl -s -L "https://github.com/pypa/hatch/releases/latest/download/hatch-${HATCH_ARCH}-unknown-linux-gnu.tar.gz" \
+        | tar -xzf - -C /usr/local/bin/ && \
+    chmod +x /usr/local/bin/hatch && \
+    hatch --version
 
-RUN curl -s -L https://github.com/pypa/hatch/releases/latest/download/hatch-x86_64-unknown-linux-gnu.tar.gz | tar -xzvf - -C /usr/local/bin/ && \
-    chmod +x /usr/local/bin/hatch
-
-RUN curl -s -L https://github.com/go-task/task/releases/download/v3.41.0/task_linux_amd64.tar.gz | tar -xzvf - -C /usr/local/bin/ && \
+RUN curl -s -L "https://github.com/go-task/task/releases/download/v3.41.0/task_linux_${TARGETARCH}.tar.gz" | tar -xzvf - -C /usr/local/bin/ && \
     chmod +x /usr/local/bin/task
 
-RUN curl -s -L https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 > /usr/local/bin/skaffold && \
+RUN curl -s -L "https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-${TARGETARCH}" > /usr/local/bin/skaffold && \
     chmod +x /usr/local/bin/skaffold
 
 RUN pip3 install tomlq && tomlq --version
 
 RUN rm -f /usr/bin/yq && \
     rm -f /usr/local/bin/yq && \
-    curl -s -LO https://github.com/mikefarah/yq/releases/download/v4.45.1/yq_linux_amd64.tar.gz && \
-    tar -xvf yq_linux_amd64.tar.gz && \
-    mv yq_linux_amd64 /usr/local/bin/yq && \
+    curl -s -LO "https://github.com/mikefarah/yq/releases/download/v4.45.1/yq_linux_${TARGETARCH}.tar.gz" && \
+    tar -xvf "yq_linux_${TARGETARCH}.tar.gz" && \
+    mv "yq_linux_${TARGETARCH}" /usr/local/bin/yq && \
     cp -v /usr/local/bin/yq /usr/bin/yq && \
     chmod +x /usr/bin/yq /usr/local/bin/yq
-    
-RUN curl -s -L https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-amd64 > /usr/bin/jq && \
+
+RUN curl -s -L "https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-${TARGETARCH}" > /usr/bin/jq && \
     chmod +x /usr/bin/jq
 
 RUN pip install --upgrade uv
-
-# Download the hatch tar.gz file from GitHub
-RUN curl -L https://github.com/pypa/hatch/releases/latest/download/hatch-x86_64-unknown-linux-gnu.tar.gz -o /tmp/hatch-x86_64-unknown-linux-gnu.tar.gz
-
-# Extract the hatch binary
-RUN tar -xzf /tmp/hatch-x86_64-unknown-linux-gnu.tar.gz -C /usr/local/bin/
 
 USER jovyan

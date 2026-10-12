@@ -1,0 +1,36 @@
+@startuml c4-containers
+!pragma layout smetana
+!include theme.iuml
+title C4 Level 2: platform applications and data stores
+rectangle "User\n[Person]\nLearner or module developer" as User #D5E9EF
+rectangle "Training + artifact services\n[External systems]\nGit, registries and dependencies" as Source #EEEEEE
+rectangle "EOAP learning and validation platform\n[System boundary; logical applications, not Kubernetes pods]" {
+  rectangle "Deployment and acceptance CLI\n[Container: Task + Skaffold + kubectl]\nInstalls services; orchestrates checks" as CLI
+  rectangle "Initialization CLI\n[Container: Bash + uv + Git]\nPrepares source, dependencies and kernels" as Init
+  rectangle "Learning workspace\n[Container: code-server + Python tooling]\nInteractive editor and exercise execution" as Workspace
+  database "Workspace files\n[Container: filesystem on workspace PVC]\nSource, environments and notebook evidence" as Files
+  rectangle "Workflow application execution\n[Containers: application images]\nRuns Calrissian-submitted task processes" as Tasks
+  database "Shared workflow files\n[Container: filesystem on Calrissian PVC]\nTask inputs, outputs and logs" as Shared
+  database "Exercise object store\n[Container: SeaweedFS S3]\nPer-module results; disposable storage" as S3
+  rectangle "Optional distributed execution\n[Containers: Dask Gateway + scheduler + workers]\nRuns distributed computation" as Dask
+}
+User --> CLI : host commands
+User --> Workspace : browser via local HTTP forwarding
+CLI --> Init : deploys and checks startup\nthrough Kubernetes API
+Init --> Source : fetches selected source and dependencies
+Init --> Files : installs and registers environments
+Workspace --> Files : edits source; saves executed notebooks
+Workspace --> Tasks : Calrissian submits task processes\nthrough Kubernetes API
+Tasks --> Shared : mounted task files
+Tasks --> S3 : stages inputs / outputs over HTTP
+Workspace --> Dask : gateway requests; distributed tasks
+note bottom of S3
+  Workspace clients also use S3.
+  Init configures credentials and initializes buckets.
+end note
+legend bottom
+  C4 container = application/runtime or data store; it does not mean Docker container.
+  Kubernetes hosts runtime elements; CLI runs on the workstation.
+  This view shows selected relationships. Deployment details are documented separately.
+endlegend
+@enduml

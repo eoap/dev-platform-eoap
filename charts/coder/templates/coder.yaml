@@ -38,6 +38,27 @@ spec:
             cpu: '1'
             memory: '1Gi'
         imagePullPolicy: IfNotPresent
+        env:
+          - name: HOME
+            value: /workspace
+          - name: HATCH_CONFIG
+            value: /workspace/.config/hatch/config.toml
+          - name: HATCH_DATA_DIR
+            value: /workspace/.local/share/hatch
+          - name: HATCH_CACHE_DIR
+            value: /workspace/.cache/hatch
+          - name: XDG_CONFIG_HOME
+            value: /workspace/.config
+          - name: XDG_DATA_HOME
+            value: /workspace/.local/share
+          - name: XDG_CACHE_HOME
+            value: /workspace/.cache
+          - name: XDG_RUNTIME_DIR
+            value: /workspace/.local
+          {{- range .Values.coder.podEnvVars }}
+          - name: {{ .name | quote }}
+            value: {{ .value | toString | quote }}
+          {{- end }}
       containers:
         - name: code-server
           image: {{ .Values.coder.coderImage }}
@@ -71,10 +92,20 @@ spec:
               mountPath: /etc/dask
             {{- end }}
           env:
+          - name: HOME
+            value: /workspace
+          - name: HATCH_CONFIG
+            value: /workspace/.config/hatch/config.toml
+          - name: HATCH_DATA_DIR
+            value: /workspace/.local/share/hatch
+          - name: HATCH_CACHE_DIR
+            value: /workspace/.cache/hatch
           - name: XDG_CONFIG_HOME
-            value: /workspace/.local
+            value: /workspace/.config
           - name: XDG_DATA_HOME
-            value: /workspace/.local/share/
+            value: /workspace/.local/share
+          - name: XDG_CACHE_HOME
+            value: /workspace/.cache
           - name: XDG_RUNTIME_DIR
             value: /workspace/.local
           - name: CWLTOOL_OPTIONS
@@ -99,13 +130,17 @@ spec:
           {{- end }}
           {{ if .Values.kaniko.enabled }}
           {{- end }}
+          {{- range .Values.coder.podEnvVars }}
+          - name: {{ .name | quote }}
+            value: {{ .value | toString | quote }}
+          {{- end }}
           resources:
             limits:
-              cpu: {{ .Values.coderResources.limits.cpu }}
-              memory: {{ .Values.coderResources.limits.memory }}
+              cpu: {{ .Values.coder.resources.limits.cpu }}
+              memory: {{ .Values.coder.resources.limits.memory }}
             requests:
-              cpu: {{ .Values.coderResources.requests.cpu }}
-              memory: {{ .Values.coderResources.requests.memory }}
+              cpu: {{ .Values.coder.resources.requests.cpu }}
+              memory: {{ .Values.coder.resources.requests.memory }}
       volumes:
         - name: workspace-volume
           persistentVolumeClaim:
@@ -141,6 +176,10 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: code-server-pvc
+  {{- if .Values.coder.retainPvc }}
+  annotations:
+    helm.sh/resource-policy: keep
+  {{- end }}
 spec:
   accessModes:
     - ReadWriteOnce

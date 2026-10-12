@@ -1,0 +1,183 @@
+version: '3'
+
+vars:
+  MINIKUBE_PROFILE: eoap-inference
+  KUBE_CONTEXT: '{{.MINIKUBE_PROFILE}}'
+  DRIVER: docker
+  CPUS: '4'
+  MEMORY: 8192
+  CONTAINER_RUNTIME: docker
+  NAMESPACE: eoap-inference
+  IMAGE: eoepca/pde-code-server:amd64
+  LAB: '*'
+  CELL_TIMEOUT: '1800'
+  LABS_LIST: 'false'
+  LOCAL_FIXTURE: '1'
+  ENV_FILE: ../.env
+  PACKAGE: ''
+
+tasks:
+  default:
+    desc: Start the cluster, deploy the module, and run smoke checks
+    cmds:
+      - task: up
+
+  start:
+    desc: Start the module's Minikube cluster and load the local PDE image
+    preconditions:
+      - sh: command -v minikube
+        msg: Install Minikube first.
+      - sh: command -v docker
+        msg: Docker and the locally built PDE image are required.
+      - sh: docker image inspect {{.IMAGE | shellQuote}} >/dev/null
+        msg: Build or load eoepca/pde-code-server:amd64 into Docker first.
+    cmds:
+      - minikube start -p {{.MINIKUBE_PROFILE | shellQuote}} --driver={{.DRIVER | shellQuote}} --cpus={{.CPUS}} --memory={{.MEMORY}} --container-runtime={{.CONTAINER_RUNTIME | shellQuote}}
+      - minikube -p {{.MINIKUBE_PROFILE | shellQuote}} image load {{.IMAGE | shellQuote}}
+
+  repos:
+    desc: Register the SeaweedFS Helm repository
+    preconditions:
+      - sh: command -v helm
+        msg: Install Helm first.
+    cmds:
+      - helm repo add seaweedfs https://seaweedfs.github.io/seaweedfs/helm
+      - helm repo update seaweedfs
+
+  deploy:
+    desc: Deploy to the selected Kubernetes context without continuous watching
+    preconditions:
+      - sh: command -v skaffold
+        msg: Install Skaffold first.
+    cmds:
+      - task: repos
+      - skaffold run --kube-context {{.KUBE_CONTEXT | shellQuote}} --detect-minikube=false --status-check=true
+
+  test:
+    desc: Check deployment readiness, editor HTTP, and S3 upload/download/delete
+    preconditions:
+      - sh: command -v kubectl
+        msg: Install kubectl first.
+    cmds:
+      - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} rollout status deployment/eoap-inference-s3-seaweedfs-all-in-one --timeout=300s
+      - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} rollout status deployment/code-server-deployment --timeout=1200s
+      - |
+        kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec deployment/code-server-deployment -c code-server -- python -c 'import urllib.request; r=urllib.request.urlopen("http://127.0.0.1:8080/healthz", timeout=10); assert r.status == 200; print("Editor HTTP check passed")'
+      - |
+        kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec deployment/code-server-deployment -c code-server -- bash -c '
+          set -euo pipefail
+          test_dir=$(mktemp -d)
+          object_key="deployment-check/$(cat /proc/sys/kernel/random/uuid)"
+          endpoint=http://eoap-inference-s3-seaweedfs-all-in-one:8333
+          trap '\''aws --endpoint-url "$endpoint" s3api delete-object --bucket results --key "$object_key" >/dev/null; rm -rf "$test_dir"'\'' EXIT
+          aws --endpoint-url "$endpoint" s3api head-bucket --bucket results
+          printf "EOAP deployment check\n" > "$test_dir/input"
+          aws --endpoint-url "$endpoint" s3api put-object --bucket results --key "$object_key" --body "$test_dir/input" >/dev/null
+          aws --endpoint-url "$endpoint" s3api head-object --bucket results --key "$object_key" >/dev/null
+          aws --endpoint-url "$endpoint" s3api get-object --bucket results --key "$object_key" "$test_dir/output" >/dev/null
+          cmp "$test_dir/input" "$test_dir/output"
+          echo "S3 upload/download check passed; removing test object"
+        '
+
+  cwl:docs:
+    desc: Validate standalone CWL metadata and generate Markdown documentation
+    cmds:
+      - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec deployment/code-server-deployment -c code-server -- /workspace/.venv/bin/python /workspace/inference-eoap/scripts/cwl-docs.py --validate --output /workspace/lab-results/cwl-docs
+
+  fixture:
+    desc: Generate the local staging fixture for real-model inference tests
+    cmds:
+      - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec deployment/code-server-deployment -c code-server -- /workspace/.venv/bin/python /workspace/inference-eoap/scripts/create-fixture.py
+
+  test:code:
+    desc: Verify the final partial inference batch is classified
+    cmds:
+      - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec deployment/code-server-deployment -c code-server -- /workspace/.venv/bin/python -m pytest /workspace/inference-eoap/tests -q
+
+  test:science:
+    desc: Verify real classification georeferencing, class range and the final edge prediction
+    cmds:
+      - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec -i deployment/code-server-deployment -c code-server -- /workspace/.venv/bin/python - < scripts/validate-real-outputs.py
+
+  test:kubernetes:
+    desc: Run a downloaded immutable candidate workflow with Calrissian and real staged input
+    preconditions:
+      - sh: test -f {{.PACKAGE | shellQuote}}
+        msg: Set PACKAGE to the downloaded candidate tile-based-classification CWL.
+    cmds:
+      - python3 scripts/run-calrissian.py --context {{.KUBE_CONTEXT | shellQuote}} --namespace {{.NAMESPACE | shellQuote}} --package {{.PACKAGE | shellQuote}}
+      - task: test:science
+
+  labs:
+    desc: Execute all six notebooks with authenticated real Sentinel-2 data
+    cmds:
+      - task: labs:authenticated
+
+  labs:fixture:
+    desc: Run development regressions with synthetic staging and the actual model (not EO release acceptance)
+    cmds:
+      - task: test:code
+      - task: labs:run
+        vars: {LAB: 'Application steps'}
+      - task: labs:run
+        vars: {LAB: 'Container.ipynb'}
+      - task: labs:run
+        vars: {LAB: 'CommandLineTool.ipynb'}
+      - task: labs:run
+        vars: {LAB: 'Workflow.ipynb'}
+      - task: labs:run
+        vars: {LAB: 'Execution-scenario.ipynb'}
+
+  labs:run:
+    desc: Execute inference-eoap notebooks in order in the deployed editor
+    cmds:
+      - '{{if eq .LOCAL_FIXTURE "1"}}task fixture KUBE_CONTEXT={{.KUBE_CONTEXT | shellQuote}}{{else}}true{{end}}'
+      - kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} rollout status deployment/code-server-deployment --timeout=1200s
+      - |
+        kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec -i deployment/code-server-deployment -c code-server -- env EOAP_INFERENCE_LOCAL_FIXTURE={{.LOCAL_FIXTURE | shellQuote}} /opt/conda/bin/python - --workspace /workspace/inference-eoap --python-kernel inference_env --notebooks-dir practice-labs --lab {{.LAB | shellQuote}} --timeout {{.CELL_TIMEOUT | shellQuote}} --list {{.LABS_LIST | shellQuote}} < ../mastering-app-package/scripts/run-practice-labs.py
+
+  labs:authenticated:
+    desc: Run all six notebooks with real CDSE S3 staging using local .env credentials
+    cmds:
+      - |
+        kubectl --context {{.KUBE_CONTEXT | shellQuote}} -n {{.NAMESPACE | shellQuote}} exec deployment/code-server-deployment -c code-server -- bash -c '
+          set -euo pipefail
+          cd /workspace/inference-eoap
+          podman build --format docker -f tile-based-classification/command-line-tools/stage-in/Dockerfile -t localhost/stage-in:latest .
+          podman build --format docker -f tile-based-classification/command-line-tools/sen2cog/Dockerfile -t docker.io/library/sen2cog:latest .
+        '
+      - python3 scripts/run-authenticated-labs.py --context {{.KUBE_CONTEXT | shellQuote}} --namespace {{.NAMESPACE | shellQuote}} --env-file {{.ENV_FILE | shellQuote}} --timeout {{.CELL_TIMEOUT | shellQuote}}
+      - task: test:science
+
+  labs:list:
+    desc: List selected inference-eoap notebooks
+    cmds:
+      - task: labs:run
+        vars:
+          LABS_LIST: 'true'
+
+  test:lifecycle:
+    desc: Verify fresh environments, retained workspaces, and disposable S3 data (run after labs)
+    cmds:
+      - bash ../scripts/test-module-lifecycle.sh {{.KUBE_CONTEXT | shellQuote}} {{.NAMESPACE | shellQuote}} eoap-inference-s3-seaweedfs-all-in-one /workspace/.venv
+
+  up:
+    desc: Start Minikube, deploy, and test in sequence
+    cmds:
+      - task: start
+      - task: deploy
+      - task: test
+
+  dev:
+    desc: Watch the deployment with editor forwarding on port 8000
+    preconditions:
+      - sh: command -v skaffold
+        msg: Install Skaffold first.
+    cmds:
+      - task: repos
+      - skaffold dev --kube-context {{.KUBE_CONTEXT | shellQuote}} --detect-minikube=false
+
+  stop:
+    desc: Stop the module's Minikube cluster
+    cmds:
+      - minikube stop -p {{.MINIKUBE_PROFILE | shellQuote}}

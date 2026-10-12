@@ -1,0 +1,22 @@
+@startuml c4-system-context
+!pragma layout smetana
+!include theme.iuml
+title C4 Level 1: EOAP learning platform system context
+rectangle "Self-learner\n[Person]\nStudies and executes EOAP exercises" as Learner #D5E9EF
+rectangle "Module developer\n[Person]\nAuthors courses and verifies acceptance" as Developer #D5E9EF
+rectangle "EOAP learning and validation platform\n[Software system]\nProvides reproducible browser workspaces\nand module-specific execution checks" as Platform #B9DCDD
+rectangle "Training repositories\n[External software system]\nCourse source, notebooks, typed CWL\nand reference tests" as Training #EEEEEE
+rectangle "Artifact services\n[External software system]\nRegistries, release assets, Python packages\nand editor extensions" as Artifacts #EEEEEE
+rectangle "EO data services\n[External software system]\nSTAC catalogs, imagery and\nauthenticated acquisition APIs" as Data #EEEEEE
+rectangle "Kubernetes cluster\n[External execution platform]\nSupplies scheduling, storage and RBAC\nMinikube is the tested local host" as Kubernetes #EEEEEE
+Learner --> Platform : follows courses; inspects outputs
+Developer --> Platform : validates named source and artifacts
+Platform --> Training : obtains course content
+Platform --> Artifacts : obtains runtime dependencies and images
+Platform --> Data : resolves scenes and retrieves assets
+Platform --> Kubernetes : deploys workspaces and executes workloads
+legend bottom
+  Teal: platform under discussion / its users. Gray: external dependencies.
+  Separate course repositories remain source dependencies, not this repository's files.
+endlegend
+@enduml

@@ -1,0 +1,30 @@
+@startuml storage-lifecycle
+!include theme.iuml
+title Lifecycle acceptance preserves work and resets exercise storage
+actor "Developer" as Dev
+participant "Lifecycle script" as Test
+participant "Editor / init container" as Editor
+database "Workspace PVC" as Workspace
+participant "SeaweedFS pod\nemptyDir data" as S3
+Dev -> Dev : Finish workloads; export wanted outputs
+Dev -> Test : Run test:lifecycle (or explicit script)
+Test -> Editor : Write workspace + environment sentinels
+Editor -> Workspace : Save sentinels; move environment\nto timestamped backup
+Test -> S3 : Write S3 sentinel object
+Test -> S3 : Replace pod and wait for readiness
+note right of S3
+  Old pod-local objects are discarded.
+  A container-only restart can retain data.
+end note
+Test -> Editor : Replace editor pod
+Editor -> Workspace : Preserve course files and backup;\ncreate fresh environment + kernels
+Editor -> S3 : Wait for S3; initialize results bucket
+Test -> Workspace : Verify retained files + backup\nand compatible new environment
+Test -> S3 : Verify bucket exists; old object absent
+Test -> Editor : Verify HTTP health
+Test --> Dev : Lifecycle result and retained evidence
+note over Workspace
+  PVC keep policy is not a backup.
+  Namespace / cluster deletion can destroy storage.
+end note
+@enduml

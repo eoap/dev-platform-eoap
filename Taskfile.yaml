@@ -68,15 +68,6 @@ tasks:
         skaffold dev
     silent: false
 
-  ogc-api-processes-with-zoo:
-    desc: 'Runs skaffold dev on ogc-api-processes-with-zoo'
-    cmds:
-      - |
-        set -x
-        cd ogc-api-processes-with-zoo
-        skaffold dev
-    silent: false
-  
   quickwin:
     desc: 'Runs skaffold dev on quickwin'
     cmds:
@@ -94,3 +85,18 @@ tasks:
         cd stac-eoap
         skaffold dev
     silent: false
+
+  docs:serve:
+    desc: Preview the Diataxis documentation
+    cmds:
+      - uv run --no-project --with-requirements scripts/requirements-docs.txt mkdocs serve --config-file mkdocs.yaml {{.CLI_ARGS}}
+
+  docs:build:
+    desc: Build the Diataxis documentation
+    cmds:
+      - uv run --no-project --with-requirements scripts/requirements-docs.txt mkdocs build --config-file mkdocs.yaml {{.CLI_ARGS}}
+
+  docs:diagrams:
+    desc: Render PlantUML documentation diagrams as SVG using PLANTUML_JAR
+    cmds:
+      - bash scripts/render-doc-diagrams.sh

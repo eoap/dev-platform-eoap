@@ -21,15 +21,21 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
     - run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-    - name: build & push image
+    - name: build & push image (multi-arch)
       run: |
         cd container/coder
         version=$(cat codemeta.json | jq -r .version )
         IMAGE_ID=ghcr.io/eoap/dev-platform-eoap/eoap-coder
-        docker build . --file Dockerfile.coder --tag eoap-coder
-        docker tag eoap-coder $IMAGE_ID:${version}
-        docker push $IMAGE_ID:${version}
+        docker buildx build . \
+          --file Dockerfile.coder \
+          --platform linux/amd64,linux/arm64 \
+          --tag $IMAGE_ID:${version} \
+          --push
 
   container-build:
 
@@ -52,21 +58,5 @@ jobs:
         docker tag ${{ matrix.step }} $IMAGE_ID:${version}
         docker push $IMAGE_ID:${version}
 
-  container-dask:
-     
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        step: ["client", "coder", "worker"]
-
-    steps:
-    - uses: actions/checkout@v2
-    - run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-    - name: build & push image
-      run: |
-        version=$(cat dask-gateway/codemeta.json | jq -r .version )
-        IMAGE_ID=ghcr.io/eoap/dev-platform-eoap/dask-gateway-${{ matrix.step }}
-        docker build dask-gateway --file dask-gateway/Dockerfile.${{ matrix.step }} --tag eoap-dask-gateway-${{ matrix.step }}
-        docker tag eoap-dask-gateway-${{ matrix.step }} $IMAGE_ID:${version}
-        docker push $IMAGE_ID:${version}
+  # Dask application/worker images are accepted and published by eoap/dask-app-package.
+  # The module uses PDE; do not republish the retired Terradue-fork editor images.

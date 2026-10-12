@@ -4,6 +4,7 @@ metadata:
   name: eoap-mastering-app-package
     
 deploy:
+  statusCheckDeadlineSeconds: 1200
   helm:
     releases:
       - name: eoap-mastering-app-package
@@ -11,26 +12,34 @@ deploy:
         namespace: eoap-mastering-app-package
         createNamespace: true
         setValues:
+          coder.coderImage: eoepca/pde-code-server:amd64
           coder.workspace: mastering-app-package
           coder.storageClassName: standard
           coder.workspaceStorage: 10Gi
-          coderResources.limits.cpu: '2'
-          coderResources.limits.memory: '6442450944'
-          coderResources.requests.cpu: '1'
-          coderResources.requests.memory: '4294967296'
+          coder.resources.limits.cpu: '2'
+          coder.resources.limits.memory: '6442450944'
+          coder.resources.requests.cpu: '1'
+          coder.resources.requests.memory: '4294967296'
+          coder.podEnvVars:
+          - name: APPLICATION_PACKAGE_VERSION
+            value: "2.0.1"
+          coder.retainPvc: false
+          calrissian.retainPvc: false
           calrissian.enabled: true
           calrissian.imagePullSecrets: []
+
         setFiles: {
           initScript: ./files/init.sh,
           bashrcScript: ./files/bash-rc,
           bashloginScript: ./files/bash-login
         }
-      - name: eoap-mastering-app-package-localstack
-        remoteChart: localstack/localstack
+      - name: eoap-mastering-app-package-s3
+        remoteChart: seaweedfs/seaweedfs
+        version: 4.48.0
         namespace: eoap-mastering-app-package
         createNamespace: true
-        setValues:
-          service.type: ClusterIP
+        valuesFiles:
+          - seaweedfs-values.yaml
 
 portForward:
   - resourceType: service
@@ -39,3 +48,19 @@ portForward:
     address: localhost
     port: 8080
     localPort: 8000
+
+profiles:
+  - name: ref
+    patches:
+      - op: add
+        path: /deploy/helm/releases/0/setValueTemplates
+        value:
+          'coder.podEnvVars[0].value': '{{.MASTERING_PACKAGE_VERSION}}'
+          'coder.podEnvVars[1].name': TRAINING_REF
+          'coder.podEnvVars[1].value': '{{.MASTERING_TRAINING_REF}}'
+  - name: release
+    patches:
+      - op: add
+        path: /deploy/helm/releases/0/setValueTemplates
+        value:
+          'coder.podEnvVars[0].value': '{{.MASTERING_RELEASE_TAG}}'

@@ -1,49 +1,24 @@
-# stage-out
+# Argo STAC stage-out helper
 
+This helper preserves the Argo `stage-out --stac-catalog --user-settings
+--bucket --subfolder` interface. It builds a Python 3.12 wheel with Hatch and
+installs hash-locked dependencies in a non-root Rocky 10.1 runtime.
 
-## For developers
-
-Create a Python environment with, e.g. `mamba`:
-
-```
-mamba create -n env_stage_in python
-mamba activate env_stage_in
-```
-
-```
-pip install -r requirements.txt
+```sh
+hatch run dev:check
+hatch run test:test
+docker build -t stageout .
+docker run --rm stageout stage-out --help
 ```
 
-## Container
+The development environment bootstraps its hash lock explicitly before quality
+checks or tests. The runtime removes venv pip after installation and `pip check`.
+The original JSON S3 user-settings layout remains supported. Credentials are
+never printed. Source assets are copied into the requested S3 prefix, including
+when their input hrefs are absolute; Item geometry, bbox and timestamp are
+preserved. Temporary catalogs use a unique temporary directory.
 
-Build the container with:
-
-```
-docker build -t stage-out .
-```
-
-Test the container with:
-
-```
-docker run --rm docker.io/library/stage-out stage-out --help
-```
-
-## CWL 
-
-You can use a cwlrunner like `cwltool` to do a stage-in operation.
-
-Requirement:
-
-* a built container tagged `docker.io/library/stage-out:latest` 
-
-```
-cwltool stage-out.cwl --bucket iride-sentinel-2 --stac_catalog /data/work/iride-marketplace/stage-in/_ka1p9cp --subfolder pippo --usersettings usersettings.json
-```
-
-## Run tests
-
-The unit tests can be run with:
-
-`nose2`
-
-TODO: add capture stdout in CWL
+The old setup.py/setup.cfg files are superseded by pyproject.toml. Version 0.3.4
+retains the previous setup.cfg metadata; no release has been published by this
+migration. The helper declares Apache-2.0, as approved for this migration. Validate the full
+Argo workflow before release promotion.

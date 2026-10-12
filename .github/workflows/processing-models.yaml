@@ -1,0 +1,28 @@
+name: Platform processing models
+on:
+  pull_request:
+    paths: ['event-driven-with-argo/containers/**', '.github/workflows/processing-models.yaml']
+  push:
+    branches: [main, develop, feature/review-stall]
+    paths: ['event-driven-with-argo/containers/**', '.github/workflows/processing-models.yaml']
+permissions:
+  contents: read
+jobs:
+  argo-stage-out:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Check the locked processing package
+        working-directory: event-driven-with-argo/containers/stage-out
+        run: |
+          uv venv --python 3.12 .venv
+          uv pip sync --python .venv/bin/python --require-hashes requirements/development.txt
+          .venv/bin/hatch run dev:check
+          .venv/bin/hatch run test:test
+      - name: Build and check non-root wheel runtimes
+        run: |
+          docker build -t argo-stage-out event-driven-with-argo/containers/stage-out
+          docker build -t argo-jsonschema event-driven-with-argo/containers/validate-schema
+          docker run --rm argo-stage-out sh -c 'test "$(id -u)" = 2000 && python -c "import importlib.util; assert importlib.util.find_spec(\"pip\") is None" && stage-out --help'
+          docker run --rm argo-jsonschema python -c 'import os, importlib.util; from jsonschema import validate; assert os.getuid() == 2000; assert importlib.util.find_spec("pip") is None; validate({"value": 1}, {"type": "object"})'

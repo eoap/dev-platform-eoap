@@ -1,5 +1,23 @@
 # Development platform for Earth Observation Application Package training modules
 
+Start with the [learning and module development documentation](docs/README.md) for guided tutorials, operational how-to guides, configuration reference, and architecture explanations.
+
+## PDE module deployments
+
+The migrated modules provide Taskfiles for an existing Kubernetes context;
+Minikube setup is optional. Follow each module README for source branches,
+worker images, storage settings, and acceptance tasks.
+
+- [Dask application packages](dask-gateway/README.md)
+- [Inference application packages](inference-eoap/README.md)
+- [CWL application packages](cwl-eoap/README.md)
+- [Application package patterns](application-package-patterns/README.md)
+- [Contract-first application packages](eoap-contract-first/README.md)
+
+These deployments use PDE and dedicated disposable SeaweedFS storage. The
+older deployment walkthroughs below include historical deployment examples;
+use the module README and Taskfile for its current configuration.
+
 ## Requirements
 
 Before you begin, make sure you have the following tools installed and set up on your local environment:
@@ -89,7 +107,6 @@ While it's optional, it can significantly improve your workflow. You can downloa
 
 ```
 helm repo add localstack https://helm.localstack.cloud
-helm repo add zoo-project https://zoo-project.github.io/charts/
 ```
 
 ### Checking the requirements
@@ -159,3 +176,8 @@ No artifacts found to watch
 Press Ctrl+C to exit
 Watching for changes...
 ```
+
+## ZOO-based modules
+
+The ZOO deployment module has moved to the sibling repository
+[`dev-platform-eoap-zoo`](../dev-platform-eoap-zoo/README.md).

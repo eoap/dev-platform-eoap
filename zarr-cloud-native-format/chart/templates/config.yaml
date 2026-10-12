@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zarr-viewer-config
+data:
+  titiler-eopf-client.html: |
+{{ .Values.clientHtml | indent 4 }}
+  titiler-eopf-config.js: |
+    window.EOAP_TITILER_CONFIG = {
+      apiBaseUrl: "/api",
+      stacBaseUrl: "/stac",
+      assetId: {{ .Values.assetId | toJson }},
+      dataBaseUrl: "/data/",
+      collectionId: {{ .Values.collectionId | toJson }},
+      itemId: {{ .Values.itemId | toJson }}
+    };
+  default.conf: |
+    server {
+      listen 8080;
+      server_name _;
+      location = /healthz { access_log off; return 200 "ok\n"; }
+      location = / { rewrite ^ /titiler-eopf-client.html last; }
+      location = /titiler-eopf-client.html {
+        alias /etc/viewer/titiler-eopf-client.html;
+        add_header Cache-Control "no-store";
+      }
+      location = /titiler-eopf-config.js {
+        alias /etc/viewer/titiler-eopf-config.js;
+        default_type application/javascript;
+        add_header Cache-Control "no-store";
+      }
+      location = /api { return 307 /api/; }
+      location /api/ {
+        proxy_pass http://titiler-eopf:8080/;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 180s;
+        proxy_buffering off;
+      }
+      location /stac/ {
+        proxy_pass http://zarr-stac-api:8080/;
+        proxy_set_header Host $http_host;
+      }
+      location /data/ {
+        alias {{ .Values.storePath }}/;
+        autoindex off;
+        add_header Cache-Control "no-store";
+      }
+      location / { return 404; }
+    }

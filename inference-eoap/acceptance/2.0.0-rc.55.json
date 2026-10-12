@@ -1,0 +1,59 @@
+{
+  "module": "inference-eoap",
+  "source_commit": "39cab012f0e6cbc20e8391e81694ad41319b2295",
+  "target_version": "2.0.0",
+  "candidate_version": "2.0.0-rc.55",
+  "ci_run": "https://github.com/eoap/inference-eoap/actions/runs/38171221762",
+  "pull_request": "https://github.com/eoap/inference-eoap/pull/1",
+  "context": "eoap-mastering-app-package-docker",
+  "namespace": "eoap-inference",
+  "architecture": "amd64",
+  "input": {
+    "product": "S2A_MSIL1C_20240125T100311_N0510_R122_T33TVM_20240125T104959.SAFE",
+    "authenticated_access": "CDSE S3",
+    "files": 66,
+    "bytes": 906601938,
+    "bands": 13
+  },
+  "checks": {
+    "clean_checkout": true,
+    "notebooks_passed": 6,
+    "regressions_passed": 7,
+    "standalone_contracts": 3,
+    "strict_documentation": true,
+    "editor_and_s3_smoke": true,
+    "published_kubernetes_workflow": true,
+    "scientific_dimensions": [
+      10980,
+      10980
+    ],
+    "scientific_checks": [
+      "source CRS",
+      "source transform",
+      "source bounds",
+      "model class range",
+      "actual model prediction for final edge chip"
+    ],
+    "artifact_checksums": true,
+    "anonymous_image_manifests": true
+  },
+  "notebook_evidence": [
+    "/workspace/lab-results/20261011T201434310333Z",
+    "/workspace/lab-results/20261011T201839584802Z",
+    "/workspace/lab-results/20261011T201925569743Z",
+    "/workspace/lab-results/20261011T202019833822Z",
+    "/workspace/lab-results/20261011T202117016981Z"
+  ],
+  "kubernetes_evidence": "/calrissian/inference-release/20261011T201938Z",
+  "images": {
+    "sen2cog": "ghcr.io/eoap/inference-eoap/sen2cog:2.0.0-rc.55@sha256:509d037fe3aaf0829fba0df8a3a1ecaa32818683c5ca262ee60b305b9f30fd2f",
+    "stage-in": "ghcr.io/eoap/inference-eoap/stage-in:2.0.0-rc.55@sha256:8107e0e47cd9e95a845a3a11d8f1f5a601acc359e3aeca950c450a501a4d8ad2",
+    "inference": "ghcr.io/eoap/inference-eoap/inference:2.0.0-rc.55@sha256:4f695960bee59c416944c7c886d9020dae0e14d3c51f1528ca230c6afe6ba44f"
+  },
+  "stable_published": false,
+  "untested": [
+    "OAuth token download",
+    "ARM64",
+    "other Kubernetes clusters"
+  ]
+}

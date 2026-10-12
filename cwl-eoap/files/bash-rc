@@ -1,5 +1,8 @@
 alias ll="ls -l"
 
-alias aws="aws --endpoint-url=http://eoap-cwl-localstack:4566"
+alias aws="aws --endpoint-url=http://eoap-cwl-s3-seaweedfs-all-in-one:8333"
 
-source /workspace/.venv/bin/activate   
+export PATH=/workspace/.venv/bin:$PATH
+export TASK_X_REMOTE_TASKFILES=1
+
+source /workspace/.venv/bin/activate

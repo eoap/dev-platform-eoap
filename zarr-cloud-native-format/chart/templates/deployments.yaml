@@ -1,0 +1,104 @@
+{{- range $name := list "titiler-eopf" "titiler-eopf-client" }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: {{ $name }}
+  template:
+    metadata:
+      labels:
+        app: {{ $name }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/config.yaml") $ | sha256sum }}
+    spec:
+      securityContext:
+        runAsUser: 1001
+        runAsGroup: 100
+        fsGroup: 100
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: code-server
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - name: {{ $name }}
+          image: {{ if eq $name "titiler-eopf" }}{{ $.Values.api.image | quote }}{{ else }}{{ $.Values.client.image | quote }}{{ end }}
+          imagePullPolicy: IfNotPresent
+          {{- if eq $name "titiler-eopf" }}
+          command: [uvicorn]
+          args: ["titiler.eopf.main:app", "--host", "0.0.0.0", "--port", "8080"]
+          env:
+            - name: TITILER_EOPF_STAC_API_URL
+              value: http://zarr-stac-api:8080
+            - name: AWS_ENDPOINT_URL
+              value: {{ $.Values.s3.endpoint | quote }}
+            - name: AWS_ALLOW_HTTP
+              value: 'true'
+            - name: AWS_VIRTUAL_HOSTED_STYLE_REQUEST
+              value: 'false'
+            - name: AWS_REGION
+              value: {{ $.Values.s3.region | quote }}
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom: {secretKeyRef: {name: zarr-s3-credentials, key: accessKey}}
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom: {secretKeyRef: {name: zarr-s3-credentials, key: secretKey}}
+            - name: TITILER_EOPF_API_ROOT_PATH
+              value: /api
+            - name: TITILER_EOPF_CACHE_ENABLE
+              value: 'false'
+            - name: TITILER_EOPF_API_CACHECONTROL
+              value: no-store
+            - name: AWS_EC2_METADATA_DISABLED
+              value: 'true'
+          {{- end }}
+          ports:
+            - {name: http, containerPort: 8080}
+          startupProbe:
+            httpGet:
+              path: {{ if eq $name "titiler-eopf" }}/_mgmt/health{{ else }}/healthz{{ end }}
+              port: http
+            periodSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            httpGet:
+              path: {{ if eq $name "titiler-eopf" }}/_mgmt/health{{ else }}/titiler-eopf-client.html{{ end }}
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: {{ if eq $name "titiler-eopf" }}/_mgmt/health{{ else }}/healthz{{ end }}
+              port: http
+            periodSeconds: 20
+          resources:
+            {{- if eq $name "titiler-eopf" }}
+            {{- toYaml $.Values.api.resources | nindent 12 }}
+            {{- else }}
+            {{- toYaml $.Values.client.resources | nindent 12 }}
+            {{- end }}
+          volumeMounts:
+            - {name: workspace, mountPath: /workspace, readOnly: true}
+            - {name: workflow, mountPath: /calrissian, readOnly: true}
+            {{- if eq $name "titiler-eopf-client" }}
+            - {name: config, mountPath: /etc/nginx/conf.d/default.conf, subPath: default.conf, readOnly: true}
+            - {name: config, mountPath: /etc/viewer, readOnly: true}
+            {{- end }}
+      volumes:
+        - name: workspace
+          persistentVolumeClaim:
+            claimName: {{ $.Values.workspaceClaim }}
+        - name: workflow
+          persistentVolumeClaim:
+            claimName: {{ $.Values.workflowClaim }}
+        - name: config
+          configMap:
+            name: zarr-viewer-config
+{{- end }}

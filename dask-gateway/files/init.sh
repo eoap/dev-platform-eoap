@@ -1,60 +1,64 @@
 #!/bin/bash
 
-set -x 
-
+if [ -z "${BASH_VERSION:-}" ]; then
+    exec /bin/bash "$0" "$@"
+fi
+set -euo pipefail
 cd /workspace
 
-git clone 'https://github.com/eoap/dask-app-package.git'
-
-code-server --install-extension ms-python.python --install-extension redhat.vscode-yaml --install-extension sbg-rabix.benten-cwl --install-extension ms-toolsai.jupyter
-
-ln -s /workspace/.local/share/code-server/extensions /workspace/extensions
-
-pip install --no-warn-script-location git+https://github.com/Terradue/calrissian@dask-gateway # calrissian
-
-mkdir -p /workspace/User/
-
-echo '{"workbench.colorTheme": "Visual Studio Dark"}' > /workspace/User/settings.json
-
-# eopf-sentinel-2 environment
-python -m venv /workspace/.venv-eopf
-source /workspace/.venv-eopf/bin/activate
-/workspace/.venv-eopf/bin/pip install --upgrade uv
-/workspace/.venv-eopf/bin/python -m uv pip install numpy==1.26.3 dask==2025.4.0 distributed==2025.4.0 dask-gateway==2025.4.0 pystac bokeh rioxarray==0.18.1 loguru==0.7.3 odc-stac[botocore]==0.3.10 stackstac==0.5.1 pystac-client==0.8.6 planetary-computer==1.0.0 xarray-spatial==0.4.0 "xarray[complete]==2025.4.0" ipykernel rio-color==2.0.1
-res=$?
-if [ $res -ne 0 ]; then
-    echo "Failed to install packages"
-    exit $res
+training_ref=${DASK_TRAINING_REF:-f428aed638e571368992bc51535ae4ae888f2210}
+if [ ! -d dask-app-package/.git ]; then
+    git clone 'https://github.com/eoap/dask-app-package.git'
+fi
+training_branch=$(git -C dask-app-package symbolic-ref --quiet --short HEAD || true)
+training_upstream=$(git -C dask-app-package rev-parse --abbrev-ref --symbolic-full-name '@{upstream}' 2>/dev/null || true)
+if [ -n "$(git -C dask-app-package status --porcelain)" ]; then
+    echo "Preserving local dask-app-package checkout and edits"
+elif [[ "$training_branch" == feature/* ]] && { [ -z "$training_upstream" ] || [ "$(git -C dask-app-package rev-list --count "${training_upstream}..HEAD")" -gt 0 ]; }; then
+    echo "Preserving local feature branch $training_branch and its commits"
+else
+    git -C dask-app-package fetch --tags origin "$training_ref"
+    git -C dask-app-package checkout --detach FETCH_HEAD
+fi
+if [ ! -f dask-app-package/scripts/cwl-docs.py ]; then
+    echo "Dask typed-CWL training source is required; select $training_ref from GitHub" >&2
+    exit 1
 fi
 
-cd /workspace/dask-app-package/eopf-sentinel-2
-/workspace/.venv-eopf/bin/python -m uv pip install -e .
+code-server --install-extension ms-python.python --install-extension redhat.vscode-yaml --install-extension sbg-rabix.benten-cwl --install-extension ms-toolsai.jupyter
+ln -sfn /workspace/.local/share/code-server/extensions /workspace/extensions
+mkdir -p /workspace/User/
+echo '{"workbench.colorTheme": "Visual Studio Dark"}' > /workspace/User/settings.json
 
-/workspace/.venv-eopf/bin/python -m ipykernel install --user --name dask-gateway-eopf --display-name "Python (EOPF Dask Application Package)"
+uv venv --allow-existing --seed --python /opt/conda/bin/python /workspace/.venv
+source /workspace/.venv/bin/activate
+ln -sfn /opt/calrissian-venv/bin/calrissian /workspace/.venv/bin/calrissian
+# Calrissian remains in the container-provided isolated environment.
+uv pip sync --python /workspace/.venv/bin/python --require-hashes /workspace/dask-app-package/requirements-notebooks.txt /workspace/dask-app-package/requirements-build.txt
+uv pip install --python /workspace/.venv/bin/python --no-deps --no-build-isolation -e /workspace/dask-app-package/eopf-sentinel-2 -e /workspace/dask-app-package/cloudless-mosaic
+/workspace/.venv/bin/python dask-app-package/scripts/cwl-docs.py --output /tmp/dask-cwl-docs
+uv pip check --python /workspace/.venv/bin/python
+/workspace/.venv/bin/python -m ipykernel install --user --name dask_env --display-name "Python (Dask Application Package)"
 
-# # cloudless-mosaic environment
-# python -m venv /workspace/.venv-cloudless-mosaic
-# source /workspace/.venv-cloudless-mosaic/bin/activate
-
-# /workspace/.venv-cloudless-mosaic/bin/pip install --upgrade uv
-# /workspace/.venv-cloudless-mosaic/bin/python -m uv pip install --no-cache-dir numpy==1.26.3 dask==2025.4.0 distributed==2025.4.0 dask-gateway==2025.4.0 pystac bokeh rioxarray==0.18.1 loguru==0.7.3 odc-stac[botocore]==0.3.10 stackstac==0.5.1 pystac-client==0.8.6 planetary-computer==1.0.0 xarray-spatial==0.4.0 "xarray[complete]==2025.4.0" ipykernel rio-color==2.0.1
-# res=$?
-# if [ $res -ne 0 ]; then
-#     echo "Failed to install packages"
-#     exit $res
-# fi
-
-# cd /workspace/dask-app-package/cloudless-mosaic
-# /workspace/.venv-cloudless-mosaic/bin/python -m uv pip install --no-cache-dir -e .
-
-# /workspace/.venv-cloudless-mosaic/bin/python -m ipykernel install --user --name dask-gateway --display-name "Python (Cloudless Mosaic Dask Application Package)"
-
-
-export AWS_DEFAULT_REGION="us-east-1"
-export AWS_ACCESS_KEY_ID="test"
-export AWS_SECRET_ACCESS_KEY="test"
-
-aws s3 mb s3://results --endpoint-url=http://eoap-dask-gateway-localstack:4566
-
-
-
+aws configure set aws_access_key_id test
+aws configure set aws_secret_access_key test
+aws configure set region us-east-1
+aws configure set endpoint_url http://eoap-dask-gateway-s3-seaweedfs-all-in-one:8333
+aws configure set s3.addressing_style path
+chmod 600 /workspace/.aws/credentials
+endpoint=http://eoap-dask-gateway-s3-seaweedfs-all-in-one:8333
+ready=0
+for attempt in {1..120}; do
+    if aws --endpoint-url "$endpoint" --cli-connect-timeout 2 --cli-read-timeout 2 s3api list-buckets >/dev/null 2>&1; then
+        ready=1
+        break
+    fi
+    sleep 2
+done
+if [ "$ready" != 1 ]; then
+    echo "SeaweedFS S3 did not become ready" >&2
+    exit 1
+fi
+if ! aws --endpoint-url "$endpoint" s3api head-bucket --bucket results >/dev/null 2>&1; then
+    aws --endpoint-url "$endpoint" s3api create-bucket --bucket results
+fi

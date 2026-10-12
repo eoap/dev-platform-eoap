@@ -2,26 +2,32 @@
 coder:
   coderImage: ghcr.io/eoap/dev-platform-eoap/eoap-coder:0.1.0
   workspace: quickwin
+  # Additional environment variables shared by the init container and editor.
+  # Example: [{name: MY_MODULE_SETTING, value: "example"}]
+  podEnvVars: []
   storageClassName: standard
   workspaceStorage: 20Gi
+  # Set false before deploying/upgrading to delete the PVC on Helm uninstall.
+  retainPvc: true
   securityContext:
     privileged: true
   serviceType: ClusterIP
+  resources:
+    limits:
+      cpu: '2'
+      memory: '6442450944'
+    requests:
+      cpu: '1'
+      memory: '4294967296'
 
 calrissian:
   enabled: True
   storage: 20Gi
   storageClassName: standard
+  # Set false before deploying/upgrading to delete the PVC on Helm uninstall.
+  retainPvc: true
   imagePullSecrets:
     - kaniko-secret
-
-coderResources:
-  limits:
-    cpu: '2'
-    memory: '6442450944'
-  requests:
-    cpu: '1'
-    memory: '4294967296'
 
 skaffold:
   enabled: False
