@@ -1,6 +1,6 @@
 {
   "cluster": "eoap-mastering-app-package-docker",
-  "processing_source_commit": "pending conventional commit; final image built from working feature source",
+  "processing_source_commit": "862d33d",
   "stage_out_unit_tests_passed": 6,
   "stage_out_host_quality_passed": true,
   "stage_out_real_job": "argo-stage-out-real-prefix-fix",
@@ -13,5 +13,10 @@
   "runtime_pip_removed": true,
   "full_argo_acceptance_passed": false,
   "license_declaration_pending": true,
-  "published_candidate_acceptance_passed": false
+  "published_candidate_acceptance_passed": false,
+  "unit_test_commit": "862d33d",
+  "stage_out_minikube_unit_tests_passed": 6,
+  "stage_out_minikube_quality_passed": true,
+  "jsonschema_minikube_valid_and_invalid_checks_passed": true,
+  "jsonschema_smoke_job": "argo-jsonschema-model-smoke"
 }
