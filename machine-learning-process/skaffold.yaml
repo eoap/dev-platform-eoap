@@ -5,83 +5,79 @@ metadata:
 deploy:
   helm:
     releases:
-      
-      - name: tile-based-training-localstack
-        remoteChart: localstack/localstack
-        namespace: tile-based-training
-        createNamespace: true
-        setValues:
-          service.type: ClusterIP
-
-      # Code-Server with Calrissian
-      - name: code-server
-        chartPath: ../charts/coder
-        namespace: tile-based-training
-        createNamespace: true
-        setValues: 
-          coder.serviceType: NodePort
-          coder.storageClassName: standard
-          coder.workspace: machine-learning-process
-          coder.workspaceStorage: 40Gi
-          coder.resources.limits.cpu: '3'
-          coder.resources.limits.memory: '10737418240'
-          coder.resources.requests.cpu: '1'
-          coder.resources.requests.memory: '4294967296'
-          calrissian.enabled: true
-          #calrissian.storage: 30Gi
-          coder.securityContext.privileged: true
-          kaniko.enabled: false
-          skaffold.enabled: true
-        setFiles: {
-          initScript: ./files/init.sh,
-          bashrcScript: ./files/bash-rc,
-          bashloginScript: ./files/bash-login,
-        }
-       
-      # MLflow
-      - name: my-mlflow  
-        remoteChart: community-charts/mlflow
-        version: 0.15.0
-        namespace: tile-based-training
-        createNamespace: true
-        setValues:
-          service.type: ClusterIP
-          service.port: 5000
-          ingress.enabled: true
-          ingress.className: standard
-          resources.limits.memory: 5Gi
-          resources.limits.cpu: 500m
-          resources.requests.cpu: 200m
-          resources.requests.memory: 3Gi
-          backendStore:
-            databaseMigration: true  # Enable database migration to ensure schema is up-to-date
-            postgres:
-              enabled: false  # Disable PostgreSQL
-            mysql:
-              enabled: false  # Disable MySQL
-          artifactRoot: 
-            proxiedArtifactStorage: true  # Disable proxied artifact storage access
-            azureBlob:
-              enabled: false  # Disable Azure Blob Storage
-            s3:
-              enabled: false  # Disable AWS S3
-            gcs:
-              enabled: false  # Disable Google Cloud Storage
-          
-            
-
+    - name: tile-based-training-s3
+      remoteChart: seaweedfs/seaweedfs
+      version: 4.48.0
+      namespace: tile-based-training
+      createNamespace: true
+      valuesFiles:
+      - seaweedfs-values.yaml
+    - name: code-server
+      chartPath: ../charts/coder
+      namespace: tile-based-training
+      createNamespace: true
+      setValues:
+        coder.serviceType: NodePort
+        coder.storageClassName: standard
+        coder.workspace: machine-learning-process
+        coder.workspaceStorage: 40Gi
+        coder.resources.limits.cpu: '3'
+        coder.resources.limits.memory: '10737418240'
+        coder.resources.requests.cpu: '1'
+        coder.resources.requests.memory: '4294967296'
+        calrissian.enabled: true
+        coder.securityContext.privileged: true
+        kaniko.enabled: false
+        skaffold.enabled: true
+        coder.coderImage: eoepca/pde-code-server:amd64
+        calrissian.storageClassName: standard
+      setFiles:
+        initScript: ./files/init.sh
+        bashrcScript: ./files/bash-rc
+        bashloginScript: ./files/bash-login
+      valuesFiles:
+      - coder-values.yaml
+    - name: my-mlflow
+      remoteChart: community-charts/mlflow
+      version: 0.15.0
+      namespace: tile-based-training
+      createNamespace: true
+      setValues:
+        service.type: ClusterIP
+        service.port: 5000
+        ingress.enabled: true
+        ingress.className: standard
+        resources.limits.memory: 5Gi
+        resources.limits.cpu: 500m
+        resources.requests.cpu: 200m
+        resources.requests.memory: 3Gi
+        backendStore:
+          databaseMigration: true
+          postgres:
+            enabled: false
+          mysql:
+            enabled: false
+        artifactRoot:
+          proxiedArtifactStorage: true
+          azureBlob:
+            enabled: false
+          s3:
+            enabled: false
+          gcs:
+            enabled: false
+      valuesFiles:
+      - mlflow-values.yaml
+  statusCheckDeadlineSeconds: 1200
 portForward:
-  - resourceType: service
-    resourceName: my-mlflow
-    address: localhost
-    namespace: tile-based-training
-    port: 5000
-    localPort: 5000
-
-  
-  - resourceType: service
-    resourceName: code-server-service # code server service name in ../chart/coder/templates/coder.yaml
-    namespace: tile-based-training
-    address: localhost
-    port: 8080
-    localPort: 8000  
+- resourceType: service
+  resourceName: my-mlflow
+  address: localhost
+  namespace: tile-based-training
+  port: 5000
+  localPort: 5000
+- resourceType: service
+  resourceName: code-server-service
+  namespace: tile-based-training
+  address: localhost
+  port: 8080
+  localPort: 8000
