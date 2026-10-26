@@ -1,4 +1,8 @@
-FROM docker.io/library/python:3.12.11-bookworm@sha256:bea386df48d7ee07eed0a1f3e6f9d5c0292c228b8d8ed2ea738b7a57b29c4470
+FROM docker.io/library/python:3.12.15-bookworm@sha256:14a4933e6cef421424f7a66d89a3f4eafcbd0d90e0a822251f298e05132dc735
+
+# Refresh the OS trust store before downloading Python packages.
+RUN apt-get update && apt-get install -y --only-upgrade ca-certificates && \
+    update-ca-certificates && rm -rf /var/lib/apt/lists/*
 
 RUN \
     apt-get update && \
@@ -88,6 +92,8 @@ ENV USER=jovyan \
 
 RUN \
     echo "**** install aws cli ****" && \   
+    pip install --no-cache-dir --upgrade "pip @ https://files.pythonhosted.org/packages/3f/06/3e4420302363fbb71be3c7f35ce042f54bfca330e3e66b3a2e3c4cca579f/pip-26.2.2-py3-none-any.whl#sha256=fd7f4dfa8190e014013b9f08f3e973f4e4c26ffd179a204895533a7254813a70" && \
+    pip install --no-cache-dir --upgrade "certifi>=2026.10.19" && \
     pip install awscli  && \
     pip install awscli-plugin-endpoint                                              
 
@@ -132,7 +138,9 @@ RUN curl -s -L https://github.com/go-task/task/releases/download/v3.41.0/task_li
 RUN curl -s -L https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 > /usr/local/bin/skaffold && \
     chmod +x /usr/local/bin/skaffold
 
-RUN pip3 install tomlq && tomlq --version
+RUN pip3 install --no-cache-dir --upgrade "pip @ https://files.pythonhosted.org/packages/3f/06/3e4420302363fbb71be3c7f35ce042f54bfca330e3e66b3a2e3c4cca579f/pip-26.2.2-py3-none-any.whl#sha256=fd7f4dfa8190e014013b9f08f3e973f4e4c26ffd179a204895533a7254813a70" && \
+    pip3 install --no-cache-dir --upgrade "certifi>=2026.10.19" && \
+    pip3 install tomlq && tomlq --version
 
 RUN rm -f /usr/bin/yq && \
     rm -f /usr/local/bin/yq && \
@@ -145,7 +153,7 @@ RUN rm -f /usr/bin/yq && \
 RUN curl -s -L https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-amd64 > /usr/bin/jq && \
     chmod +x /usr/bin/jq
 
-RUN pip install --upgrade uv && uv pip install --no-warn-script-location git+https://github.com/Terradue/calrissian@dask-gateway
+RUN pip install --upgrade "uv>=0.13.4" && uv pip install --no-warn-script-location git+https://github.com/Terradue/calrissian@dask-gateway
 
 
 
