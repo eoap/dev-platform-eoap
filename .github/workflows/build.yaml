@@ -20,14 +20,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v7
     - run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
     - name: build & push image
       run: |
         cd container/coder
         version=$(cat codemeta.json | jq -r .version )
         IMAGE_ID=ghcr.io/eoap/dev-platform-eoap/eoap-coder
-        docker build . --file Dockerfile.coder --tag eoap-coder
+        docker build --pull --no-cache . --file Dockerfile.coder --tag eoap-coder
         docker tag eoap-coder $IMAGE_ID:${version}
         docker push $IMAGE_ID:${version}
 
@@ -42,13 +42,13 @@ jobs:
         step: ["application-package-patterns", "advanced-tooling", "how-to"]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v7
     - run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
     - name: build & push image
       run: |
         version=$(cat ${{ matrix.step }}/codemeta.json | jq -r .version )
         IMAGE_ID=ghcr.io/eoap/dev-platform-eoap/${{ matrix.step }}-coder
-        docker build ${{ matrix.step }} --file ${{ matrix.step }}/Dockerfile.coder --tag ${{ matrix.step }}
+        docker build --pull --no-cache ${{ matrix.step }} --file ${{ matrix.step }}/Dockerfile.coder --tag ${{ matrix.step }}
         docker tag ${{ matrix.step }} $IMAGE_ID:${version}
         docker push $IMAGE_ID:${version}
 
@@ -61,12 +61,12 @@ jobs:
         step: ["client", "coder", "worker"]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v7
     - run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
     - name: build & push image
       run: |
         version=$(cat dask-gateway/codemeta.json | jq -r .version )
         IMAGE_ID=ghcr.io/eoap/dev-platform-eoap/dask-gateway-${{ matrix.step }}
-        docker build dask-gateway --file dask-gateway/Dockerfile.${{ matrix.step }} --tag eoap-dask-gateway-${{ matrix.step }}
+        docker build --pull --no-cache dask-gateway --file dask-gateway/Dockerfile.${{ matrix.step }} --tag eoap-dask-gateway-${{ matrix.step }}
         docker tag eoap-dask-gateway-${{ matrix.step }} $IMAGE_ID:${version}
         docker push $IMAGE_ID:${version}
