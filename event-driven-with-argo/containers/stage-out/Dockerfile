@@ -2,6 +2,7 @@ FROM docker.io/library/python:3.12.15-bookworm@sha256:14a4933e6cef421424f7a66d89
 
 # Refresh the OS trust store before downloading Python packages.
 RUN apt-get update && apt-get install -y --only-upgrade ca-certificates && \
+    sed -i '/^[#!]*mozilla\/emSign_ECC_Root_CA_-_G3\.crt$/s/^[#!]*/!/' /etc/ca-certificates.conf && \
     update-ca-certificates && rm -rf /var/lib/apt/lists/*
 
 RUN apt update && apt install -y yq
