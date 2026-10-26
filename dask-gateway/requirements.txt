@@ -3,7 +3,7 @@ dask==2025.4.0
 distributed==2025.4.0
 dask-gateway==2025.4.0
 pystac==1.13.0
-bokeh==3.6.2
+bokeh==3.8.2
 rioxarray==0.18.1
 loguru==0.7.3
 odc-stac[botocore]==0.3.10
