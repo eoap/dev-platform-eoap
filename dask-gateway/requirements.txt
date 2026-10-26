@@ -1,6 +1,6 @@
 numpy==1.26.3  
 dask==2025.4.0
-distributed==2025.4.0
+distributed==2026.1.0
 dask-gateway==2025.4.0
 pystac==1.13.0
 bokeh==3.8.2
